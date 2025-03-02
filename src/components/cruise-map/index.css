@@ -1,0 +1,27 @@
+.cruise-map__marker_type_ship {
+	fill: var(--cruise-map__marker_color);
+	transform:
+		translateY(calc(var(--cruise-map__marker_intersection-index, 0) * 12px))
+		rotate(var(--cruise-map__marker_angle, 0deg))
+		translateY(-10px);
+}
+
+.cruise-map__icon_type_stop {
+	fill: var(--cruise-map__popup_company-color);
+}
+
+.cruise-map__icon_type_showplace {
+	stroke: var(--cruise-map__popup_company-color);
+}
+
+.cruise-map__icon_type_ship {
+	fill: var(--theme-background);
+	stroke: var(--cruise-map__popup_company-color);
+}
+
+.cruise-map__ship-name:before {
+	content: "“";
+}
+.cruise-map__ship-name:after {
+	content: "”";
+}

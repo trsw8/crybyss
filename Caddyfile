@@ -1,0 +1,8 @@
+http://:3000 {
+	reverse_proxy /* localhost:3001
+	reverse_proxy /api* https://krubiss.ru {
+		transport http {
+			tls_insecure_skip_verify
+		}
+	}
+}

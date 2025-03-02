@@ -1,0 +1,32 @@
+{
+  "name": "crybyss",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "webpack serve --mode=development",
+    "build": "webpack --mode=production --node-env=production",
+    "build:dev": "webpack --mode=development",
+    "build:prod": "webpack --mode=production --node-env=production",
+    "watch": "webpack --watch"
+  },
+  "dependencies": {
+    "@datastructures-js/binary-search-tree": "^5.3.2",
+    "@datastructures-js/graph": "^5.3.0",
+    "@types/leaflet": "^1.9.16",
+    "@types/throttle-debounce": "^5.0.2",
+    "css-loader": "^7.1.2",
+    "html-loader": "^5.1.0",
+    "html-webpack-plugin": "^5.6.3",
+    "leaflet": "1.9.4",
+    "mini-css-extract-plugin": "^2.9.2",
+    "template-ejs-loader": "^0.9.4",
+    "throttle-debounce": "^5.0.2",
+    "ts-loader": "^9.5.2",
+    "typescript": "^5.7.3",
+    "typescript-event-target": "^1.1.1",
+    "webpack": "^5.98.0"
+  },
+  "devDependencies": {
+    "webpack-cli": "^6.0.1",
+    "webpack-dev-server": "^5.2.0"
+  }
+}

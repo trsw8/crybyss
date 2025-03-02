@@ -1,0 +1,11 @@
+{
+	"compilerOptions": {
+		"noImplicitAny": true,
+		"module": "es6",
+		"target": "es6",
+		"allowJs": true,
+		"moduleResolution": "node",
+		"sourceMap": true,
+		"downlevelIteration": true
+	}
+}

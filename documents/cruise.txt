@@ -1,0 +1,283 @@
+<pre>Array
+(
+    [263165] =&gt; Array
+        (
+            [ID] =&gt; 263165
+            [NAME] =&gt; [20.07.25-01.08.25] 20.07-01.08 Казань — Казань (ИВБ) ("Иван Бунин" Иван Бунин)
+            [CODE] =&gt; 20-07-25-01-08-25-20-07-01-08-kazan-kazan-ivb-ivan-bunin-ivan-bunin
+            [IBLOCK_SECTION_ID] =&gt; 
+            [IBLOCK_ID] =&gt; 5
+            [PROPERTY_ARRIVALDATE_VALUE] =&gt; 01.08.2025 09:00:00
+            [PROPERTY_ARRIVALDATE_VALUE_ID] =&gt; 263165:40
+            [PROPERTY_DEPARTUREDATE_VALUE] =&gt; 20.07.2025 15:00:00
+            [PROPERTY_DEPARTUREDATE_VALUE_ID] =&gt; 263165:41
+            [PROPERTY_SHIPID_VALUE] =&gt; 259330
+            [PROPERTY_SHIPID_VALUE_ID] =&gt; 263165:42
+            [PROPERTY_WEB_VALUE] =&gt; https://azurit-tour.ru/kruizy/kruizy-na-t-h-ivan-bunin-hide/kruizy/kruiz/programma-kruiza-bunin?tourid=363
+            [PROPERTY_WEB_VALUE_ID] =&gt; 263165:43
+            [PROPERTY_TRACKSTOPS_VALUE] =&gt; Array
+                (
+                    [0] =&gt; Array
+                        (
+                            [CR_ID] =&gt; 6203
+                            [CR_ARRIVAL] =&gt; 20.07.2025 15:00:00
+                            [CR_DEPARTURE] =&gt; 20.07.2025 15:00:00
+                            [CR_FILE] =&gt; 54161
+                            [CR_DISTANCE] =&gt; 0
+                        )
+
+                    [1] =&gt; Array
+                        (
+                            [CR_ID] =&gt; 6019
+                            [CR_ARRIVAL] =&gt; 21.07.2025 14:00:00
+                            [CR_DEPARTURE] =&gt; 22.07.2025 05:30:00
+                            [CR_FILE] =&gt; 54162
+                            [CR_DISTANCE] =&gt; 398.983
+                        )
+
+                    [2] =&gt; Array
+                        (
+                            [CR_ID] =&gt; 6158
+                            [CR_ARRIVAL] =&gt; 22.07.2025 14:00:00
+                            [CR_DEPARTURE] =&gt; 22.07.2025 16:00:00
+                            [CR_FILE] =&gt; 54163
+                            [CR_DISTANCE] =&gt; 468.435
+                        )
+
+                    [3] =&gt; Array
+                        (
+                            [CR_ID] =&gt; 6252
+                            [CR_ARRIVAL] =&gt; 23.07.2025 08:00:00
+                            [CR_DEPARTURE] =&gt; 23.07.2025 12:00:00
+                            [CR_FILE] =&gt; 54164
+                            [CR_DISTANCE] =&gt; 792.527
+                        )
+
+                    [4] =&gt; Array
+                        (
+                            [CR_ID] =&gt; 6156
+                            [CR_ARRIVAL] =&gt; 23.07.2025 14:00:00
+                            [CR_DEPARTURE] =&gt; 23.07.2025 16:00:00
+                            [CR_FILE] =&gt; 54165
+                            [CR_DISTANCE] =&gt; 830.243
+                        )
+
+                    [5] =&gt; Array
+                        (
+                            [CR_ID] =&gt; 6042
+                            [CR_ARRIVAL] =&gt; 24.07.2025 10:00:00
+                            [CR_DEPARTURE] =&gt; 24.07.2025 13:30:00
+                            [CR_FILE] =&gt; 54166
+                            [CR_DISTANCE] =&gt; 1134.891
+                        )
+
+                    [6] =&gt; Array
+                        (
+                            [CR_ID] =&gt; 6046
+                            [CR_ARRIVAL] =&gt; 25.07.2025 06:00:00
+                            [CR_DEPARTURE] =&gt; 26.07.2025 14:30:00
+                            [CR_FILE] =&gt; 54167
+                            [CR_DISTANCE] =&gt; 1259.158
+                        )
+
+                    [7] =&gt; Array
+                        (
+                            [CR_ID] =&gt; 6149
+                            [CR_ARRIVAL] =&gt; 27.07.2025 11:00:00
+                            [CR_DEPARTURE] =&gt; 27.07.2025 17:00:00
+                            [CR_FILE] =&gt; 54168
+                            [CR_DISTANCE] =&gt; 1492.499
+                        )
+
+                    [8] =&gt; Array
+                        (
+                            [CR_ID] =&gt; 6239
+                            [CR_ARRIVAL] =&gt; 28.07.2025 08:30:00
+                            [CR_DEPARTURE] =&gt; 28.07.2025 12:00:00
+                            [CR_FILE] =&gt; 54169
+                            [CR_DISTANCE] =&gt; 1750.503
+                        )
+
+                    [9] =&gt; Array
+                        (
+                            [CR_ID] =&gt; 6226
+                            [CR_ARRIVAL] =&gt; 28.07.2025 14:30:00
+                            [CR_DEPARTURE] =&gt; 28.07.2025 18:00:00
+                            [CR_FILE] =&gt; 54170
+                            [CR_DISTANCE] =&gt; 1783.907
+                        )
+
+                    [10] =&gt; Array
+                        (
+                            [CR_ID] =&gt; 6212
+                            [CR_ARRIVAL] =&gt; 29.07.2025 05:00:00
+                            [CR_DEPARTURE] =&gt; 29.07.2025 09:00:00
+                            [CR_FILE] =&gt; 54171
+                            [CR_DISTANCE] =&gt; 1819.905
+                        )
+
+                    [11] =&gt; Array
+                        (
+                            [CR_ID] =&gt; 6135
+                            [CR_ARRIVAL] =&gt; 29.07.2025 14:00:00
+                            [CR_DEPARTURE] =&gt; 29.07.2025 18:00:00
+                            [CR_FILE] =&gt; 54172
+                            [CR_DISTANCE] =&gt; 1868.218
+                        )
+
+                    [12] =&gt; Array
+                        (
+                            [CR_ID] =&gt; 6072
+                            [CR_ARRIVAL] =&gt; 30.07.2025 05:00:00
+                            [CR_DEPARTURE] =&gt; 30.07.2025 10:00:00
+                            [CR_FILE] =&gt; 54173
+                            [CR_DISTANCE] =&gt; 2035.164
+                        )
+
+                    [13] =&gt; Array
+                        (
+                            [CR_ID] =&gt; 6189
+                            [CR_ARRIVAL] =&gt; 30.07.2025 13:30:00
+                            [CR_DEPARTURE] =&gt; 30.07.2025 17:00:00
+                            [CR_FILE] =&gt; 54174
+                            [CR_DISTANCE] =&gt; 2093.312
+                        )
+
+                    [14] =&gt; Array
+                        (
+                            [CR_ID] =&gt; 6195
+                            [CR_ARRIVAL] =&gt; 31.07.2025 05:00:00
+                            [CR_DEPARTURE] =&gt; 31.07.2025 07:30:00
+                            [CR_FILE] =&gt; 54175
+                            [CR_DISTANCE] =&gt; 2294.033
+                        )
+
+                    [15] =&gt; Array
+                        (
+                            [CR_ID] =&gt; 6019
+                            [CR_ARRIVAL] =&gt; 31.07.2025 12:00:00
+                            [CR_DEPARTURE] =&gt; 31.07.2025 12:30:00
+                            [CR_FILE] =&gt; 54176
+                            [CR_DISTANCE] =&gt; 2345.177
+                        )
+
+                    [16] =&gt; Array
+                        (
+                            [CR_ID] =&gt; 6203
+                            [CR_ARRIVAL] =&gt; 01.08.2025 09:00:00
+                            [CR_DEPARTURE] =&gt; 01.08.2025 09:00:00
+                            [CR_FILE] =&gt; 54177
+                            [CR_DISTANCE] =&gt; 2744.16
+                        )
+
+                )
+
+            [PROPERTY_CREWID_VALUE] =&gt; 5943
+            [PROPERTY_CREWID_VALUE_ID] =&gt; 263165:47
+            [PROPERTY_DURABILITY_VALUE] =&gt; 11 дней / 10 ночей
+            [PROPERTY_DURABILITY_ENUM_ID] =&gt; 359
+            [PROPERTY_DURABILITY_VALUE_ID] =&gt; 263165:84
+            [PROPERTY_TRACKPOINTS_VALUE] =&gt; Array
+                (
+                )
+
+            [PROPERTY_POINTS_VALUE] =&gt; Array
+                (
+                    [0] =&gt; 259331
+                    [1] =&gt; 259332
+                    [2] =&gt; 259333
+                )
+
+            [PROPERTY_TRACKSTOPS_DESCRIPTION] =&gt; Array
+                (
+                    [0] =&gt; 
+                    [1] =&gt; 
+                    [2] =&gt; 
+                    [3] =&gt; 
+                    ... 
+                )
+
+            [PROPERTY_TRACKSTOPS_PROPERTY_VALUE_ID] =&gt; Array
+                (
+                    [0] =&gt; 306898
+                    [1] =&gt; 306899
+                    [2] =&gt; 306900
+                    [3] =&gt; 306901
+                    ...
+                )
+
+            [PROPERTY_TRACKPOINTS_DESCRIPTION] =&gt; Array
+                (
+                )
+
+            [PROPERTY_TRACKPOINTS_PROPERTY_VALUE_ID] =&gt; Array
+                (
+                )
+
+            [PROPERTY_POINTS_DESCRIPTION] =&gt; Array
+                (
+                    [0] =&gt; 
+                    [1] =&gt; 
+                    [2] =&gt; 
+                    [3] =&gt; 
+                   ...
+                )
+
+            [PROPERTY_POINTS_PROPERTY_VALUE_ID] =&gt; Array
+                (
+                    [0] =&gt; 306915
+                    [1] =&gt; 306916
+                    [2] =&gt; 306917
+                    [3] =&gt; 306918
+                    ...
+                )
+
+            [POINTS] =&gt; Array
+                (
+                    [0] =&gt; Array
+                        (
+                            [ID] =&gt; 259331
+                            [isTrackStop] =&gt; 330
+                            [pointArrivalDate] =&gt; 2025-07-20 15:00:00
+                            [Sunrise] =&gt; 331
+                            [coordinates] =&gt; Array
+                                (
+                                    [latitude] =&gt; 55.77403358
+                                    [longitude] =&gt; 49.09030048
+                                )
+
+                        )
+
+                    [1] =&gt; Array
+                        (
+                            [ID] =&gt; 259332
+                            [pointArrivalDate] =&gt; 2025-07-20 15:00:00
+                            [coordinates] =&gt; Array
+                                (
+                                    [latitude] =&gt; 55.77403358
+                                    [longitude] =&gt; 49.09030048
+                                )
+
+                            [angle] =&gt; -67.471734331478
+                        )
+
+                    [2] =&gt; Array
+                        (
+                            [ID] =&gt; 259333
+                            [pointArrivalDate] =&gt; 2025-07-20 15:00:00
+                            [coordinates] =&gt; Array
+                                (
+                                    [latitude] =&gt; 55.774034856561
+                                    [longitude] =&gt; 49.090295008311
+                                )
+
+                            [angle] =&gt; -67.471734331478
+                        )
+
+                    ...
+                )
+
+        )
+
+)
+</pre>

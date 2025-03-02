@@ -1,0 +1,44 @@
+.leaflet-container {
+	font-family: inherit;
+	font-size: inherit;
+	line-height: inherit;
+}
+
+.leaflet-popup {
+	margin-bottom: calc(var(--leaflet-popup_icon-height) / 2);
+}
+
+.leaflet-popup-tip-container {
+	display: none;
+}
+
+.leaflet-popup-content-wrapper {
+	padding: 0;
+	border-radius: 0;
+	background: none;
+	color: inherit;
+	box-shadow: none;
+}
+
+.leaflet-popup-content {
+	margin: 0;
+	line-height: inherit;
+	font-size: inherit;
+}
+
+.leaflet-popup-content p {
+	padding: 0;
+	margin: 0;
+}
+
+.leaflet-marker-icon {
+	width: var(--leaflet-marker-icon_width);
+	height: var(--leaflet-marker-icon_height);
+	margin-left: calc(var(--leaflet-marker-icon_width) / -2);
+	margin-top: calc(var(--leaflet-marker-icon_height) / -2);
+}
+
+.leaflet-marker-icon > * {
+	width: 100%;
+	height: 100%;
+}
