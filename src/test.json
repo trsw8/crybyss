@@ -1,0 +1,162 @@
+[
+  {
+    "id": 1,
+    "name": "Красная площадь",
+    "description": "Историческая площадь в центре Москвы",
+    "latitude": 55.7539,
+    "longitude": 37.6208,
+    "image": "https://example.com/red_square.jpg"
+  },
+  {
+    "id": 2,
+    "name": "Эйфелева башня",
+    "description": "Одна из самых известных достопримечательностей Парижа",
+    "latitude": 48.8584,
+    "longitude": 2.2945,
+    "image": "https://example.com/eiffel_tower.jpg"
+  },
+  {
+    "id": 3,
+    "name": "Таймс-сквер",
+    "description": "Популярное туристическое место в Нью-Йорке",
+    "latitude": 40.7580,
+    "longitude": -73.9855,
+    "image": "https://example.com/times_square.jpg"
+  },
+  {
+    "id": 4,
+    "name": "Сиднейский оперный театр",
+    "description": "Знаменитый театр в Австралии",
+    "latitude": -33.8568,
+    "longitude": 151.2153,
+    "image": "https://example.com/sydney_opera.jpg"
+  },
+  {
+    "id": 5,
+    "name": "Колизей",
+    "description": "Древнеримский амфитеатр в Риме",
+    "latitude": 41.8902,
+    "longitude": 12.4922,
+    "image": "https://example.com/colosseum.jpg"
+  },
+  {
+    "id": 6,
+    "name": "Статуя Свободы",
+    "description": "Символ свободы в США",
+    "latitude": 40.6892,
+    "longitude": -74.0445,
+    "image": "https://example.com/statue_of_liberty.jpg"
+  },
+  {
+    "id": 7,
+    "name": "Пирамида Хеопса",
+    "description": "Одна из семи чудес света",
+    "latitude": 29.9792,
+    "longitude": 31.1342,
+    "image": "https://example.com/great_pyramid.jpg"
+  },
+  {
+    "id": 8,
+    "name": "Тадж-Махал",
+    "description": "Знаменитый мавзолей в Индии",
+    "latitude": 27.1751,
+    "longitude": 78.0421,
+    "image": "https://example.com/taj_mahal.jpg"
+  },
+  {
+    "id": 9,
+    "name": "Мачу-Пикчу",
+    "description": "Древний город инков в Перу",
+    "latitude": -13.1631,
+    "longitude": -72.5450,
+    "image": "https://example.com/machu_picchu.jpg"
+  },
+  {
+    "id": 10,
+    "name": "Великая Китайская стена",
+    "description": "Одна из крупнейших построек в мире",
+    "latitude": 40.4319,
+    "longitude": 116.5704,
+    "image": "https://example.com/great_wall.jpg"
+  },
+  {
+    "id": 11,
+    "name": "Гранд-Каньон",
+    "description": "Огромное ущелье в США",
+    "latitude": 36.1069,
+    "longitude": -112.1129,
+    "image": "https://example.com/grand_canyon.jpg"
+  },
+  {
+    "id": 12,
+    "name": "Фудзи",
+    "description": "Самая высокая гора Японии",
+    "latitude": 35.3606,
+    "longitude": 138.7274,
+    "image": "https://example.com/mt_fuji.jpg"
+  },
+  {
+    "id": 13,
+    "name": "Анкор-Ват",
+    "description": "Один из крупнейших храмовых комплексов в Камбодже",
+    "latitude": 13.4125,
+    "longitude": 103.8669,
+    "image": "https://example.com/angkor_wat.jpg"
+  },
+  {
+    "id": 14,
+    "name": "Килиманджаро",
+    "description": "Самая высокая гора в Африке",
+    "latitude": -3.0674,
+    "longitude": 37.3556,
+    "image": "https://example.com/kilimanjaro.jpg"
+  },
+  {
+    "id": 15,
+    "name": "Стоунхендж",
+    "description": "Доисторический мегалитический памятник",
+    "latitude": 51.1789,
+    "longitude": -1.8262,
+    "image": "https://example.com/stonehenge.jpg"
+  },
+  {
+    "id": 16,
+    "name": "Рио-де-Жанейро (Статуя Христа-Искупителя)",
+    "description": "Одна из самых узнаваемых статуй в мире",
+    "latitude": -22.9519,
+    "longitude": -43.2105,
+    "image": "https://example.com/christ_redeemer.jpg"
+  },
+  {
+    "id": 17,
+    "name": "Остров Пасхи",
+    "description": "Известен своими гигантскими статуями моаи",
+    "latitude": -27.1127,
+    "longitude": -109.3497,
+    "image": "https://example.com/easter_island.jpg"
+  },
+  {
+    "id": 18,
+    "name": "Долина Йосемити",
+    "description": "Знаменитый национальный парк в США",
+    "latitude": 37.8651,
+    "longitude": -119.5383,
+    "image": "https://example.com/yosemite.jpg"
+  },
+  {
+    "id": 19,
+    "name": "Петра",
+    "description": "Древний город, высеченный в скалах в Иордании",
+    "latitude": 30.3285,
+    "longitude": 35.4444,
+    "image": "https://example.com/petra.jpg"
+  },
+  {
+    "id": 20,
+    "name": "Замок Нойшванштайн",
+    "description": "Сказочный замок в Германии",
+    "latitude": 47.5576,
+    "longitude": 10.7498,
+    "image": "https://example.com/neuschwanstein.jpg"
+  }
+]
