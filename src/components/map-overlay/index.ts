@@ -39,6 +39,8 @@ export default class MapOverlay extends DOMComponent {
 			domNode.getElementsByClassName('map-overlay--search')[0],
 			cruiseMap, entry,
 		);
+console.log('hello');
+
 
 		const overlayBoundsElements = [
 			'map-overlay--search-box',
