@@ -87,7 +87,31 @@ class SearchBox extends DOMComponent {
 		const companiesElement = resultsElement
 			.getElementsByClassName('map-overlay--search-companies')[0]
 			.getElementsByClassName('map-overlay--search-checks')[0];
+		const checkAllCompanies = document.getElementById('companyAllSelect') as HTMLInputElement;
+		const checkAllShips = document.getElementById('shipsAllSelect') as HTMLInputElement;
 
+		const onSelectAll = () => {
+			const checkboxes = shipsElement.getElementsByTagName('input');
+			const allChecked = Array.from(checkboxes).every(checkbox => checkbox.checked);
+
+			for (const checkbox of checkboxes) {
+					checkbox.checked = !allChecked;
+					checkbox.dispatchEvent(new Event('change'));
+			}
+		}
+		checkAllShips.addEventListener('click', onSelectAll);
+
+		const onSelectAllCompanies = () => {
+			const checkboxes = companiesElement.getElementsByTagName('input');
+			const allChecked = Array.from(checkboxes).every(checkbox => checkbox.checked);
+
+			for (const checkbox of checkboxes) {
+					checkbox.checked = !allChecked;
+					checkbox.dispatchEvent(new Event('change'));
+			}
+		}
+		checkAllCompanies.addEventListener('click', onSelectAllCompanies);
+		
 		let searchLock = Promise.resolve();
 		const onInput = () => {
 			const value = input.value;
