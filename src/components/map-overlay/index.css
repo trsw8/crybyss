@@ -179,6 +179,8 @@ body .rs-tooltip {
 	cursor: pointer;
 	margin-bottom: 15px;
 	user-select: none;
+	display: inline-block;
+	width: 200px;
 }
 
 .map-overlay--search-title svg {

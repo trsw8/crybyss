@@ -111,6 +111,24 @@ class SearchBox extends DOMComponent {
 			}
 		}
 		checkAllCompanies.addEventListener('click', onSelectAllCompanies);
+
+		const openBtns = document.querySelectorAll('.map-overlay--search-title')
+		const closeCheckboxList = document.querySelectorAll('.map-overlay--search-block ')
+
+		const checkboxOpening = ()=>{
+				openBtns.forEach((openBtn , index) =>{
+					openBtn.addEventListener('click',()=>{
+						if(!closeCheckboxList[index].classList.contains('active')){
+							closeCheckboxList[index].classList.add('active')
+							
+						}else{
+							
+							closeCheckboxList[index].classList.remove('active')
+						}
+					})
+				})
+			}
+		checkboxOpening()
 		
 		let searchLock = Promise.resolve();
 		const onInput = () => {
