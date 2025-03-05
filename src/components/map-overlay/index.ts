@@ -131,6 +131,16 @@ class SearchBox extends DOMComponent {
 		checkboxOpening()
 		
 		let searchLock = Promise.resolve();
+
+		const onLoad = async () => {
+					for await (const ship of entry.allShips()) {
+							for await (const cruise of ship.cruises()) {
+									this.cruiseMap.addCruise(cruise);
+							}
+					}
+		};
+
+		window.addEventListener('load', onLoad);
 		const onInput = () => {
 			const value = input.value;
 			searchLock = searchLock.then(async () => {
