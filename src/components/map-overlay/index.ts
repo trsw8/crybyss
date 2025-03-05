@@ -78,7 +78,7 @@ class SearchBox extends DOMComponent {
 
 		const input = domNode.getElementsByClassName(
 			'map-overlay--search-box'
-		)[0].querySelector('[type="text"]') as HTMLInputElement;
+		)[0].querySelector('input') as HTMLInputElement;
 		const resultsElement = domNode
 			.getElementsByClassName('map-overlay--search-results')[0];
 		const shipsElement = resultsElement
