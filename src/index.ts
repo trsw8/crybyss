@@ -6,7 +6,7 @@ import MapContainer from './components/map-container';
 import './site-globals.css';
 import './index.css';
 
-const cruiseEntry = new CruiseAPIEntry("https://krubis.ru");
+const cruiseEntry = new CruiseAPIEntry("https://krubiss.ru");
 const text = {
 	GO_TO_TRACKSTOP: 'Перейти на стоянку',
 };
