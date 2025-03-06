@@ -115,16 +115,35 @@ export default class CruiseMap {
 			this._timelineRange = [departure, arrival];
 			this.timelinePoint = departure;
 		} else {
-			const [start, end] = this._timelineRange;
+			const [start, end] = this._timelineRange;{
 			this._timelineRange = [
 				new Date(Math.min(+start, +departure)),
 				new Date(Math.max(+end, +arrival))
 			];
-		}
+		}}
 
 		const points = cruise.route.points.map(({lat, lng}) => ({lat, lng}));
 		const polyline = {points, color: company.color};
-		this._shipLayer.drawPolyline(polyline);
+		const checkboxes = document.querySelectorAll('.custom-checkbox');
+
+		const onSelectCompanies = () => {
+			checkboxes.forEach((checkbox ) => {
+				checkbox.addEventListener('change' , ()=>{
+					this._shipLayer.clearPolyline(polyline)
+					if((checkbox as HTMLInputElement).checked){
+						polyline.color = company.color
+						console.log('ashxatec');
+						
+					}else{
+						polyline.color = 4278190080         	
+						console.log('chashxatec');
+					}
+					this._shipLayer.drawPolyline(polyline)            			
+					
+			})
+		})		
+	};
+	onSelectCompanies()	
 
 		for (const stop of stops) {
 			const {id, lat, lng, type} = stop;

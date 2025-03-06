@@ -258,11 +258,11 @@ class SearchBox extends DOMComponent {
 				this.cruiseMap.addCruise(cruise);
 			this.selectedCruises.set(id, selectedTimes + 1);
 		} else {
-			if (selectedTimes <= 1) {
-				this.cruiseMap.removeCruise(cruise);
-				this.selectedCruises.delete(id);
-			}
-			this.selectedCruises.set(id, selectedTimes - 1);
+			// if (selectedTimes <= 1) {
+			// 	// this.cruiseMap.removeCruise(cruise);
+			// 	// this.selectedCruises.delete(id);
+			// }
+			this.selectedCruises.set(id, selectedTimes - 1  );
 		}
 	}
 
