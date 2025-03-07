@@ -176,14 +176,8 @@ class SearchBox extends DOMComponent {
 							//~ }
 					//~ }
 		//~ };
-		const onLoad = () => {
-			onInput();
-			for (const cruise of api.allCruises()) {
-				this.cruiseMap.addCruise(cruise);
-			}
-		};
 
-		window.addEventListener('cruisesDataLoaded', onLoad);
+		window.addEventListener('cruisesDataLoaded', onInput);
 		input.addEventListener('input', onInput);
 	}
 
