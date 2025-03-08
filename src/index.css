@@ -1,0 +1,277 @@
+.filter-overlay {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  padding: 5% 0% 2%;
+  overflow-y: auto;
+
+  > h2 {
+    font-weight: 600;
+    font-size: 30px;
+    padding: 0 10%;
+    text-transform: uppercase;
+  }
+}
+
+.filter-box {
+  display: flex;
+  align-items: center;
+  padding: 0 10%;
+  gap: 20px;
+}
+
+._label {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-weight: 600;
+
+  .symbol {
+    border: 1px solid #32739d;
+    color: #32739d;
+    padding: 0px 6px;
+    border-radius: 50%;
+  }
+}
+
+.datepicker-container {
+  position: relative;
+  width: 400px;
+}
+.datepicker-label {
+  width: 100%;
+  height: 58px;
+  display: flex;
+  align-items: center;
+  padding: 0 20px 0 0;
+  border-radius: 10px;
+  border: 1px solid #00000075;
+  overflow: hidden;
+}
+#datepicker-input {
+  width: 100%;
+  padding: 10px;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+#datepicker-calendar {
+  position: absolute;
+  top: 70px;
+  left: 0;
+  width: 400px;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  box-shadow: 0 0px 4px rgba(0, 0, 0, 0.226);
+  padding: 10px 20px 20px;
+  z-index: 100;
+
+  > button {
+    width: 100%;
+    height: 50px;
+    border-radius: 10px;
+    border: none;
+    background: #32739d;
+    color: white;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+}
+
+.hidden {
+  display: none;
+}
+
+.calendar-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 5px;
+  font-weight: 600;
+  font-size: 25px;
+}
+
+.calendar-header button {
+  background: none;
+  border: none;
+  color: #000;
+  font-size: 38px;
+  padding-bottom: 4px;
+  cursor: pointer;
+}
+
+.calendar-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+  font-weight: bold;
+  margin-top: 5px;
+}
+
+#calendar-body {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 5px;
+  padding: 10px 0;
+}
+
+.day {
+  width: 40px;
+  height: 40px;
+  line-height: 40px;
+  text-align: center;
+  cursor: pointer;
+  border-radius: 50%;
+  border: 1px solid transparent;
+  transition: border-color 0.3s ease;
+}
+
+.day:hover {
+  border-color: #32739d;
+}
+
+.day.selected {
+  border-color: #32739d;
+}
+
+.range-container {
+  position: relative;
+  width: 500px;
+  height: 58px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+  position: relative;
+  border: 1px solid #00000075;
+  border-radius: 10px;
+  padding: 10px;
+  gap: 10px;
+}
+
+.slider-container {
+  position: relative;
+  width: 100%;
+  padding: 0 25px;
+
+  i {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-25%);
+    width: 16px;
+    height: 16px;
+    border: 1px solid #00000075;
+    background-color: #fff;
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 99;
+  }
+}
+
+.slider-container i:last-child {
+  left: 10px;
+}
+
+.--title {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #444;
+  font-weight: 400;
+  font-size: 14px;
+}
+
+#time-slider {
+  width: 100%;
+  appearance: none;
+  background: transparent;
+  position: relative;
+  z-index: 1;
+}
+
+#time-slider::-webkit-slider-runnable-track {
+  height: 1px;
+  background: #00000075;
+  border-radius: 5px;
+}
+
+#time-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  margin-top: -7px;
+  background: #32739d;
+  border-radius: 50%;
+  cursor: pointer;
+  position: relative;
+  z-index: 2;
+}
+
+#time-tooltip {
+  position: absolute;
+  top: -20px;
+  background: white;
+  border: 1px solid #32739d;
+  color: #32739d;
+  padding: 5px 10px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: bold;
+  white-space: nowrap;
+  transition: left 0.1s ease-out;
+}
+
+.time-picker-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 200px;
+  height: 58px;
+  border: 1px solid #00000075;
+  border-radius: 10px;
+  background-color: #fff;
+  font-size: 18px;
+  font-weight: bold;
+  color: #444;
+  cursor: pointer;
+  text-align: center;
+  position: relative;
+}
+
+#timeInput {
+  position: absolute;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  z-index: -1;
+}
+
+@media (max-width: 500px) {
+  .filter-overlay {
+    padding: 10% 0;
+
+    > h2 {
+      font-size: 20px;
+      padding: 0 5% 55px;
+      text-align: center;
+    }
+  }
+  .filter-box {
+    order: 3;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .datepicker-container,
+  .range-container,
+  .time-picker-container {
+    width: 90vw !important;
+    height: 54px;
+  }
+}
