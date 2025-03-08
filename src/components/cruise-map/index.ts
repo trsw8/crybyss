@@ -186,7 +186,7 @@ export default class CruiseMap {
 		stop: TrackStop,
 	): Promise<Element> {
 		const {lat, lng, type, arrival} = stop;
-		const {name, categoryName, description, image} = stop.details;
+		const {name, categoryName, description, image, link} = stop.details;
 		const imageElements = image ? [
 			LocatedItemDescriptionImage.create(image),
 		] : [];
@@ -213,7 +213,7 @@ export default class CruiseMap {
 				LocatedItemDescriptionButton.create(
 					this.text.GO_TO_TRACKSTOP,
 					() => {
-						this.timelinePoint = arrival;
+						location.assign( link );
 					},
 				),
 				LocatedItemDescriptionGroup.create([
