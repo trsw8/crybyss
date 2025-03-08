@@ -186,7 +186,7 @@ export default class CruiseMap {
 		stop: TrackStop,
 	): Promise<Element> {
 		const {lat, lng, type, arrival} = stop;
-		const {name, categoryName, description, image} = await stop.details();
+		const {name, categoryName, description, image} = stop.details;
 		const imageElements = image ? [
 			LocatedItemDescriptionImage.create(image),
 		] : [];

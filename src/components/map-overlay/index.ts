@@ -1,6 +1,6 @@
 import {throttle} from 'throttle-debounce';
 import {TypedEventTarget} from 'typescript-event-target';
-import CruiseEntry, {Cruise, Ship, Company} from '../../state/cruise';
+import {CruiseAPI, Cruise, Ship, Company} from '../../state/cruise';
 import {DOMComponent} from '../dom';
 import {VisibilityControl} from '../map';
 import CruiseMap from '../cruise-map';
@@ -17,7 +17,7 @@ export default class MapOverlay extends DOMComponent {
 	constructor(
 		domNode: Element,
 		cruiseMap: CruiseMap,
-		entry: CruiseEntry,
+		api: CruiseAPI,
 	) {
 		super(domNode);
 		for (const [className, layer] of [
@@ -37,7 +37,7 @@ export default class MapOverlay extends DOMComponent {
 		);
 		new SearchBox(
 			domNode.getElementsByClassName('map-overlay--search')[0],
-			cruiseMap, entry,
+			cruiseMap, api,
 		);
 
 		const overlayBoundsElements = [
@@ -72,7 +72,7 @@ class SearchBox extends DOMComponent {
 
 	private selectedCruises: Map<unknown, number> = new Map();
 
-	constructor(domNode: Element, cruiseMap: CruiseMap, entry: CruiseEntry) {
+	constructor(domNode: Element, cruiseMap: CruiseMap, api: CruiseAPI) {
 		super(domNode);
 		this.cruiseMap = cruiseMap;
 
@@ -132,15 +132,6 @@ class SearchBox extends DOMComponent {
 		
 		let searchLock = Promise.resolve();
 
-		const onLoad = async () => {
-					for await (const ship of entry.allShips()) {
-							for await (const cruise of ship.cruises()) {
-									this.cruiseMap.addCruise(cruise);
-							}
-					}
-		};
-
-		window.addEventListener('load', onLoad);
 		const onInput = () => {
 			const value = input.value;
 			searchLock = searchLock.then(async () => {
@@ -149,7 +140,7 @@ class SearchBox extends DOMComponent {
 				const companiesCheckboxes = [];
 				const shipsCheckboxes = [];
 				if (value)
-					for await (const [type, entity] of entry.search(value)) {
+					for await (const [type, entity] of api.search(value)) {
 						if (type === 'company')
 							companiesCheckboxes.push(
 								...this.createCompanyElements(entity),
@@ -158,11 +149,11 @@ class SearchBox extends DOMComponent {
 							shipsCheckboxes.push(...this.createShipElements(entity));
 					}
 				else {
-					for await (const company of entry.allCompanies())
+					for await (const company of api.allCompanies())
 						companiesCheckboxes.push(
 							...this.createCompanyElements(company),
 						);
-					for await (const ship of entry.allShips())
+					for await (const ship of api.allShips())
 						shipsCheckboxes.push(...this.createShipElements(ship));
 				}
 				for (const checkbox of [
@@ -176,7 +167,17 @@ class SearchBox extends DOMComponent {
 				shipsElement.prepend(...shipsCheckboxes);
 			});
 		};
-		onInput();
+		//~ onInput();
+
+		//~ const onLoad = async () => {
+					//~ for await (const ship of api.allShips()) {
+							//~ for await (const cruise of ship.cruises()) {
+									//~ this.cruiseMap.addCruise(cruise);
+							//~ }
+					//~ }
+		//~ };
+
+		window.addEventListener('cruisesDataLoaded', onInput);
 		input.addEventListener('input', onInput);
 	}
 
