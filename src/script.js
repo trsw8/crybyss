@@ -10,7 +10,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const nextMonthBtn = document.getElementById("next-month");
 
     let selectedDate = new Date();
-
     function updateCalendar() {
         calendarBody.innerHTML = "";
         const year = selectedDate.getFullYear();
