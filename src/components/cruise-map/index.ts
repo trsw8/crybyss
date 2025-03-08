@@ -124,7 +124,7 @@ export default class CruiseMap {
 
 		const points = cruise.route.points.map(({lat, lng}) => ({lat, lng}));
 		const polyline = {points, color: company.color};
-		this._shipLayer.drawPolyline(polyline);
+		// this._shipLayer.drawPolyline(polyline);
 
 		for (const stop of stops) {
 			const {id, lat, lng, type} = stop;

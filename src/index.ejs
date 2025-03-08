@@ -1,17 +1,76 @@
 <!DOCTYPE html>
 <html>
+
 <head>
 
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>КруБИС</title>
 
+	<link rel="stylesheet" href="./index.css">
 </head>
+
 <body>
 
 	<main id="root">
-		<%- include('./components/map-container/index') %>
+		<div class="filter-overlay">
+			<h2>онлайн карта</h2>
+			<div class="filter-box">
+				<div class="_label">
+					<p>Выберите дату <span class="symbol"> ?</span></p>
+					<div class="datepicker-container">
+						<label class="datepicker-label">
+							<input type="text" id="datepicker-input" placeholder="" readonly>
+							<%- include('./icons/calendar.svg') %>
+						</label>
+						<div id="datepicker-calendar" class="hidden">
+							<div class="calendar-header">
+								<span id="calendar-title"></span>
+								<button id="prev-month">‹</button>
+								<button id="next-month">›</button>
+							</div>
+							<div class="calendar-days">
+								<div>Pzt</div>
+								<div>Sal</div>
+								<div>Çar</div>
+								<div>Per</div>
+								<div>Cum</div>
+								<div>Cmt</div>
+								<div>Paz</div>
+							</div>
+							<div id="calendar-body"></div>
+							<button id="confirm">сбросить</button>
+						</div>
+					</div>
+				</div>
+				<div class="_label">
+					<p>Выберите время <span class="symbol"> ?</span></p>
+					<div class="range-container">
+						<div class="slider-container">
+							<input type="range" id="time-slider" min="0" max="1439" value="720">
+							<i></i>
+							<i></i>
+						</div>
+						<div id="time-tooltip">12:00</div>
+						<div class="--title">
+							<span>00:00</span>
+							<span>23:59</span>
+						</div>
+					</div>
+				</div>
+				<div class="_label">
+					<p>Выберите время <span class="symbol"> ?</span></p>
+					<label for="timeInput" class="time-picker-container">
+						<input type="time" id="timeInput" step="1">
+						<span id="timeDisplay">00:00:00</span>
+					</label>
+				</div>
+			</div>
+			<%- include('./components/map-container/index') %>
+		</div>
 	</main>
 
 </body>
+<script src="./script.js"></script>
+
 </html>
