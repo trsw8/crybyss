@@ -5,6 +5,7 @@ import {
 } from '.';
 
 /// @todo: Конфиг вынести в отдельный файл
+const siteURL = 'https://krubiss.ru';
 const apiURL = 'https://krubiss.ru/api';
 const apiEntries = {
 	start : 'cruis/start/',
@@ -84,7 +85,9 @@ class CruiseData implements Cruise {
 					name: data.DETAIL.NAME,
 					categoryName: undefined,
 					description: data.DETAIL.DETAIL_TEXT,
-					image: data.DETAIL.DETAIL_PICTURE
+					//~ image: data.DETAIL.DETAIL_PICTURE
+					// Это для тестирования. После переноса приложения на основной сайт проверку url можно будет убрать
+					image: ( /^https?:\/\//.test( data.DETAIL.DETAIL_PICTURE ) ? '' : siteURL ) + data.DETAIL.DETAIL_PICTURE,
 				}
 			})
 		);
