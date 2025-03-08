@@ -1,21 +1,30 @@
 .map-container {
-	position: relative;
-	display: grid;
-	min-height: 100vh;
+  position: relative;
+  display: grid;
+  min-height: 100%;
 }
 
-.map-container__map, .map-container__overlay {
-	grid-area: 1 / 1 / 2 / 2;
-	z-index: 0;
+.map-container__map,
+.map-container__overlay {
+  grid-area: 1 / 1 / 2 / 2;
+  z-index: 0;
 }
 
 .map-container__map {
-	/* height: 100%; */
-	position: relative;
-	height: 998px !important;
+  height: 100%;
+  position: relative;
+  height: 998px;
 }
 
 .map-container__overlay {
-	position: absolute;
-	inset: 0;
+  position: absolute;
+  inset: 0;
+}
+
+@media (max-width: 767px) {
+  .map-container__map {
+	height: 50dvh;
+	margin-bottom: 100px;
+  }
+	
 }

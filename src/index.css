@@ -3,11 +3,13 @@
   display: flex;
   flex-direction: column;
   gap: 30px;
-  padding: 5% 10% 2%;
+  padding: 5% 0% 2%;
+  overflow-y: auto;
 
   > h2 {
     font-weight: 600;
     font-size: 30px;
+    padding: 0 10%;
     text-transform: uppercase;
   }
 }
@@ -15,6 +17,7 @@
 .filter-box {
   display: flex;
   align-items: center;
+  padding: 0 10%;
   gap: 20px;
 }
 
@@ -247,4 +250,28 @@
   height: 100%;
   cursor: pointer;
   z-index: -1;
+}
+
+@media (max-width: 500px) {
+  .filter-overlay {
+    padding: 10% 0;
+
+    > h2 {
+      font-size: 20px;
+      padding: 0 5% 55px;
+      text-align: center;
+    }
+  }
+  .filter-box {
+    order: 3;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .datepicker-container,
+  .range-container,
+  .time-picker-container {
+    width: 90vw !important;
+    height: 54px;
+  }
 }
