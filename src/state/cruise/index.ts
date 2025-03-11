@@ -1,5 +1,6 @@
 /** Интерфейсы для получения данных о круизах по API */
 
+/*
 export default interface CruiseEntry {
 	allShips: () => AsyncIterable<Ship>;
 	allCompanies: () => AsyncIterable<Company>;
@@ -8,41 +9,55 @@ export default interface CruiseEntry {
 		| ['company', Company]
 	>;
 }
+*/
+
+export interface CruiseAPI {
+	company: ( id : string ) => Promise<Company>;
+	cruise: ( id : string ) => Promise<Cruise>;
+	ship: ( id : string ) => Promise<Ship>;
+	allCruises: () => Iterable<Cruise>;
+	allShips: () => AsyncIterable<Ship>;
+	allCompanies: () => AsyncIterable<Company>;
+	search: ( text: string ) => AsyncIterable<any>;
+}
 
 export interface Cruise {
-	id: unknown;
+	id: string;
 	departure: Date;
 	arrival: Date;
 	departureLocationName?: string;
 	arrivalLocationName?: string;
-	shipId: unknown;
+	shipId: string;
 	ship: () => Promise<Ship>;
+	company: () => Promise<Company>;
 	stops: TrackStop[];
 	route: CruiseRoute;
 }
 
 export interface Company {
-	id: unknown;
+	id: string;
 	name: string;
 	color: number;
 	ships: () => AsyncIterable<Ship>;
-}
-
-export interface Ship {
-	id: unknown;
-	name: string;
-	company: () => Promise<Company>;
 	cruises: () => AsyncIterable<Cruise>;
 }
 
+export interface Ship {
+	id: string;
+	name: string;
+	companyId: string;
+	company: () => Promise<Company>;
+	cruises: () => Iterable<Cruise>;
+}
+
 export interface TrackStop {
-	id: unknown;
+	id: string;
 	lat: number;
 	lng: number;
-	type: LocationType;
+	type?: LocationType;
 	arrival: Date;
 	departure: Date;
-	details: () => Promise<TrackStopDetails>;
+	details: TrackStopDetails;
 }
 
 export interface TrackStopDetails {
@@ -56,6 +71,8 @@ export interface TrackPoint {
 	lat: number;
 	lng: number;
 	arrival: Date;
+	sunrise?: number;
+	angle: number;
 }
 
 export enum LocationType {
