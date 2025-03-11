@@ -479,10 +479,17 @@ body .map-overlay--range-dates .rs-container .rs-pointer {
 .map-overlay--menu {
   display: none;
 }
+@media (max-width: 1200px) {
+  .map-overlay--ship,
+  .map-overlay--anchor,
+  .map-overlay--place {
+    display: none;
+  }
+}
 
-@media (max-width: 500px) {
+@media (max-width: 800px) {
   .map-overlay {
-    height: 67dvh;
+    height: calc(50dvh + 130px);
   }
 
   .map-overlay--search-box {

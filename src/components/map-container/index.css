@@ -21,10 +21,9 @@
   inset: 0;
 }
 
-@media (max-width: 767px) {
+@media (max-width: 800px) {
   .map-container__map {
-	height: 50dvh;
-	margin-bottom: 100px;
+    height: 50dvh;
+    margin-bottom: 100px;
   }
-	
 }
