@@ -17,6 +17,7 @@
 .filter-box {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   padding: 0 10%;
   gap: 20px;
 }
@@ -151,6 +152,7 @@
   border-radius: 10px;
   padding: 10px;
   gap: 10px;
+  z-index: 999;
 }
 
 .slider-container {
@@ -252,7 +254,16 @@
   z-index: -1;
 }
 
-@media (max-width: 500px) {
+@media (max-width: 1200px) {
+  ._label:nth-child(2) {
+    order: 3;
+  }
+  .range-container {
+    width: calc(100vw - 20vw);
+  }
+}
+
+@media (max-width: 800px) {
   .filter-overlay {
     padding: 10% 0;
 
@@ -266,6 +277,11 @@
     order: 3;
     flex-direction: column;
     gap: 20px;
+    padding: 5% 0;
+  }
+
+  ._label:nth-child(2) {
+    order: unset;
   }
 
   .datepicker-container,
