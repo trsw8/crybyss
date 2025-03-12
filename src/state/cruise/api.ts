@@ -123,12 +123,16 @@ class ShipData implements Ship {
 		Object.assign( this, {
 			id: data.ID,
 			name: data.NAME,
-			companyId: data.companyId_VALUE
+			//~ companyId: data.companyId_VALUE
+			companyId: data.COMPANY?.ID
 		} );
 	}
 	
-	async company(): Promise<Company> {
-		return await cache.company( this.companyId );
+	//~ async company(): Promise<Company> {
+		//~ return await cache.company( this.companyId );
+	//~ }
+	company(): Company {
+		return cache.company( this.companyId );
 	}
 
 	*cruises(): Iterable<Cruise> {
@@ -168,14 +172,14 @@ function dataIsSane( type: 'cruise' | 'company' | 'ship', data: any ): boolean {
 	return true;
 }
 
-async function fetchCompanies() : Promise<Record<string, Company>> {
-	const data = await connector.send( apiEntries.shipCompanies ) ?? [];
-	const ret : Record<string, Company> = {};
-	for (const company of data) {
-		if (!ret[ company.ID ]) ret[ company.ID ] = new CompanyData( company );
-	}
-	return ret;
-}
+//~ async function fetchCompanies() : Promise<Record<string, Company>> {
+	//~ const data = await connector.send( apiEntries.shipCompanies ) ?? [];
+	//~ const ret : Record<string, Company> = {};
+	//~ for (const company of data) {
+		//~ if (!ret[ company.ID ]) ret[ company.ID ] = new CompanyData( company );
+	//~ }
+	//~ return ret;
+//~ }
 
 async function fetchCruise( id: string ) : Promise<Cruise> {
 	const data = await connector.send( apiEntries.cruiseByID, { id } ) ?? [];
@@ -186,16 +190,21 @@ async function fetchCruise( id: string ) : Promise<Cruise> {
 }
 
 async function fetchShip( id: string ) : Promise<Ship> {
-	const data = await connector.send( apiEntries.shipByID, { id } ) ?? [];
-	const ret = new ShipData( Object.values( data )[0] );
-	if (ret.companyId) await cache.company( ret.companyId );
+	const data = Object.values( await connector.send( apiEntries.shipByID, { id } ) )[0] as any;
+	if (!data) throw new Error( 'Invalid data' );
+	const ret = new ShipData( data );
+	//~ if (ret.companyId) await cache.company( ret.companyId );
+	if (ret.companyId && !cache.company( ret.companyId )) {
+		cache.companies[ ret.companyId ] = new CompanyData( data.COMPANY );
+	}
 	return ret;
 }
 
 async function fetchStartCruises() : Promise<Record<string, Cruise>> {
-	const [ data, companies ] = await Promise.all([ connector.send( apiEntries.start ), fetchCompanies() ]);
-	cache.companies = companies ?? {};
+	//~ const [ data, companies ] = await Promise.all([ connector.send( apiEntries.start ), fetchCompanies() ]);
+	const data = await connector.send( apiEntries.start );
 	const allShips: Record<string, any> = {};
+	cache.companies = {};
 	cache.cruises = {};
 	cache.ships = {};
 	for (const cruise of Object.values( data ?? {} ) as any) {
@@ -229,11 +238,12 @@ class CruiseAPICache extends Cache implements CruiseAPI {
 			} );
 	}
 	
-	async company( id : string ) : Promise<Company> {
-		if (this.companies[ id ]) return this.companies[ id ];
-		if (Object.keys( this.companies ).length === 0) {
-			this.companies = await fetchCompanies();
-		}
+	//~ async company( id : string ) : Promise<Company> {
+	company( id : string ) : Company {
+		//~ if (this.companies[ id ]) return this.companies[ id ];
+		//~ if (Object.keys( this.companies ).length === 0) {
+			//~ this.companies = await fetchCompanies();
+		//~ }
 		return this.companies[ id ];
 	}
 
@@ -273,7 +283,8 @@ class CruiseAPICache extends Cache implements CruiseAPI {
 		const tmpCompanies: Record<string, Company> = {};
 		for await (const ship of this.allShips()) {
 			if (!tmpCompanies[ ship.companyId ]) {
-				tmpCompanies[ ship.companyId ] = await ship.company();
+				//~ tmpCompanies[ ship.companyId ] = await ship.company();
+				tmpCompanies[ ship.companyId ] = ship.company();
 			}
 		}
 		const tmpCompaniesArr = Object.values( tmpCompanies );
