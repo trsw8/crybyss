@@ -12,7 +12,7 @@ export default interface CruiseEntry {
 */
 
 export interface CruiseAPI {
-	company: ( id : string ) => Company;
+	company: ( id : string ) => Promise<Company>;
 	cruise: ( id : string ) => Promise<Cruise>;
 	ship: ( id : string ) => Promise<Ship>;
 	allCruises: () => Iterable<Cruise>;
@@ -46,7 +46,7 @@ export interface Ship {
 	id: string;
 	name: string;
 	companyId: string;
-	company: () => Company;
+	company: () => Promise<Company>;
 	cruises: () => Iterable<Cruise>;
 }
 
@@ -65,7 +65,6 @@ export interface TrackStopDetails {
 	categoryName?: string;
 	description: string;
 	image?: string;
-	link?: string;
 }
 
 export interface TrackPoint {
