@@ -252,21 +252,52 @@ class SearchBox extends DOMComponent {
 	}
 
 	private handleCruiseCheckbox(checkbox: HTMLInputElement, cruise: Cruise) {
-		const {id} = cruise;
+		const {id , departure} = cruise;
+		const currentTimeBtn = document.getElementById("currentTimeBtn") as HTMLInputElement
+		const inputTime = document.getElementById("datepicker-input") as HTMLInputElement;
+		const timeTooltip = document.getElementById("time-tooltip");
+		const timeDisplay = document.getElementById("timeDisplay");
+		const splitedTime = timeTooltip.textContent.split(':')
+		let departureSrting = `${departure}` 
+		inputTime.value.split(' ')
+		let splitedDeparture = departureSrting.split('GTM ')
+		let splitedDate = inputTime.value.split(' ')
 		const selectedTimes = this.selectedCruises.get(id) ?? 0;
+		const dateStr = splitedDeparture[0];
+		const calendarDateStr = splitedDate;
+		const dateObj = new Date(dateStr);
+		const inputDateObj = new Date( +calendarDateStr[0] , +calendarDateStr[1]-1 , +calendarDateStr[2] ,+splitedTime[0], 0 , 0 )
+		const numericDate = new Date(new Date().getFullYear(), new Date().getMonth()-1, new Date().getDate(), new Date().getHours(), 0, 0); // Месяцы идут с 0 (8 = Сентябрь)
+
+
 		if (checkbox.checked) {
 			if (selectedTimes === 0)
-				this.cruiseMap.addCruise(cruise);
-			this.selectedCruises.set(id, selectedTimes + 1);
+
+					if(currentTimeBtn.checked){
+						if (dateObj.getTime() > numericDate.getTime()) {
+							this.cruiseMap.addCruise(cruise);
+							this.selectedCruises.set(id, selectedTimes + 1);
+						} else {
+							return
+						}
+					}else{
+						if(inputDateObj.getTime() < new Date().getTime()){
+						this.cruiseMap.addCruise(cruise);
+						this.selectedCruises.set(id, selectedTimes + 1);
+					}else{
+						
+						this.selectedCruises.set(id, selectedTimes + 1);
+					}
+				}
+
 		} else {
 			if (selectedTimes <= 1) {
 				this.cruiseMap.removeCruise(cruise);
 				this.selectedCruises.delete(id);
 			}
-			this.selectedCruises.set(id, selectedTimes - 1);
+			this.selectedCruises.set(id, selectedTimes - 1);			
 		}
 	}
-
 }
 
 class LayerVisibilityButton extends DOMComponent {
