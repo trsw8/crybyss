@@ -13,6 +13,7 @@
 <body>
 
 	<main id="root">
+		<input type="checkbox" id="currentTimeBtn" class="currentTimeBtn"></input>
 		<div class="filter-overlay">
 			<h2>онлайн карта</h2>
 			<div class="filter-box">
@@ -20,7 +21,7 @@
 					<p>Выберите дату <span class="symbol"> ?</span></p>
 					<div class="datepicker-container">
 						<label class="datepicker-label">
-							<input type="text" id="datepicker-input" placeholder="" readonly>
+							<input type="text" value id="datepicker-input" placeholder="" readonly>
 							<%- include('./icons/calendar.svg') %>
 						</label>
 						<div id="datepicker-calendar" class="hidden">
@@ -47,11 +48,11 @@
 					<p>Выберите время <span class="symbol"> ?</span></p>
 					<div class="range-container">
 						<div class="slider-container">
-							<input type="range" id="time-slider" min="0" max="1439" value="720">
+							<input type="range" id="time-slider" min="0" max="1439" >
 							<i></i>
 							<i></i>
 						</div>
-						<div id="time-tooltip">12:00</div>
+						<div id="time-tooltip"></div>
 						<div class="--title">
 							<span>00:00</span>
 							<span>23:59</span>
@@ -61,8 +62,8 @@
 				<div class="_label">
 					<p>Выберите время <span class="symbol"> ?</span></p>
 					<label for="timeInput" class="time-picker-container">
-						<input type="time" id="timeInput" step="1">
-						<span id="timeDisplay">00:00:00</span>
+						<input type="time" id="timeInput" >
+						<span id="timeDisplay"></span>
 					</label>
 				</div>
 			</div>
