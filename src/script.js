@@ -1,83 +1,47 @@
 document.addEventListener("DOMContentLoaded", function () {
-    // date picker
+    // Получение элементов
     const input = document.getElementById("datepicker-input");
     const calendar = document.getElementById("datepicker-calendar");
     const calendarBody = document.getElementById("calendar-body");
     const calendarTitle = document.getElementById("calendar-title");
     const confirm = document.getElementById("confirm");
-
     const prevMonthBtn = document.getElementById("prev-month");
     const nextMonthBtn = document.getElementById("next-month");
+    const timeSlider = document.getElementById("time-slider");
+    const timeTooltip = document.getElementById("time-tooltip");
+    const timeInput = document.getElementById("timeInput");
+    const timeDisplay = document.getElementById("timeDisplay");
+    const currentTimeBtn = document.getElementById("currentTimeBtn");
 
     let selectedDate = new Date();
+
     function updateCalendar() {
         calendarBody.innerHTML = "";
         const year = selectedDate.getFullYear();
         const month = selectedDate.getMonth();
-
         const firstDay = new Date(year, month, 1).getDay();
         const lastDate = new Date(year, month + 1, 0).getDate();
 
-        calendarTitle.textContent = `${selectedDate.toLocaleString("ru-RU", { month: "long" })}`;
+        calendarTitle.textContent = selectedDate.toLocaleString("ru-RU", { month: "long" });
 
         for (let i = 0; i < firstDay; i++) {
-            const emptyDiv = document.createElement("div");
-            calendarBody.appendChild(emptyDiv);
+            calendarBody.appendChild(document.createElement("div"));
         }
 
         for (let day = 1; day <= lastDate; day++) {
             const dayElement = document.createElement("div");
             dayElement.textContent = day;
             dayElement.classList.add("day");
-
             dayElement.addEventListener("click", function () {
                 selectedDate.setDate(day);
-                // seleced date value
-                input.value = `${day}/${month + 1}/${year}`;
+                // input.value = `${day}/${month + 1}/${year}`;
+                input.value = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                document.querySelectorAll(".day").forEach(d => d.classList.remove("selected"));
                 dayElement.classList.add("selected");
-
-                const days = document.querySelectorAll(".day");
-                days.forEach(function (day) {
-                    if (day !== dayElement) {
-                        day.classList.remove("selected");
-                    }
-                });
             });
-
             calendarBody.appendChild(dayElement);
         }
     }
-
-    confirm.addEventListener("click", function () {
-        calendar.classList.add("hidden");
-    });
-
-    input.addEventListener("focus", function () {
-        calendar.classList.remove("hidden");
-        updateCalendar();
-    });
-
-    document.addEventListener("click", function (event) {
-        if (!input.contains(event.target) && !calendar.contains(event.target)) {
-            calendar.classList.add("hidden");
-        }
-    });
-
-    prevMonthBtn.addEventListener("click", function () {
-        selectedDate.setMonth(selectedDate.getMonth() - 1);
-        updateCalendar();
-    });
-
-    nextMonthBtn.addEventListener("click", function () {
-        selectedDate.setMonth(selectedDate.getMonth() + 1);
-        updateCalendar();
-    });
-
-    updateCalendar();
-
-    //time range
-    const timeSlider = document.getElementById("time-slider");
-    const timeTooltip = document.getElementById("time-tooltip");
 
     function formatTime(minutes) {
         let hours = Math.floor(minutes / 60);
@@ -86,35 +50,52 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function updateTooltip() {
-        // time value
         let time = parseInt(timeSlider.value, 10);
         timeTooltip.textContent = formatTime(time);
-
+        let percent = time / 1439;
         let sliderRect = timeSlider.getBoundingClientRect();
-        let thumbWidth = 16; 
-        let percent = (time / 1439); 
-
+        let thumbWidth = 16;
         let newPosition = percent * (sliderRect.width - thumbWidth) + thumbWidth / 2;
         timeTooltip.style.left = `${newPosition}px`;
     }
 
-    timeSlider.addEventListener("input", updateTooltip);
-    updateTooltip();
-
-    //hours
-    const timeInput = document.getElementById("timeInput");
-    const timeDisplay = document.getElementById("timeDisplay");
-
-    function formatTimer(timeStr) {
-        return timeStr ? timeStr : "00:00:00";
+    function updateTimeDisplay() {
+        const now = new Date();
+        timeDisplay.textContent = formatTime(now.getHours() * 60 + now.getMinutes());
     }
 
-    timeInput.addEventListener("input", function () {
-        timeDisplay.textContent = formatTimer(timeInput.value);
-    });
+    function toggleCurrentTimeTracking(enabled) {
+        if (enabled) {
+            timeSlider.value = new Date().getHours() * 60 + new Date().getMinutes();
+            updateTooltip();
+            setInterval(updateTimeDisplay, 1000);
+        } else {
+            timeSlider.value = 720;
+            updateTooltip();
+            timeDisplay.textContent = "12:00";
+        }
+    }
 
-    timeDisplay.addEventListener("click", function () {
-        timeInput.showPicker(); //
+    confirm.addEventListener("click", () => calendar.classList.add("hidden"));
+    input.addEventListener("focus", () => {
+        calendar.classList.remove("hidden");
+        updateCalendar();
     });
+    document.addEventListener("click", event => {
+        if (!input.contains(event.target) && !calendar.contains(event.target)) {
+            calendar.classList.add("hidden");
+        }
+    });
+    prevMonthBtn.addEventListener("click", () => { selectedDate.setMonth(selectedDate.getMonth() - 1); updateCalendar(); });
+    nextMonthBtn.addEventListener("click", () => { selectedDate.setMonth(selectedDate.getMonth() + 1); updateCalendar(); });
+
+    timeSlider.addEventListener("input", updateTooltip);
+    timeInput.addEventListener("input", () => { timeDisplay.textContent = formatTime(timeInput.value); });
+    timeDisplay.addEventListener("click", () => timeInput.showPicker());
+
+    currentTimeBtn.addEventListener("change", () => toggleCurrentTimeTracking(currentTimeBtn.checked));
+    toggleCurrentTimeTracking(currentTimeBtn.checked);
+
+    updateCalendar();
+    updateTooltip();
 });
-

@@ -173,13 +173,15 @@ class LeafletPane<
 	}
 
 	addMarker(mapMarker: TMarker) {
+		if (this.representations.has(mapMarker)) return;
+	
 		const lMarker = marker([mapMarker.lat, mapMarker.lng], {
 			icon: new DOMIcon({
 				html: mapMarker.icon,
 				iconSize: mapMarker.iconSize
 			}),
 			pane: this.compositePaneName('markerPane'),
-		});
+		});	
 		this.syncMarker(mapMarker, lMarker);
 	}
 
@@ -269,7 +271,7 @@ class LeafletPane<
 			this.intersections.update(intersectionMarker);
 			this.checkIntersections([marker]);
 		});
-		lMarker.addTo(this.map);
+			lMarker.addTo(this.map);
 		this.checkIntersections([marker]);
 	}
 
