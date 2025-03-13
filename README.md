@@ -2,7 +2,7 @@
 
 ## Сборка и запуск
 
-```bash
+```bash 
 npm install
 ```
 
