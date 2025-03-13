@@ -171,6 +171,9 @@ class CruiseData implements Cruise {
 					//~ image: data.DETAIL.DETAIL_PICTURE
 					// Это для тестирования. После переноса приложения на основной сайт проверку url можно будет убрать
 					image: ( /^https?:\/\//.test( data.DETAIL.DETAIL_PICTURE ) ? '' : siteURL ) + data.DETAIL.DETAIL_PICTURE,
+					//~ link: data.DETAIL.URL
+					// Это для тестирования. После переноса приложения на основной сайт проверку url можно будет убрать
+					link: ( /^https?:\/\//.test( data.DETAIL.URL ) ? '' : siteURL ) + data.DETAIL.URL,
 				}
 			})
 		);
