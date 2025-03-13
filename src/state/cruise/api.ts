@@ -444,8 +444,12 @@ class CruiseAPICache extends Cache implements CruiseAPI {
 		this.activeCruises = [ ...this.cruises.items.keys() ].filter( index => {
 			const cruise = this.cruises.at( index );
 			let ret = true;
-			if (this.activeFilters.companyName && !this.companies.item( this.ships.item( cruise.shipId )?.companyId )?.name.includes( this.activeFilters.companyName )) ret = false;
-			if (ret && this.activeFilters.shipName && !this.ships.item( cruise.shipId )?.name.includes( this.activeFilters.shipName )) ret = false;
+			if (this.activeFilters.companyName || this.activeFilters.shipName) {
+				ret =
+					( this.activeFilters.companyName && this.companies.item( this.ships.item( cruise.shipId )?.companyId )?.name.includes( this.activeFilters.companyName ) )
+					||
+					( this.activeFilters.shipName && this.ships.item( cruise.shipId )?.name.includes( this.activeFilters.shipName ) );
+			}
 			if (ret && this.activeFilters.startDate && ( !cruise.departure || cruise.departure < this.activeFilters.startDate )) ret = false;
 			if (ret && this.activeFilters.endDate && ( !cruise.arrival || cruise.arrival > this.activeFilters.endDate )) ret = false;
 			return ret;
