@@ -1,7 +1,7 @@
 import {
-	CruiseAPI, 
+	CruiseAPI,
 	Cruise, Company, Ship,
-	CruiseRoute, TrackStop, TrackStopDetails
+	CruiseRoute, TrackPoint, TrackStop, TrackStopDetails
 } from '.';
 
 /// @todo: Конфиг вынести в отдельный файл
@@ -14,7 +14,84 @@ const apiEntries = {
 	stopByID : 'stop/byID/',
 	search : 'search/title/',
 	cruisesByShipIDS : 'cruis/shipid/',
-	shipCompanies : 'ship/companies/'	
+	shipCompanies : 'ship/companies/'
+};
+
+class SortedList<T extends { id: string }> implements Iterable<T> {
+	declare compareFunc: ( a: T, b: T ) => number;
+	declare sortingOrder: Record<string, number>;
+	declare items: T[];
+
+	constructor( compareFunc: ( a: T, b: T ) => number, items: T[] = [] ) {
+		this.compareFunc = compareFunc;
+		this.items = [ ...items.filter( item => !!item.id ) ];
+		if (this.items.length > 0) {
+			this.items.sort( compareFunc );
+			this.sortingOrder = this.items.reduce( (ret, item, index) => { ret[ item.id ] = index; return ret; }, {} as Record<string, number> );
+		}
+		else {
+			this.sortingOrder = {};
+		}
+	}
+
+	get count() { return this.items.length; }
+
+	item( id: string ): T | undefined {
+		return this.items[ this.sortingOrder[ id ] ];
+	}
+
+	add( item: T ): number {
+		if (!item?.id) return this.items.length;
+		if (this.sortingOrder[ item.id ]) {
+			if (!this.compareFunc( this.items[ this.sortingOrder[ item.id ] ], item )) {
+				this.items[ this.sortingOrder[ item.id ] ] = item;
+				return this.items.length;
+			}
+			this.delete( item.id );
+		}
+
+		let left = 0;
+		let right = this.items.length - 1;
+		while (right >= left) {
+			const mid = right + left >> 1;
+			const cmp = this.compareFunc( this.items[ mid ], item );
+			if (!cmp) {
+				left = mid + 1;
+				break;
+			}
+			if (cmp < 0) left = mid + 1;
+			else right = mid - 1;
+		}
+		this.items.splice( left, 0, item );
+		for (const id of Object.keys( this.sortingOrder )) {
+			if (this.sortingOrder[ id ] >= left) {
+				this.sortingOrder[ id ]++;
+			}
+		}
+		this.sortingOrder[ item.id ] = left;
+
+		return this.items.length;
+	}
+
+	delete( id: string ): T | undefined {
+		let ret = this.item( id );
+		if (!!ret) {
+			const index = this.sortingOrder[ id ];
+			this.items.splice( index, 1 );
+			for (const id of Object.keys( this.sortingOrder )) {
+				if (this.sortingOrder[ id ] > index) {
+					this.sortingOrder[ id ]--;
+				}
+			}
+			delete this.sortingOrder[ id ];
+		}
+		return ret;
+	}
+
+	at( index: number ): T | undefined { return this.items[ index ]; }
+	filter( callbackFn: ( element: T, index?: number, array?: T[] ) => boolean, thisArg?: any ): T[] { return this.items.filter( callbackFn, thisArg ); }
+	map( callbackFn: ( element: T, index?: number, array?: T[] ) => any, thisArg?: any ): any[] { return this.items.map( callbackFn, thisArg ); }
+	[Symbol.iterator](): Iterator<T> { return this.items[Symbol.iterator](); }
 };
 
 class CompanyData implements Company {
@@ -31,15 +108,17 @@ class CompanyData implements Company {
 	}
 
 	async* cruises(): AsyncIterable<Cruise> {
-		for (const cruise of cache.activeCruises) {
-			const ship = await cache.cruises[ cruise ]?.ship();
-			if (ship?.companyId === this.id) yield cache.cruises[ cruise ];
+		for (const index of cache.activeCruises) {
+			const cruise = cache.cruises.at( index );
+			const ship = await cruise.ship();
+			if (ship?.companyId === this.id) yield cruise;
 		}
 	}
 
 	async* ships(): AsyncIterable<Ship> {
-		for (const cruise of cache.activeCruises) {
-			const ship = await cache.cruises[ cruise ]?.ship();
+		for (const index of cache.activeCruises) {
+			const cruise = cache.cruises.at( index );
+			const ship = await cruise.ship();
 			if (ship?.companyId === this.id) yield ship;
 		}
 	}
@@ -47,14 +126,17 @@ class CompanyData implements Company {
 
 class CruiseData implements Cruise {
 	declare id: string;
+	declare name: string;
 	declare departure: Date;
 	declare arrival: Date;
 	declare departureLocationName?: string;
 	declare arrivalLocationName?: string;
+	declare alias: string;
+	declare url: string;
 	declare shipId: string;
 	declare stops: TrackStop[];
 	declare route: CruiseRoute;
-	
+
 	constructor( data: any ) {
 		const route = new CruiseRoute(
 			data.POINTS
@@ -70,8 +152,9 @@ class CruiseData implements Cruise {
 					sunrise: Sunrise,
 					angle
 				}))
+				.sort( ( a: TrackPoint, b: TrackPoint ) => +a.arrival - +b.arrival )
 		);
-		
+
 		const stops = data.PROPERTY_TRACKSTOPS_VALUE.map(
 			(data: any): TrackStop =>
 			({
@@ -94,19 +177,22 @@ class CruiseData implements Cruise {
 				}
 			})
 		);
-					
+
 		Object.assign( this, {
 			id: data.ID,
+			name: data.NAME,
 			departure: parseDate( data.PROPERTY_DEPARTUREDATE_VALUE ),
 			arrival: parseDate( data.PROPERTY_ARRIVALDATE_VALUE ),
 			departureLocationName: undefined,
 			arrivalLocationName: undefined,
+			alias: data.CODE,
+			url: data.PROPERTY_WEB_VALUE,
 			shipId: data.PROPERTY_SHIPID_VALUE,
 			stops,
 			route
 		} );
 	}
-	
+
 	async ship(): Promise<Ship> {
 		return this.shipId ? await cache.ship( this.shipId ) : undefined;
 	}
@@ -130,7 +216,7 @@ class ShipData implements Ship {
 			companyId: data.COMPANY?.ID
 		} );
 	}
-	
+
 	//~ async company(): Promise<Company> {
 		//~ return await cache.company( this.companyId );
 	//~ }
@@ -139,10 +225,38 @@ class ShipData implements Ship {
 	}
 
 	*cruises(): Iterable<Cruise> {
-		for (const cruise of cache.activeCruises) {
-			if (cache.cruises[ cruise ]?.shipId === this.id) yield cache.cruises[ cruise ];
+		for (const index of cache.activeCruises) {
+			const cruise = cache.cruises.at( index );
+			if (cruise.shipId === this.id) yield cruise;
 		}
-	};
+	}
+
+	cruiseOn( datetime: Date ): Cruise | undefined {
+		const moment = +datetime;
+		for (const index of cache.activeCruises) {
+			const cruise = cache.cruises.at( index );
+			if (cruise.shipId === this.id && +( cruise.departure ?? 0 ) >= moment && +( cruise.arrival ?? 0 ) <= moment) return cruise;
+		}
+		return;
+	}
+
+	positionAt( datetime: Date ): TrackPoint {
+		const moment = +datetime;
+		let found: Cruise;
+		for (const index of cache.activeCruises) {
+			const cruise = cache.cruises.at( index );
+			if (cruise.shipId === this.id) {
+				found = cruise;
+				if (+( cruise.departure ?? 0 ) >= moment && +( cruise.arrival ?? 0 ) <= moment) break;
+			}
+		}
+		if (found) {
+			return found.route.positionAt( datetime );
+		}
+		else {
+			return { lat: 0, lng: 0, arrival: datetime };
+		}
+	}
 }
 
 class APIConnector {
@@ -198,41 +312,49 @@ async function fetchShip( id: string ) : Promise<Ship> {
 	const ret = new ShipData( data );
 	//~ if (ret.companyId) await cache.company( ret.companyId );
 	if (ret.companyId && !cache.company( ret.companyId )) {
-		cache.companies[ ret.companyId ] = new CompanyData( data.COMPANY );
+		cache.companies.add( new CompanyData( data.COMPANY ) );
 	}
 	return ret;
 }
 
-async function fetchStartCruises() : Promise<Record<string, Cruise>> {
+async function fetchStartCruises() : Promise<void> {
 	//~ const [ data, companies ] = await Promise.all([ connector.send( apiEntries.start ), fetchCompanies() ]);
 	const data = await connector.send( apiEntries.start );
 	const allShips: Record<string, any> = {};
-	cache.companies = {};
-	cache.cruises = {};
-	cache.ships = {};
 	for (const cruise of Object.values( data ?? {} ) as any) {
-		if (dataIsSane( 'cruise', cruise ) && !cache.cruises[ cruise.ID ]) {
-			cache.cruises[ cruise.ID ] = new CruiseData( cruise );
-			if (cache.cruises[ cruise.ID ].shipId) {
-				allShips[ cache.cruises[ cruise.ID ].shipId ] = true;
+		if (dataIsSane( 'cruise', cruise )) {
+			cache.cruises.add( new CruiseData( cruise ) );
+			if (cache.cruises.item( cruise.ID ).shipId) {
+				allShips[ cache.cruises.item( cruise.ID ).shipId ] = true;
 			}
 		}
 	}
-	cache.activeCruises = Object.keys( cache.cruises );
 	( await Promise.allSettled( Object.keys( allShips ).map( fetchShip ) ) )
 // @ts-ignore
-		.forEach( ({ value }) => { if (value?.id) cache.ships[ value.id ] = value } );
-	return cache.cruises;
+		.forEach( ({ value }) => { if (value?.id) cache.ships.add( value ) } );
+	await cache.setFilter({});
+	return;
 }
 
 class Cache {
-	activeCruises : string[] = [];
-	companies : Record<string, Company> = {};
-	ships : Record<string, Ship> = {};
-	cruises : Record<string, Cruise> = {};
+	activeCruises : number[] = [];
+	companies = new SortedList<Company>( ( a, b ) => a.name.localeCompare( b.name, 'ru', { ignorePunctuation: true } ) );
+	ships = new SortedList<Ship>( ( a, b ) => a.name.localeCompare( b.name, 'ru', { ignorePunctuation: true } ) );
+	cruises = new SortedList<Cruise>( ( a, b ) =>
+		+a.departure - +b.departure ||
+		+a.arrival - +b.arrival ||
+		a.name.localeCompare( b.name, 'ru', { ignorePunctuation: true } )
+	);
 }
 
 class CruiseAPICache extends Cache implements CruiseAPI {
+	activeFilters: {
+		companyName?: string,
+		shipName?: string,
+		startDate?: Date | null,
+		endDate?: Date | null
+	} = {};
+
 	constructor() {
 		super();
 		fetchStartCruises()
@@ -240,269 +362,100 @@ class CruiseAPICache extends Cache implements CruiseAPI {
 				window.dispatchEvent( new Event( 'cruisesDataLoaded' ) );
 			} );
 	}
-	
+
+	get minDate(): Date | undefined {
+		if (!this.activeCruises.length) return;
+		else return this.cruises.at( this.activeCruises[0] ).departure;
+	}
+
+	get maxDate(): Date | undefined {
+		if (!this.activeCruises.length) return;
+		else return this.activeCruises.reduce( ( ret: Date | undefined, index: number ): Date | undefined => {
+			const date = this.cruises.at( index ).arrival;
+			if (date && date > ( ret ?? 0 )) ret = date;
+			return ret;
+		}, undefined );
+	}
+
 	//~ async company( id : string ) : Promise<Company> {
 	company( id : string ) : Company {
 		//~ if (this.companies[ id ]) return this.companies[ id ];
 		//~ if (Object.keys( this.companies ).length === 0) {
 			//~ this.companies = await fetchCompanies();
 		//~ }
-		return this.companies[ id ];
+		return this.companies.item( id );
 	}
 
 	async cruise( id : string ) : Promise<Cruise> {
-		if (this.cruises[ id ]) return this.cruises[ id ];
-		const ret = await fetchCruise( id );
-		if (ret) this.cruises[ id ] = ret;
+		let ret = this.cruises.item( id );
+		if (ret) return ret;
+		ret = await fetchCruise( id );
+		if (ret) this.cruises.add( ret );
 		return ret;
 	}
 
 	async ship( id : string ) : Promise<Ship> {
-		if (this.ships[ id ]) return this.ships[ id ];
-		const ret = await fetchShip( id );
-		if (ret) this.ships[ id ] = ret;
+		let ret = this.ships.item( id );
+		if (ret) return ret;
+		ret = await fetchShip( id );
+		if (ret) this.ships.add( ret );
 		return ret;
 	}
-	
+
 	*allCruises(): Iterable<Cruise> {
-		for (const id of this.activeCruises) {
-			yield this.cruises[ id ];
+		for (const index of this.activeCruises) {
+			yield this.cruises.at( index );
 		}
 	}
-	
+
 	async* allShips(): AsyncIterable<Ship> {
-		const tmpShips: Record<string, Ship> = {};
-		for (const cruise of this.allCruises()) {
-			if (!tmpShips[ cruise.shipId ]) {
-				tmpShips[ cruise.shipId ] = await cruise.ship();
-			}
+		const shipIds: Record<string, true> = {};
+		for (const index of this.activeCruises) {
+			const id = this.cruises.at( index ).shipId;
+			shipIds[ id ] = true;
+			if (!this.ships.item( id )) await this.ship( id );
 		}
-		const tmpShipsArr = Object.values( tmpShips );
-		tmpShipsArr.sort( ( a, b ) => a.name < b.name ? -1 : a.name > b.name ? 1 : 0 );
-		yield* tmpShipsArr;
+		yield* this.ships.filter( ship => shipIds[ ship.id ] );
 	}
-	
+
 	async* allCompanies(): AsyncIterable<Company> {
-		const tmpCompanies: Record<string, Company> = {};
+		const companyIds: Record<string, true> = {};
 		for await (const ship of this.allShips()) {
-			if (!tmpCompanies[ ship.companyId ]) {
-				//~ tmpCompanies[ ship.companyId ] = await ship.company();
-				tmpCompanies[ ship.companyId ] = ship.company();
-			}
+			companyIds[ ship.companyId ] = true;
+			//~ if (!this.companies.item( ship.companyId )) await ship.company();
 		}
-		const tmpCompaniesArr = Object.values( tmpCompanies );
-		tmpCompaniesArr.sort( ( a, b ) => a.name < b.name ? -1 : a.name > b.name ? 1 : 0 );
-		yield* tmpCompaniesArr;
+		yield* this.companies.filter( company => companyIds[ company.id ] );
 	}
-	
+
 	async* search( text : string ) : AsyncIterable<any> {
 		return;
+	};
+
+	async setFilter( options: { companyName?: string, shipName?: string, startDate?: Date | null, endDate?: Date | null } ) {
+		for (const key of [ 'companyName', 'shipName', 'startDate', 'endDate' ]) {
+			if (key in options) (this.activeFilters as any)[ key ] = (options as any)[ key ];
+		}
+		if (this.activeFilters.shipName) {
+			await Promise.all( this.cruises.items.map( cruise => cruise.ship() ) );
+		}
+		if (this.activeFilters.companyName) {
+			await Promise.all( this.cruises.items.map( cruise => cruise.company() ) );
+		}
+		this.activeCruises = [ ...this.cruises.items.keys() ].filter( index => {
+			const cruise = this.cruises.at( index );
+			let ret = true;
+			if (this.activeFilters.companyName && !this.companies.item( this.ships.item( cruise.shipId )?.companyId )?.name.includes( this.activeFilters.companyName )) ret = false;
+			if (ret && this.activeFilters.shipName && !this.ships.item( cruise.shipId )?.name.includes( this.activeFilters.shipName )) ret = false;
+			if (ret && this.activeFilters.startDate && ( !cruise.departure || cruise.departure < this.activeFilters.startDate )) ret = false;
+			if (ret && this.activeFilters.endDate && ( !cruise.arrival || cruise.arrival > this.activeFilters.endDate )) ret = false;
+			return ret;
+		} );
 	};
 }
 
 const cache = new CruiseAPICache;
 
 export default cache;
-
-/*
-class APIConnector {
-
-	public baseUrl: string;
-
-	constructor(baseUrl: string) {
-		this.baseUrl = baseUrl;
-	}
-
-	async send(url: string, data: any = {}): Promise<any> {
-		const response = await fetch(`${this.baseUrl}/${url}`, {
-			method: 'POST',
-			body: JSON.stringify(data),
-			headers: {'content-type': 'application/json'},
-		});
-		return await response.json();
-	}
-
-}
-
-class Cache {
-
-	private _cruisesPreviews?: APICruisePreview[] = undefined;
-	shipsCruises: Record<string, APICruisePreview[]> = {};
-	get cruisesPreviews(): APICruisePreview[] | undefined {
-		return this._cruisesPreviews;
-	}
-	set cruisesPreviews(value) {
-		this._cruisesPreviews = value;
-		for (const cruise of (value ?? [])) {
-			if (!(cruise.shipId in this.shipsCruises))
-				this.shipsCruises[cruise.shipId] = [];
-			this.shipsCruises[cruise.shipId].push(cruise);
-		}
-	}
-
-	ships: Record<string, APIShip> = {};
-
-}
-
-class APIEntry {
-
-	declare protected connector: APIConnector;
-	declare protected cache: Cache;
-
-	constructor(connector: APIConnector, cache: Cache) {
-		this.connector = connector;
-		this.cache = cache;
-	}
-
-}
-
-export default class CruiseAPIEntry extends APIEntry implements CruiseEntry {
-
-	constructor(baseUrl = '') {
-		super(new APIConnector(baseUrl), new Cache());
-	}
-
-	async* allShips() {
-		await this.cruisesPreviews();
-		for (const [cruise] of Object.values(this.cache.shipsCruises))
-			yield await cruise.ship();
-	}
-
-	async* search(searchString: string): ReturnType<CruiseEntry['search']> {
-		const data = await this.connector.send('api/search/title/', {
-			q: searchString
-		});
-		for (const item of data)
-			if (APIShip.dataFilter(item) && (item.ID in this.cache.shipsCruises)) {
-				if (!(item.ID in this.cache.ships))
-					this.cache.ships[item.ID] = new APIShip(
-						this.connector, this.cache, item
-					);
-				yield ['ship', this.cache.ships[item.ID]];
-			}
-	}
-
-	async* allCompanies() {}
-	async* searchCompanies() {}
-
-	private async cruisesPreviews(): Promise<APICruisePreview[]> {
-		if (!this.cache.cruisesPreviews) {
-			const data = await this.connector.send('api/cruis/start/');
-			this.cache.cruisesPreviews = Object.values(data)
-				.filter(data => APICruise.dataIntegrity(data))
-				.map(data => new APICruise(this.connector, this.cache, data));
-		}
-		return this.cache.cruisesPreviews;
-	}
-
-}
-
-class APICruise extends APIEntry implements Cruise {
-
-	declare id: string;
-	declare departure: Date;
-	declare arrival: Date;
-	departureLocationName?: string = undefined;
-	arrivalLocationName?: string = undefined;
-	declare shipId: string;
-	declare stops: Cruise['stops'];
-	declare route: Cruise['route'];
-
-	static dataIntegrity(data: any): boolean {
-		return !!data.PROPERTY_SHIPID_VALUE
-			&& data.POINTS?.length > 0;
-	}
-
-	constructor(connector: APIConnector, cache: Cache, data: any) {
-		super(connector, cache);
-		Object.assign(this, {
-			id: data.ID,
-			departure: parseDate(data.PROPERTY_DEPARTUREDATE_VALUE),
-			arrival: parseDate(data.PROPERTY_ARRIVALDATE_VALUE),
-			shipId: data.PROPERTY_SHIPID_VALUE,
-			stops: [],
-			route: new CruiseRoute(
-				data.POINTS
-					.filter(Boolean)
-					.map(({
-						coordinates: {latitude: lat, longitude: lng},
-						pointArrivalDate,
-					}: any) => ({
-						lat, lng,
-						arrival: parseDate(pointArrivalDate),
-					}))
-			),
-		});
-	}
-
-	async ship(): Promise<Ship> {
-		if (!(this.shipId in this.cache.ships)) {
-			const data = await this.connector.send('api/ship/byID/', {
-				id: this.shipId,
-			});
-			this.cache.ships[this.shipId] = new APIShip(
-				this.connector, this.cache, data[this.shipId]
-			);
-		}
-		return this.cache.ships[this.shipId];
-	}
-
-	async full(): Promise<APICruise> {
-		return this;
-	}
-
-}
-
-type APICruisePreview = APICruise;
-
-class APICompany extends APIEntry implements Company {
-
-	declare id: unknown;
-	declare name: string;
-	declare color: number;
-
-	constructor(connector: APIConnector, cache: Cache, data: any) {
-		super(connector, cache);
-		Object.assign(this, {
-			id: data.ID,
-			name: '<Компания>',
-			color: 0x31739D,
-		});
-	}
-
-	async* ships() {
-		for (const [cruise] of Object.values(this.cache.shipsCruises))
-			yield await cruise.ship();
-	}
-
-}
-
-class APIShip extends APIEntry implements Ship {
-
-	declare id: string;
-	declare name: string;
-	declare company: Ship['company'];
-
-	static dataFilter(data: any) {
-		return !!data.shipClass;
-	}
-
-	constructor(connector: APIConnector, cache: Cache, data: any) {
-		super(connector, cache);
-		Object.assign(this, {
-			id: data.ID,
-			name: data.NAME,
-		});
-		this.company = async () => new APICompany(connector, cache, data);
-	}
-
-	async* cruises() {
-		for (const cruise of this.cache.shipsCruises[this.id] ?? [])
-			yield await cruise.full();
-	}
-
-}
-*/
 
 function parseDate(dateString: string): Date {
 	let match = dateString
