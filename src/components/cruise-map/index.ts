@@ -151,7 +151,7 @@ export default class CruiseMap {
 		this.events.dispatchEvent(new Event('cruiseedit'));
 	}
 
-	async removeCruise({id}: Cruise): Promise<void> {
+	removeCruise({id}: Cruise): void {
 		if (!this._cruises.has(id))
 			return;
 		const {cruise, polyline, shipMarker} = this._cruises.get(id);

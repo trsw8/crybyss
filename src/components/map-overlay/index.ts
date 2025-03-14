@@ -70,8 +70,6 @@ class SearchBox extends DOMComponent {
 
 	declare private cruiseMap: CruiseMap;
 
-	private selectedCruises: Map<unknown, number> = new Map();
-
 	constructor(domNode: Element, cruiseMap: CruiseMap, api: CruiseAPI) {
 		super(domNode);
 		this.cruiseMap = cruiseMap;
@@ -120,62 +118,48 @@ class SearchBox extends DOMComponent {
 					openBtn.addEventListener('click',()=>{
 						if(!closeCheckboxList[index].classList.contains('active')){
 							closeCheckboxList[index].classList.add('active')
-							
+
 						}else{
-							
+
 							closeCheckboxList[index].classList.remove('active')
 						}
 					})
 				})
 			}
 		checkboxOpening()
-		
+
 		let searchLock = Promise.resolve();
 
 		const onInput = () => {
-			const value = input.value;
+			let value = input.value;
 			searchLock = searchLock.then(async () => {
 				if (value !== input.value)
 					return;
+				await new Promise( resolve => { setTimeout( resolve, 400 ); } );   // задержка 0.4 секунды
+				if (value !== input.value)
+					return;
+
+				for (const cruise of this.cruiseMap.cruises) {
+					this.cruiseMap.removeCruise( cruise );
+				}
+				companiesElement.textContent = '';
+				shipsElement.textContent = '';
 				const companiesCheckboxes = [];
 				const shipsCheckboxes = [];
-				if (value)
-					for await (const [type, entity] of api.search(value)) {
-						if (type === 'company')
-							companiesCheckboxes.push(
-								...this.createCompanyElements(entity),
-							);
-						if (type === 'ship')
-							shipsCheckboxes.push(...this.createShipElements(entity));
-					}
-				else {
-					for await (const company of api.allCompanies())
-						companiesCheckboxes.push(
-							...this.createCompanyElements(company),
-						);
-					for await (const ship of api.allShips())
-						shipsCheckboxes.push(...this.createShipElements(ship));
+				if (value.length < 2) value = '';   // поиск от 2 букв
+				await api.setFilter({ companyName: value, shipName: value });
+				for await (const company of api.allCompanies()) {
+					companiesCheckboxes.push(
+						...this.createCompanyElements(company),
+					);
 				}
-				for (const checkbox of [
-					...companiesElement.getElementsByTagName('input'),
-					...shipsElement.getElementsByTagName('input'),
-				] as HTMLInputElement[])
-					if (!checkbox.checked)
-						for (const element of [checkbox, ...checkbox.labels])
-							element.remove();
+				for await (const ship of api.allShips()) {
+					shipsCheckboxes.push(...this.createShipElements(ship));
+				}
 				companiesElement.prepend(...companiesCheckboxes);
 				shipsElement.prepend(...shipsCheckboxes);
 			});
 		};
-		//~ onInput();
-
-		//~ const onLoad = async () => {
-					//~ for await (const ship of api.allShips()) {
-							//~ for await (const cruise of ship.cruises()) {
-									//~ this.cruiseMap.addCruise(cruise);
-							//~ }
-					//~ }
-		//~ };
 
 		window.addEventListener('cruisesDataLoaded', onInput);
 		input.addEventListener('input', onInput);
@@ -184,12 +168,9 @@ class SearchBox extends DOMComponent {
 	private createCompanyElements(company: Company): Element[] {
 		const {id, name, color} = company;
 		const elementId = `map-overlay--search-company_${id}`;
-		const existingInput =
-			document.getElementById(elementId) as HTMLInputElement;
-		if (existingInput)
-			return [existingInput, existingInput.labels[0]];
 
 		const [input, label] = this.createCheckboxElements(elementId);
+		input.checked = true;
 		label.style.setProperty(
 			'--map-overlay--search-check_color',
 			`#${color.toString(16)}`
@@ -204,10 +185,29 @@ class SearchBox extends DOMComponent {
 		nameElement.innerText = name;
 		label.appendChild(nameElement);
 
-		input.addEventListener('change', async () => {
-			for await (const ship of company.ships())
-				for await (const cruise of ship.cruises())
-					this.handleCruiseCheckbox(input, cruise);
+		input.addEventListener('change', async event => {
+			const checked = ( event.target as HTMLInputElement ).checked as boolean;
+			for await (const ship of company.ships()) {
+				const {id} = ship;
+				const input = document.getElementById( `map-overlay--search-ship_${id}` ) as HTMLInputElement;
+				if (input) {
+					if (checked && input.style.display) {
+						input.checked = input.defaultChecked;
+						for (const el of [ input, ...input.labels ]) {
+							el.style.display = null;
+						}
+						if (input.checked) input.dispatchEvent( new Event( 'change' ) );
+					}
+					else if (!checked && !input.style.display) {
+						input.defaultChecked = input.checked;
+						input.checked = false;
+						for (const el of [ input, ...input.labels ]) {
+							el.style.display = 'none';
+						}
+						if (input.defaultChecked) input.dispatchEvent( new Event( 'change' ) );
+					}
+				}
+			}
 		});
 
 		return [input, label];
@@ -216,12 +216,9 @@ class SearchBox extends DOMComponent {
 	private createShipElements(ship: Ship): Element[] {
 		const {id, name} = ship;
 		const elementId = `map-overlay--search-ship_${id}`;
-		const existingInput =
-			document.getElementById(elementId) as HTMLInputElement;
-		if (existingInput)
-			return [existingInput, existingInput.labels[0]];
 
 		const [input, label] = this.createCheckboxElements(elementId);
+		input.checked = true;
 
 		const nameElement = document.createElement('span');
 		nameElement.classList.add('name');
@@ -233,6 +230,7 @@ class SearchBox extends DOMComponent {
 				this.handleCruiseCheckbox(input, cruise);
 		});
 
+		input.dispatchEvent( new Event( 'change' ) );
 		return [input, label];
 	}
 
@@ -253,17 +251,10 @@ class SearchBox extends DOMComponent {
 
 	private handleCruiseCheckbox(checkbox: HTMLInputElement, cruise: Cruise) {
 		const {id} = cruise;
-		const selectedTimes = this.selectedCruises.get(id) ?? 0;
 		if (checkbox.checked) {
-			if (selectedTimes === 0)
-				this.cruiseMap.addCruise(cruise);
-			this.selectedCruises.set(id, selectedTimes + 1);
+			this.cruiseMap.addCruise(cruise);
 		} else {
-			if (selectedTimes <= 1) {
-				this.cruiseMap.removeCruise(cruise);
-				this.selectedCruises.delete(id);
-			}
-			this.selectedCruises.set(id, selectedTimes - 1);
+			this.cruiseMap.removeCruise(cruise);
 		}
 	}
 
