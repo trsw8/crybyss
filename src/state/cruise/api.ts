@@ -152,8 +152,8 @@ class CruiseData implements Cruise {
 				}: any) => ({
 					lat, lng,
 					arrival: parseDate(pointArrivalDate),
-					sunrise: Sunrise,
-					angle
+					sunrise: isFinite( Sunrise ) ? Number( Sunrise ) : undefined,
+					angle: isFinite( angle ) ? Number( angle ) : undefined
 				}))
 				.sort( ( a: TrackPoint, b: TrackPoint ) => +a.arrival - +b.arrival )
 		);
@@ -220,6 +220,22 @@ class ShipData implements Ship {
 		} );
 	}
 
+	get navigationStartDate(): Date | undefined {
+		const cruise = this.cruises()[Symbol.iterator]().next().value;
+		if (!cruise) return;
+		else return cruise.departure;
+	}
+
+	get navigationEndDate(): Date | undefined {
+		const cruises = [ ...this.cruises() ];
+		if (!cruises.length) return;
+		else return cruises.reduce( ( ret: Date | undefined, cruise: Cruise ): Date | undefined => {
+			const date = cruise.arrival;
+			if (date && date > ( ret ?? 0 )) ret = date;
+			return ret;
+		}, undefined );
+	}
+
 	//~ async company(): Promise<Company> {
 		//~ return await cache.company( this.companyId );
 	//~ }
@@ -236,11 +252,15 @@ class ShipData implements Ship {
 
 	cruiseOn( datetime: Date ): Cruise | undefined {
 		const moment = +datetime;
+		let found: Cruise;
 		for (const index of cache.activeCruises) {
 			const cruise = cache.cruises.at( index );
-			if (cruise.shipId === this.id && +( cruise.departure ?? 0 ) >= moment && +( cruise.arrival ?? 0 ) <= moment) return cruise;
+			if (cruise.shipId === this.id) {
+				if (+( cruise.arrival ?? 0 ) >= moment) return cruise;
+				found = cruise;
+			}
 		}
-		return;
+		return found;
 	}
 
 	positionAt( datetime: Date ): TrackPoint {
@@ -250,7 +270,7 @@ class ShipData implements Ship {
 			const cruise = cache.cruises.at( index );
 			if (cruise.shipId === this.id) {
 				found = cruise;
-				if (+( cruise.departure ?? 0 ) >= moment && +( cruise.arrival ?? 0 ) <= moment) break;
+				if (+( cruise.arrival ?? 0 ) >= moment) break;
 			}
 		}
 		if (found) {
@@ -366,12 +386,12 @@ class CruiseAPICache extends Cache implements CruiseAPI {
 			} );
 	}
 
-	get minDate(): Date | undefined {
+	get navigationStartDate(): Date | undefined {
 		if (!this.activeCruises.length) return;
 		else return this.cruises.at( this.activeCruises[0] ).departure;
 	}
 
-	get maxDate(): Date | undefined {
+	get navigationEndDate(): Date | undefined {
 		if (!this.activeCruises.length) return;
 		else return this.activeCruises.reduce( ( ret: Date | undefined, index: number ): Date | undefined => {
 			const date = this.cruises.at( index ).arrival;

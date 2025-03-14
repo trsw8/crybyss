@@ -1,8 +1,8 @@
 /** Интерфейсы для получения данных о круизах по API */
 
 export interface CruiseAPI {
-	minDate?: Date;
-	maxDate?: Date;
+	navigationStartDate?: Date;
+	navigationEndDate?: Date;
 	company: ( id : string ) => Company;
 	cruise: ( id : string ) => Promise<Cruise>;
 	ship: ( id : string ) => Promise<Ship>;
@@ -41,6 +41,8 @@ export interface Ship {
 	id: string;
 	name: string;
 	companyId: string;
+	navigationStartDate?: Date;
+	navigationEndDate?: Date;
 	company: () => Company;
 	cruises: () => Iterable<Cruise>;
 	cruiseOn: ( datetime: Date ) => Cruise | undefined;
@@ -107,19 +109,31 @@ export class CruiseRoute {
 				sliceEnd = center - 1;
 			}
 		}
-		if (previous < 0) return this.points[0];
+		if (previous < 0) {
+			return this.points[0];
+		}
 		else {
 			while (previous < this.points.length - 1 && this.points[ previous + 1 ].arrival <= this.points[ previous ].arrival) previous++;
-			if (previous >= this.points.length - 1) return this.points[ this.points.length - 1 ]
+			if (previous >= this.points.length - 1) return this.points[ this.points.length - 1 ];
 		};
 
 		const frac = (needle - +this.points[ previous ].arrival) / ( +this.points[ previous + 1 ].arrival - +this.points[ previous ].arrival );
 		const lat = this.points[ previous ].lat * ( 1 - frac ) + this.points[ previous + 1 ].lat * frac;
 		const lng = this.points[ previous ].lng * ( 1 - frac ) + this.points[ previous + 1 ].lng * frac;
-		const angle = this.points[ previous ].angle !== undefined && this.points[ previous + 1 ].angle !== undefined ?
-			this.points[ previous ].angle * ( 1 - frac ) + this.points[ previous + 1 ].angle * frac :
+		let angle;
+		if (this.points[ previous + 1 ].lat !== this.points[ previous ].lat || this.points[ previous + 1 ].lng !== this.points[ previous ].lng) {
 			this.points[ previous ].angle ?? this.points[ previous + 1 ].angle ?? undefined;
-		return { arrival: datetime, lat, lng, angle };
+			if (this.points[ previous ].angle !== undefined && this.points[ previous + 1 ].angle !== undefined) {
+				let rot = this.points[ previous + 1 ].angle - this.points[ previous ].angle;
+				if (rot > 180) rot -= 360;
+				else if (rot < -180) rot += 360;
+				rot *= frac;
+				angle = this.points[ previous ].angle + rot;
+				if (angle > 180) angle -= 360;
+				else if (angle < -180) angle += 360;
+			}
+		}
+        return { arrival: datetime, lat, lng, angle };
 	}
 
 	pointIndexInMoment(moment: Date): number {
