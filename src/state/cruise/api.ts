@@ -57,6 +57,7 @@ class SortedList<T extends { id: string }> implements Iterable<T> {
 			const cmp = this.compareFunc( this.items[ mid ], item );
 			if (!cmp) {
 				left = mid + 1;
+				while (left < this.items.length && !this.compareFunc( this.items[ left ], item )) left++;
 				break;
 			}
 			if (cmp < 0) left = mid + 1;
@@ -116,11 +117,13 @@ class CompanyData implements Company {
 	}
 
 	async* ships(): AsyncIterable<Ship> {
+		const shipIds: Record<string, true> = {};
 		for (const index of cache.activeCruises) {
 			const cruise = cache.cruises.at( index );
 			const ship = await cruise.ship();
-			if (ship?.companyId === this.id) yield ship;
+			if (ship?.companyId === this.id) shipIds[ ship.id ] = true;
 		}
+		yield* cache.ships.filter( ship => shipIds[ ship.id ] );
 	}
 }
 
@@ -446,9 +449,9 @@ class CruiseAPICache extends Cache implements CruiseAPI {
 			let ret = true;
 			if (this.activeFilters.companyName || this.activeFilters.shipName) {
 				ret =
-					( this.activeFilters.companyName && this.companies.item( this.ships.item( cruise.shipId )?.companyId )?.name.includes( this.activeFilters.companyName ) )
+					( this.activeFilters.companyName && this.companies.item( this.ships.item( cruise.shipId )?.companyId )?.name.toLowerCase().includes( this.activeFilters.companyName.toLowerCase() ) )
 					||
-					( this.activeFilters.shipName && this.ships.item( cruise.shipId )?.name.includes( this.activeFilters.shipName ) );
+					( this.activeFilters.shipName && this.ships.item( cruise.shipId )?.name.toLowerCase().includes( this.activeFilters.shipName.toLowerCase() ) );
 			}
 			if (ret && this.activeFilters.startDate && ( !cruise.departure || cruise.departure < this.activeFilters.startDate )) ret = false;
 			if (ret && this.activeFilters.endDate && ( !cruise.arrival || cruise.arrival > this.activeFilters.endDate )) ret = false;
