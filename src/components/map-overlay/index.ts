@@ -89,8 +89,8 @@ class SearchBox extends DOMComponent {
 		const checkAllShips = document.getElementById('shipsAllSelect') as HTMLInputElement;
 
 		const onSelectAll = () => {
-			const checkboxes = shipsElement.getElementsByTagName('input');
-			const allChecked = Array.from(checkboxes).every(checkbox => checkbox.checked);
+			const checkboxes = Array.from( shipsElement.getElementsByTagName('input') ).filter( el => !el.style.display );
+			const allChecked = checkboxes.every(checkbox => checkbox.checked);
 
 			for (const checkbox of checkboxes) {
 					checkbox.checked = !allChecked;
@@ -139,8 +139,8 @@ class SearchBox extends DOMComponent {
 				if (value !== input.value)
 					return;
 
-				for (const cruise of this.cruiseMap.cruises) {
-					this.cruiseMap.removeCruise( cruise );
+				for (const ship of this.cruiseMap.ships) {
+					this.cruiseMap.removeShip( ship );
 				}
 				companiesElement.textContent = '';
 				shipsElement.textContent = '';
@@ -225,9 +225,8 @@ class SearchBox extends DOMComponent {
 		nameElement.innerText = name;
 		label.appendChild(nameElement);
 
-		input.addEventListener('change', async () => {
-			for await (const cruise of ship.cruises())
-				this.handleCruiseCheckbox(input, cruise);
+		input.addEventListener('change', () => {
+			this.handleShipCheckbox(input, ship);
 		});
 
 		input.dispatchEvent( new Event( 'change' ) );
@@ -249,12 +248,11 @@ class SearchBox extends DOMComponent {
 		return [input, label];
 	}
 
-	private handleCruiseCheckbox(checkbox: HTMLInputElement, cruise: Cruise) {
-		const {id} = cruise;
+	private handleShipCheckbox(checkbox: HTMLInputElement, ship: Ship) {
 		if (checkbox.checked) {
-			this.cruiseMap.addCruise(cruise);
+			this.cruiseMap.addShip(ship);
 		} else {
-			this.cruiseMap.removeCruise(cruise);
+			this.cruiseMap.removeShip(ship);
 		}
 	}
 
@@ -291,8 +289,8 @@ class TimelineSlider extends DOMComponent {
 		const valueElement = slider
 			.getElementsByClassName('rs-tooltip')[0] as HTMLElement;
 
-		const onCruiseEdit = () => {
-			if (cruiseMap.cruises.length > 0) {
+		const onTimeRangeChanged = () => {
+			if (!!+cruiseMap.timelineRange[0] && !!+cruiseMap.timelineRange[1]) {
 				for (const [value, element] of [
 					[cruiseMap.timelineRange[0], fromElement],
 					[cruiseMap.timelineRange[1], toElement],
@@ -302,8 +300,8 @@ class TimelineSlider extends DOMComponent {
 			} else
 				domNode.classList.add('map-overlay--range-dates-hidden');
 		};
-		onCruiseEdit();
-		cruiseMap.events.addEventListener('cruiseedit', onCruiseEdit);
+		onTimeRangeChanged();
+		cruiseMap.events.addEventListener('timerangechanged', onTimeRangeChanged);
 		const onTimelineMove = () => {
 			const [from, to] = cruiseMap.timelineRange;
 			if (+from !== 0 || +to !== 0)

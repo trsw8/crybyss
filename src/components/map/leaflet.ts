@@ -181,6 +181,7 @@ class LeafletPane<
 			pane: this.compositePaneName('markerPane'),
 		});
 		this.syncMarker(mapMarker, lMarker);
+		return lMarker;
 	}
 
 	addInteractiveMarker(interactiveMarker: TMarker & InteractiveMapMarker) {
@@ -238,7 +239,7 @@ class LeafletPane<
 			if (popup) {
 				const container = popup.getElement();
 				if (container.contains(
-					event.originalEvent.relatedTarget as Node
+					event.originalEvent?.relatedTarget as Node
 				)) {
 					container.addEventListener('mouseleave', () => {
 						popup.close();
@@ -249,6 +250,7 @@ class LeafletPane<
 		});
 
 		this.syncMarker(interactiveMarker, lMarker);
+		return lMarker;
 	}
 
 	removeMarker(marker: TMarker) {
