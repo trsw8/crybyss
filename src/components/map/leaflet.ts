@@ -363,9 +363,11 @@ class LeafletPane<
 		}
 
 		if (( mapPolyline as InteractiveMapPolyline).events) {
-			const getEvents = ( function getEvents() { return ( mapPolyline as InteractiveMapPolyline).events } );
 			for (const layer of layers) {
-				layer.getEvents = getEvents;
+				const events = ( mapPolyline as InteractiveMapPolyline ).events;
+				for (const type of Object.keys( events )) {
+					layer.on( type, events[ type ] );
+				}
 			}
 		}
 

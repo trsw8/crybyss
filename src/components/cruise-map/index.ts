@@ -201,16 +201,8 @@ export default class CruiseMap {
 					const polyline = {
 						...cruise.polyline,
 						events: {
-							mouseover( event ) {
-								isHover = true;
+							'mouseover mouseout click'( event ) {
 								marker.fire( event.type, event );
-							},
-							mouseout( event ) {
-								isHover = false;
-								marker.fire( event.type, event );
-							},
-							click( event ) {
-								if (isHover) marker.fire( event.type, event );
 							}
 						}
 					} as InteractiveMapPolyline;
