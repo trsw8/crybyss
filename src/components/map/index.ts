@@ -89,6 +89,10 @@ export interface MapPolyline {
 	color: number;
 }
 
+export interface InteractiveMapPolyline extends MapPolyline {
+	events: Record<string, (event: any) => void>;
+}
+
 export interface MapPolylinePoint {
 	lat: number;
 	lng: number;

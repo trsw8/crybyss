@@ -11,7 +11,7 @@ import Text from '../../state/text';
 import {Cruise, Company, Ship, TrackStop, LocationType} from '../../state/cruise';
 import WorldMap, {
 	VisibilityControl, Layer,
-	InteractiveMapMarker, MapPolyline
+	InteractiveMapMarker, MapPolyline, InteractiveMapPolyline
 } from '../map';
 import LocatedItemDescription, {
 	LocatedItemDescriptionGroup,
@@ -82,10 +82,26 @@ export default class CruiseMap {
 			const { cruiseId } = shipMarker;
 			if (cruise?.id !== shipMarker.cruiseId) {
 				if (shipMarker.cruiseId) this.removeCruise( shipMarker.cruiseId );
-				if (cruise?.id) this.addCruise( cruise );
-				shipMarker.cruiseId = cruise?.id;
-				this._shipLayer.removeMarker(shipMarker);
-				this._shipLayer.addInteractiveMarker(shipMarker);
+				if (cruise?.id) this.addCruise( cruise )
+				.then( () => {
+					shipMarker.cruiseId = cruise?.id;
+					this._shipLayer.removeMarker(shipMarker);
+					this.createShipMarker( shipMarker );
+
+					if (shipMarker.activeTrack || shipMarker.trackLocked) {
+						if (shipMarker.activeTrack) {
+							this._trackLayer.clearPolyline( shipMarker.activeTrack );
+						}
+						shipMarker.activeTrack = undefined;
+						if (shipMarker.cruiseId) {
+							const cruise = this._cruises.get( shipMarker.cruiseId );
+							if (cruise?.polyline) {
+								this._trackLayer.drawPolyline( cruise.polyline );
+								shipMarker.activeTrack = cruise.polyline;
+							}
+						}
+					}
+				} );
 			}
 
 			shipMarker.move(value);
@@ -133,7 +149,7 @@ export default class CruiseMap {
 		const company = await cruise.company();
 
 		const points = cruise.route.points.map(({lat, lng}) => ({lat, lng}));
-		const polyline = {points, color: company.color};
+		const polyline = { points, color: company.color };
 
 		for (const stop of stops) {
 			const {id, lat, lng, type} = stop;
@@ -170,6 +186,81 @@ export default class CruiseMap {
 		}
 	}
 	
+	createShipMarker( shipMarker: ShipMarker ): void {
+		const marker = this._shipLayer.addInteractiveMarker(shipMarker);
+		let timer: ReturnType<typeof setTimeout>;
+		const onMouseOver = () => {
+			if (timer) {
+				clearTimeout( timer );
+				timer = undefined;
+			}
+			if (shipMarker.cruiseId && !shipMarker.activeTrack) {
+				const cruise = this._cruises.get( shipMarker.cruiseId );
+				if (cruise?.polyline) {
+					let isHover = false;
+					const polyline = {
+						...cruise.polyline,
+						events: {
+							mouseover( event ) {
+								isHover = true;
+								marker.fire( event.type, event );
+							},
+							mouseout( event ) {
+								isHover = false;
+								marker.fire( event.type, event );
+							},
+							click( event ) {
+								if (isHover) marker.fire( event.type, event );
+							}
+						}
+					} as InteractiveMapPolyline;
+					this._trackLayer.drawPolyline( polyline );
+					shipMarker.activeTrack = polyline;
+				}
+			}
+		};
+		const onMouseOut = () => {
+			if (shipMarker.activeTrack && !shipMarker.trackLocked && !timer) {
+				timer = setTimeout( () => {
+					if (shipMarker.activeTrack && !shipMarker.trackLocked) {
+						this._trackLayer.clearPolyline( shipMarker.activeTrack );
+						shipMarker.activeTrack = undefined;
+					}
+					timer = undefined;
+				}, 300 );
+			}
+		};
+		marker.on( 'mouseover', onMouseOver );
+		marker.on( 'mouseout', onMouseOut );
+		let popupContainer: HTMLElement;
+		marker.on( 'popupopen', () => {
+			const popup = marker.getPopup();
+			if (popup) {
+				popupContainer = popup.getElement();
+				if (popupContainer) {
+					popupContainer.addEventListener( 'mouseover', onMouseOver );
+					popupContainer.addEventListener( 'mouseout', onMouseOut );
+				}
+			}
+		} );
+		marker.on( 'popupclose', () => {
+			if (popupContainer) {
+				popupContainer.removeEventListener( 'mouseover', onMouseOver );
+				popupContainer.removeEventListener( 'mouseout', onMouseOut );
+			}
+			onMouseOut();
+		} );
+		marker.on( 'click', () => {
+			shipMarker.trackLocked = !shipMarker.trackLocked;
+			if (shipMarker.trackLocked) {
+				onMouseOver();
+			}
+			else {
+				onMouseOut();
+			}
+		} );
+	}
+	
 	async addShip(ship: Ship): Promise<void> {
 		if (this._ships.has( ship.id )) return;
 		const navigationStartDate = ship.navigationStartDate;
@@ -195,66 +286,10 @@ export default class CruiseMap {
 			this.map, ship, company,
 			this.timelinePoint,
 			async () => this.shipPopup(ship),
-			this.addCruise.bind( this ),
-			this.removeCruise.bind( this ),
 			cruise?.id
 		);
-
-		const marker = this._shipLayer.addInteractiveMarker(shipMarker);
-		let timer: ReturnType<typeof setTimeout>;
-		const onMouseOver = () => {
-			if (shipMarker.cruiseId) {
-				if (shipMarker.activeTrack) {
-					if (timer) {
-						clearTimeout( timer );
-						timer = undefined;
-					}
-				}
-				else {
-					const cruise = this._cruises.get( shipMarker.cruiseId );
-					if (cruise?.polyline) {
-						this._trackLayer.drawPolyline( cruise.polyline );
-						shipMarker.activeTrack = cruise.polyline;
-					}
-				}
-			}
-		};
-		const onMouseOut = () => {
-			if (!timer) {
-				timer = setTimeout( () => {
-					timer = undefined;
-					if (shipMarker.activeTrack) {
-						this._trackLayer.clearPolyline( shipMarker.activeTrack );
-						shipMarker.activeTrack = undefined;
-					}
-				}, 400 );
-			}
-		};
-		marker.on( 'mouseover', onMouseOver );
-		marker.on( 'mouseout', onMouseOut );
-		marker.on( 'popupopen', () => {
-			const popup = marker.getPopup();
-			if (popup) {
-				const container = popup.getElement();
-				if (container) {
-					( container as any )._onmouseover = () => { onMouseOver() };
-					( container as any )._onmouseout = () => { onMouseOut() };
-					container.addEventListener( 'mouseover', ( container as any )._onmouseover );
-					container.addEventListener( 'mouseout', ( container as any )._onmouseout );
-				}
-			}
-		} );
-		marker.on( 'popupclose', () => {
-			const popup = marker.getPopup();
-			if (popup) {
-				const container = popup.getElement();
-				if (container) {
-					container.removeEventListener( 'mouseover', ( container as any )._onmouseover );
-					container.removeEventListener( 'mouseout', ( container as any )._onmouseout );
-				}
-				onMouseOut();
-			}
-		} );
+		
+		this.createShipMarker( shipMarker );
 		this._ships.set( ship.id, shipMarker );
 		
 		this.events.dispatchEvent(new Event('timerangechanged'));
@@ -264,6 +299,11 @@ export default class CruiseMap {
 		if (!this._ships.has( id )) return;
 		const shipMarker = this._ships.get( id );
 		this._ships.delete( id )
+
+		if (shipMarker.activeTrack) {
+			this._trackLayer.clearPolyline( shipMarker.activeTrack );
+			shipMarker.activeTrack = undefined;
+		}
 
 		this.removeCruise( shipMarker.cruiseId );
 		this.fitTimeline();
@@ -283,13 +323,13 @@ export default class CruiseMap {
 		stop: TrackStop,
 	): Promise<Element> {
 		const {lat, lng, type, arrival} = stop;
-		const {name, categoryName, description, image, link} = stop.details;
+		const {name, description, image, link} = stop.details;
 		const imageElements = image ? [
 			LocatedItemDescriptionImage.create(image),
 		] : [];
-		const categoryNameElements = categoryName ? [
-			LocatedItemDescriptionText.create(categoryName),
-		] : [];
+		//~ const categoryNameElements = categoryName ? [
+			//~ LocatedItemDescriptionText.create(categoryName),
+		//~ ] : [];
 		const descriptionElement = LocatedItemDescriptionText.create(description);
 		const itemDescription = LocatedItemDescription.create(
 			type === LocationType.SHOWPLACE ? [
@@ -302,7 +342,7 @@ export default class CruiseMap {
 						showplaceIcon,
 						'cruise-map__icon', 'cruise-map__icon_type_showplace',
 					)),
-					...categoryNameElements,
+					//~ ...categoryNameElements,
 				], LocatedItemDescriptionGap.MEDIUM),
 				descriptionElement,
 			] : [
@@ -444,9 +484,8 @@ class ShipMarker implements InteractiveMapMarker {
 	declare lng: number;
 	declare popupContent: InteractiveMapMarker['popupContent'];
 	declare cruiseId: string | undefined;
-	declare addCruise: (cruise: Cruise) => Promise<void>;
-	declare removeCruise: (id: string) => void;
 	declare activeTrack: MapPolyline | undefined;
+	declare trackLocked: boolean;
 
 	icon = svgAsset(
 		linerMarkerIcon,
@@ -465,8 +504,6 @@ class ShipMarker implements InteractiveMapMarker {
 		company: Company,
 		datetime: Date,
 		popupContent: InteractiveMapMarker['popupContent'],
-		addCruise: (cruise: Cruise) => Promise<void>,
-		removeCruise: (id: string) => void,
 		cruiseId: string | undefined
 	) {
 		this.icon.style.setProperty(
@@ -477,8 +514,6 @@ class ShipMarker implements InteractiveMapMarker {
 		this.ship = ship;
 		this.popupContent = popupContent;
 		this.cruiseId = cruiseId;
-		this.addCruise = addCruise;
-		this.removeCruise = removeCruise;
 		this.move(datetime);
 	}
 
