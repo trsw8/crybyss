@@ -1,6 +1,6 @@
 import {
 	CruiseAPI,
-	Cruise, Company, Ship,
+	Cruise, Company, Ship, LocationType,
 	CruiseRoute, TrackPoint, TrackStop, TrackStopDetails
 } from '.';
 
@@ -145,31 +145,47 @@ class CruiseData implements Cruise {
 			data.POINTS
 				.filter(Boolean)
 				.map(({
-					coordinates: {latitude: lat, longitude: lng},
+					isTrackStop,
 					pointArrivalDate,
 					Sunrise,
+					Sunset,
+					coordinates: {latitude: lat, longitude: lng},
 					angle
 				}: any) => ({
-					lat, lng,
+					lat,
+					lng,
 					arrival: parseDate(pointArrivalDate),
-					sunrise: isFinite( Sunrise ) ? Number( Sunrise ) : undefined,
-					angle: isFinite( angle ) ? Number( angle ) : undefined
+					isStop: !!isTrackStop,
+					sunrise: !!Sunrise,
+					sunset: !!Sunset,
+					angle: !isTrackStop && isFinite( angle ) ? Number( angle ) : undefined
 				}))
 				.sort( ( a: TrackPoint, b: TrackPoint ) => +a.arrival - +b.arrival )
+				.reduce( ( ret: TrackPoint[], point: TrackPoint ) => {
+					const lastPoint = ret.length ? ret[ ret.length - 1 ] : undefined;
+					if (!lastPoint ||
+						+point.arrival - +lastPoint.arrival >= 500 ||
+						lastPoint.isStop !== point.isStop ||
+						lastPoint.sunrise !== point.sunrise ||
+						lastPoint.sunset !== point.sunset
+					) {
+						ret.push( point );
+					}
+					return ret;
+				}, [] )
 		);
 
-		const stops = data.PROPERTY_TRACKSTOPS_VALUE.map(
+		const stops = ( data.PROPERTY_TRACKSTOPS_VALUE || [] ).map(
 			(data: any): TrackStop =>
 			({
 				id: data.CR_ID,
 				lat: data.DETAIL.coordinates.latitude,
 				lng: data.DETAIL.coordinates.longitude,
-				type: undefined,
+				type: LocationType.REGULAR,
 				arrival: parseDate( data.CR_ARRIVAL ),
 				departure: parseDate( data.CR_DEPARTURE ),
 				details: {
 					name: data.DETAIL.NAME,
-					categoryName: undefined,
 					description: data.DETAIL.DETAIL_TEXT,
 					//~ image: data.DETAIL.DETAIL_PICTURE
 					// Это для тестирования. После переноса приложения на основной сайт проверку url можно будет убрать
@@ -277,7 +293,7 @@ class ShipData implements Ship {
 			return found.route.positionAt( datetime );
 		}
 		else {
-			return { lat: 0, lng: 0, arrival: datetime };
+			return { lat: 0, lng: 0, arrival: datetime, isStop: false, sunrise: false, sunset: false };
 		}
 	}
 }
@@ -307,7 +323,10 @@ const connector = new APIConnector( apiURL );
 function dataIsSane( type: 'cruise' | 'company' | 'ship', data: any ): boolean {
 	switch (type) {
 		case 'cruise' :
-		return !!data.PROPERTY_SHIPID_VALUE && data.POINTS?.length > 0;
+		return !!data.PROPERTY_SHIPID_VALUE &&
+			!!data.PROPERTY_DEPARTUREDATE_VALUE &&
+			!!data.PROPERTY_ARRIVALDATE_VALUE &&
+			data.POINTS?.length > 0;
 	}
 	return true;
 }
@@ -492,8 +511,9 @@ function parseDate(dateString: string): Date {
 		return new Date(+year, +month - 1, +day, +hour, +minute, +second);
 	}
 
-	match = dateString
-		.match(/(\d{4})-(\d{2})-(\d{2})\s(\d{2}):(\d{2}):(\d{2})?/);
-	const [, year, month, day, hour, minute, second = '00'] = match;
-	return new Date(+year, +month - 1, +day, +hour, +minute, +second);
+	//~ match = dateString
+		//~ .match(/(\d{4})-(\d{2})-(\d{2})\s(\d{2}):(\d{2}):(\d{2})?/);
+	//~ const [, year, month, day, hour, minute, second = '00'] = match;
+	//~ return new Date(+year, +month - 1, +day, +hour, +minute, +second);
+	return new Date( dateString );
 }
