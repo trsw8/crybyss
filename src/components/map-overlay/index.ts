@@ -321,6 +321,20 @@ class DateFilter {
 
 		const handleTimeInputChange = () => {
 			timeValue = time.value.split(':').slice(0,2).join(':');
+			const [hours, minutes] = timeValue.split(':');
+			const totalMinutes = parseInt(hours) * 60 + parseInt(minutes);
+			const sliderValue = Math.round(totalMinutes);
+			slider.value = sliderValue.toString();
+
+			const timeSlider = document.getElementById("time-slider");
+			const timeTooltip = document.getElementById("time-tooltip");
+			let sliderRect = timeSlider.getBoundingClientRect();
+			let thumbWidth = 16; 
+			let percent = (sliderValue / 1439); 
+
+			let newPosition = percent * (sliderRect.width - thumbWidth) + thumbWidth / 2;
+			timeTooltip.style.left = `${newPosition}px`;
+			timeTooltip.textContent = timeValue;
 			createDate();
 		};
 
