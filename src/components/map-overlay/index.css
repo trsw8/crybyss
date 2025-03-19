@@ -134,10 +134,12 @@ body .rs-tooltip {
 
 .map-overlay--search-box [type="text"] {
   border-radius: 10px;
-  border: 1px solid #eee;
+  /* border: 1px solid #eee; */
   background: #fff;
   height: var(--height);
   line-height: var(--height);
+  font-size: 18px;
+  letter-spacing: -0.5px;
   padding: 0 50px 0 20px;
   width: 100%;
   min-width: 440px;
@@ -147,7 +149,7 @@ body .rs-tooltip {
   position: absolute;
   top: 50%;
   right: 10px;
-  transform: translateY(-50%);
+  transform: translate(-50%, -50%);
   cursor: pointer;
 }
 
@@ -178,6 +180,8 @@ body .rs-tooltip {
 .map-overlay--search-title {
   cursor: pointer;
   margin-bottom: 15px;
+  font-size: 18px;
+  letter-spacing: -0.5px;
   user-select: none;
   display: inline-block;
   width: 200px;
@@ -190,7 +194,9 @@ body .rs-tooltip {
 
 .map-overlay--search-select {
   cursor: pointer;
-  margin-bottom: 15px;
+  margin-bottom: 21px;
+  font-size: 18px;
+  letter-spacing: -1.3px;
   user-select: none;
 }
 
@@ -198,6 +204,12 @@ body .rs-tooltip {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  font-size: 16px;
+  letter-spacing: -0.5px;
+}
+.map-overlay--search-checks .map-overlay--search-check {
+  font-size: 16px;
+  letter-spacing: -0.5px;
 }
 
 .map-overlay--search-checks label {
