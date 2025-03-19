@@ -273,24 +273,57 @@ class DateFilter {
 		this.cruiseMap = cruiseMap;
 
 		const date = dateInput as HTMLInputElement;
-		console.log('date', date)
 		const slider = timeSlider as HTMLInputElement;
 		const time = timeInput as HTMLInputElement;
+
+		let dateValue = '';
+		let timeValue = '';
+
+		const createDate = () => {
+			if (!dateValue) return;
+			let finalDate;
+			
+			if (timeValue) {
+				const [month, day, year] = dateValue.split('/');
+				const isoDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+				const formattedTime = timeValue.includes(':') ? timeValue : `${timeValue}:00`;
+				
+				finalDate = new Date(`${isoDate}T${formattedTime}`);
+			} else {
+				const [month, day, year] = dateValue.split('/');
+				finalDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+			}
+			
+			console.log('Создана дата:', finalDate);
+			
+		};
 
 		const handleDateChange = (event: Event) => {
 			const { date } = (event as CustomEvent).detail;
 			console.log('Выбранная дата:', date);
+			const [day, month, year] = date.split('/');
+			dateValue = `${month}/${day}/${year}`;
+			createDate();
 		};
 
 		const handleTimeSliderChange = () => {
 			const tooltip = document.getElementById('time-tooltip')
-			console.log('tooltip', tooltip);
+			const tooltipTime = tooltip.innerText;
+			if (tooltipTime.match(/^\d{1,2}:\d{2}(:\d{2})?$/)) {
+				timeValue = tooltipTime.includes(':') ? 
+					(tooltipTime.split(':').length === 2 ? `${tooltipTime}:00` : tooltipTime) : 
+					`${tooltipTime}:00:00`;
+			} else {
+				console.error('Неправильный формат времени:', tooltipTime);
+			}
+			createDate();
 		};
 
 		const handleTimeInputChange = () => {
-			console.log('Выбранное время:', time.value);
+			timeValue = time.value.split(':').slice(0,2).join(':');
+			createDate();
 		};
-		// date.addEventListener('change', handleDateChange);
+
 		window.addEventListener('datepicker-change', handleDateChange);
 		slider.addEventListener('input', handleTimeSliderChange);
 		time.addEventListener('input', handleTimeInputChange);
