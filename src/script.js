@@ -34,6 +34,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 selectedDate.setDate(day);
                 // seleced date value
                 input.value = `${day}/${month + 1}/${year}`;
+                window.dispatchEvent(new CustomEvent('datepicker-change', {
+                    detail: {
+                        date: input.value
+                    }
+                }));
                 dayElement.classList.add("selected");
 
                 const days = document.querySelectorAll(".day");

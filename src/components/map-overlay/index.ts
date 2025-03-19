@@ -266,22 +266,20 @@ class SearchBox extends DOMComponent {
 
 }
 
-class DateFilter extends DOMComponent {
+class DateFilter {
 	declare private cruiseMap: CruiseMap;
 
 	constructor(dateInput: Element, timeSlider: Element, timeInput: Element, cruiseMap: CruiseMap, api: CruiseAPI) {
-		super(dateInput);
 		this.cruiseMap = cruiseMap;
 
 		const date = dateInput as HTMLInputElement;
+		console.log('date', date)
 		const slider = timeSlider as HTMLInputElement;
 		const time = timeInput as HTMLInputElement;
-		console.log('date', date);
-		console.log('slider', slider);
-		console.log('time', time);
 
-		const handleDateChange = () => {
-			console.log('Выбранная дата:', date.value);
+		const handleDateChange = (event: Event) => {
+			const { date } = (event as CustomEvent).detail;
+			console.log('Выбранная дата:', date);
 		};
 
 		const handleTimeSliderChange = () => {
@@ -292,8 +290,8 @@ class DateFilter extends DOMComponent {
 		const handleTimeInputChange = () => {
 			console.log('Выбранное время:', time.value);
 		};
-
-		date.addEventListener('input', handleDateChange);
+		// date.addEventListener('change', handleDateChange);
+		window.addEventListener('datepicker-change', handleDateChange);
 		slider.addEventListener('input', handleTimeSliderChange);
 		time.addEventListener('input', handleTimeInputChange);
 	}
