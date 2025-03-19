@@ -1,4 +1,4 @@
-import {throttle} from 'throttle-debounce';
+import {throttle, debounce} from 'throttle-debounce';
 import {TypedEventTarget} from 'typescript-event-target';
 import {CruiseAPI, Cruise, Ship, Company} from '../../state/cruise';
 import {DOMComponent} from '../dom';
@@ -306,7 +306,7 @@ class DateFilter {
 			createDate();
 		};
 
-		const handleTimeSliderChange = () => {
+		const handleTimeSliderChange = debounce(400, () => {
 			const tooltip = document.getElementById('time-tooltip')
 			const tooltipTime = tooltip.innerText;
 			if (tooltipTime.match(/^\d{1,2}:\d{2}(:\d{2})?$/)) {
@@ -315,7 +315,7 @@ class DateFilter {
 					`${tooltipTime}:00:00`;
 			}
 			createDate();
-		};
+		});
 
 		const handleTimeInputChange = () => {
 			timeValue = time.value.split(':').slice(0,2).join(':');
