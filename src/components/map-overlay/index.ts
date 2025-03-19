@@ -313,6 +313,8 @@ class DateFilter {
 				timeValue = tooltipTime.includes(':') ? 
 					(tooltipTime.split(':').length === 2 ? `${tooltipTime}:00` : tooltipTime) : 
 					`${tooltipTime}:00:00`;
+					time.value = timeValue;
+					document.getElementById('timeDisplay').innerText = timeValue;
 			}
 			createDate();
 		});
