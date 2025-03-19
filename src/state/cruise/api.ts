@@ -483,7 +483,6 @@ class CruiseAPICache extends Cache implements CruiseAPI {
 		if (this.activeFilters.companyName) {
 			await Promise.all( this.cruises.items.map( cruise => cruise.company() ) );
 		}
-		console.log('this.activeFilters', this.cruises)
 		this.activeCruises = [ ...this.cruises.items.keys() ].filter( index => {
 			const cruise = this.cruises.at( index );
 			let ret = true;
