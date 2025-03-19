@@ -307,7 +307,7 @@ class APIConnector {
 	public baseUrl: string;
 
 	constructor(baseUrl: string) {
-		this.baseUrl = baseUrl;
+		this.baseUrl ="https://krubiss.ru";
 	}
 
 	async send(url: string, data: any = {}): Promise<any> {
