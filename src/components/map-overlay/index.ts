@@ -40,6 +40,13 @@ export default class MapOverlay extends DOMComponent {
 			cruiseMap, api,
 		);
 
+		new DateFilter(
+			document.getElementById('datepicker-input'),
+			document.getElementById('time-slider'),
+			document.getElementById('timeInput'),
+			cruiseMap, api,
+		);
+
 		const overlayBoundsElements = [
 			'map-overlay--search-box',
 			'map-overlay--overlays',
@@ -72,6 +79,7 @@ class SearchBox extends DOMComponent {
 
 	constructor(domNode: Element, cruiseMap: CruiseMap, api: CruiseAPI) {
 		super(domNode);
+		console.log('domNode', domNode)
 		this.cruiseMap = cruiseMap;
 
 		const input = domNode.getElementsByClassName(
@@ -256,6 +264,39 @@ class SearchBox extends DOMComponent {
 		}
 	}
 
+}
+
+class DateFilter extends DOMComponent {
+	declare private cruiseMap: CruiseMap;
+
+	constructor(dateInput: Element, timeSlider: Element, timeInput: Element, cruiseMap: CruiseMap, api: CruiseAPI) {
+		super(dateInput);
+		this.cruiseMap = cruiseMap;
+
+		const date = dateInput as HTMLInputElement;
+		const slider = timeSlider as HTMLInputElement;
+		const time = timeInput as HTMLInputElement;
+		console.log('date', date);
+		console.log('slider', slider);
+		console.log('time', time);
+
+		const handleDateChange = () => {
+			console.log('Выбранная дата:', date.value);
+		};
+
+		const handleTimeSliderChange = () => {
+			const tooltip = document.getElementById('time-tooltip')
+			console.log('tooltip', tooltip);
+		};
+
+		const handleTimeInputChange = () => {
+			console.log('Выбранное время:', time.value);
+		};
+
+		date.addEventListener('input', handleDateChange);
+		slider.addEventListener('input', handleTimeSliderChange);
+		time.addEventListener('input', handleTimeInputChange);
+	}
 }
 
 class LayerVisibilityButton extends DOMComponent {
