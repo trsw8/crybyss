@@ -145,6 +145,12 @@ body .rs-tooltip {
   min-width: 440px;
 }
 
+@media (max-width: 800px) {
+  .map-overlay--search-box [type="text"] {
+  border: 1px solid #eee;
+  }
+}
+
 .map-overlay--search-box svg {
   position: absolute;
   top: 50%;
