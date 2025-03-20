@@ -294,10 +294,9 @@ class DateFilter {
 			}
 			
 			console.log('Создана дата:', finalDate);
-			shipSlider.setSlider(finalDate, cruiseMap);
 			cruiseMap.timelinePoint = finalDate;
 			shipSlider.setSlider(finalDate, cruiseMap);
-			window.dispatchEvent(new CustomEvent('timelinemove', {detail: {date: cruiseMap.timelinePoint}}));
+			window.dispatchEvent(new CustomEvent('timeline-change', {detail: {date: cruiseMap.timelinePoint}}));
 		};
 
 		const handleDateChange = (event: Event) => {
@@ -355,7 +354,7 @@ class DateFilter {
 		const updateFilter = () => {
 			const now = new Date();
 
-			window.dispatchEvent(new CustomEvent('timelinemove', {detail: {date: now}}));
+			window.dispatchEvent(new CustomEvent('timeline-change', {detail: {date: now}}));
 
 			const time = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0') + ':' + now.getSeconds().toString().padStart(2, '0');
 			document.getElementById('timeDisplay').innerText = time;
@@ -378,7 +377,7 @@ class DateFilter {
 			.getElementsByClassName('rs-tooltip')[0] as HTMLElement;
 
 			// shipSlider.setSlider(now, cruiseMap);
-			// window.dispatchEvent(new CustomEvent('timelinemove', {detail: {date: now}}));
+			// window.dispatchEvent(new CustomEvent('timeline-change', {detail: {date: now}}));
 			cruiseMap.timelinePoint = now;
 			shipSlider.setSlider(now, cruiseMap);
 			if (now > cruiseMap.timelineRange[0] && now < cruiseMap.timelineRange[1]) {
@@ -485,7 +484,7 @@ class TimelineSlider extends DOMComponent {
 				);
 			valueElement.innerText =
 				TimelineSlider.formatDate(cruiseMap.timelinePoint);
-			window.dispatchEvent(new CustomEvent('timelinemove', {detail: {date: cruiseMap.timelinePoint}}));
+			window.dispatchEvent(new CustomEvent('timeline-change', {detail: {date: cruiseMap.timelinePoint}}));
 		};
 		onTimelineMove();
 		cruiseMap.events.addEventListener('timelinemove', onTimelineMove);

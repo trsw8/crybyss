@@ -122,7 +122,7 @@ document.addEventListener("DOMContentLoaded", function () {
         timeInput.showPicker(); //
     });
 
-    window.addEventListener('timelinemove', function (event) {
+    window.addEventListener('timeline-change', function (event) {
         const date = event.detail.date;
         const day = date.getDate();
         const month = date.getMonth() + 1;
