@@ -404,6 +404,7 @@ class TimelineSlider extends DOMComponent {
 				);
 			valueElement.innerText =
 				TimelineSlider.formatDate(cruiseMap.timelinePoint);
+			window.dispatchEvent(new CustomEvent('timelinemove', {detail: {date: cruiseMap.timelinePoint}}));
 		};
 		onTimelineMove();
 		cruiseMap.events.addEventListener('timelinemove', onTimelineMove);
@@ -436,7 +437,6 @@ class TimelineSlider extends DOMComponent {
 
 	public setSlider(value: Date, cruiseMap: CruiseMap) {
 		const [from, to] = cruiseMap.timelineRange;
-		console.log('cruiseMap', cruiseMap)
 		const timeRange = +to - +from;
 		const timePoint = +value - +from;
 		let point = timePoint / timeRange;

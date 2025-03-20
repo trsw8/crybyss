@@ -121,5 +121,14 @@ document.addEventListener("DOMContentLoaded", function () {
     timeDisplay.addEventListener("click", function () {
         timeInput.showPicker(); //
     });
+
+    window.addEventListener('timelinemove', function (event) {
+        const date = event.detail.date;
+        const day = date.getDate();
+        const month = date.getMonth() + 1;
+        const year = date.getFullYear();
+        const formattedDate = `${day}/${month}/${year}`;
+        input.value = formattedDate;
+    });
 });
 
