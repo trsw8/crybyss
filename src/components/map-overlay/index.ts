@@ -80,7 +80,6 @@ class SearchBox extends DOMComponent {
 
 	constructor(domNode: Element, cruiseMap: CruiseMap, api: CruiseAPI) {
 		super(domNode);
-		console.log('domNode', domNode)
 		this.cruiseMap = cruiseMap;
 
 		const input = domNode.getElementsByClassName(
@@ -302,7 +301,6 @@ class DateFilter {
 
 		const handleDateChange = (event: Event) => {
 			const { date } = (event as CustomEvent).detail;
-			console.log('Выбранная дата:', date);
 			const [day, month, year] = date.split('/');
 			dateValue = `${month}/${day}/${year}`;
 			createDate();
@@ -322,7 +320,6 @@ class DateFilter {
 		});
 
 		const updateTimeSlider = (timeValue: string) => {
-			console.log('timeValue', timeValue)
 			const [hours, minutes] = timeValue.split(':');
 			const totalMinutes = parseInt(hours) * 60 + parseInt(minutes);
 			const sliderValue = Math.round(totalMinutes);
@@ -348,6 +345,51 @@ class DateFilter {
 		window.addEventListener('datepicker-change', handleDateChange);
 		slider.addEventListener('input', handleTimeSliderChange);
 		time.addEventListener('input', handleTimeInputChange);
+
+		const updateFilter = () => {
+			const now = new Date();
+			window.dispatchEvent(new CustomEvent('timelinemove', {detail: {date: now}}));
+
+			const time = now.getHours() + ':' + now.getMinutes() + ':' + now.getSeconds();
+			document.getElementById('timeDisplay').innerText = time;
+			timeValue = time.split(':').slice(0,2).join(':');
+			updateTimeSlider(timeValue);
+
+			const formatDate = (value: Date): string => {
+				return value.toLocaleDateString(undefined, {
+					day: '2-digit',
+					month: '2-digit',
+					year: 'numeric',
+				});
+			};
+
+			const slider = document.getElementsByClassName('rs-container')[0];
+			const valueElement = slider
+			.getElementsByClassName('rs-tooltip')[0] as HTMLElement;
+
+			if (now > cruiseMap.timelineRange[0] && now < cruiseMap.timelineRange[1]) {
+				cruiseMap.timelinePoint = now;
+			} else if (now < cruiseMap.timelineRange[0]) {
+				cruiseMap.timelinePoint = cruiseMap.timelineRange[0];
+				valueElement.innerText = formatDate(now);
+			} else if (now > cruiseMap.timelineRange[1]) {
+				cruiseMap.timelinePoint = cruiseMap.timelineRange[1];
+				valueElement.innerText = formatDate(now);
+			}
+		};
+		document.addEventListener('DOMContentLoaded', () => {
+			updateFilter();
+			const timeUpdate = setInterval(() => {
+				updateFilter();
+			}, 1000);
+		});
+
+		window.addEventListener('cruisesDataLoaded', () => {
+			setTimeout(() => {
+				updateFilter();
+			}, 1000);
+		});
+
 	}
 }
 
