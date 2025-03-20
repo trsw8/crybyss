@@ -404,18 +404,13 @@ class DateFilter {
 			const clockBtn = document.querySelector('.map-overlay--time') as HTMLElement;
 
 			const pointer = document.querySelector('.rs-pointer') as HTMLElement;
-			pointer.addEventListener('mousedown', () => {
-				console.log('pointer');
+			const onPointerDown = () => {
 				clockBtn.classList.remove('active');
-					isclockActive = false;
-					window.dispatchEvent(new Event('filterchange'));
-			});
-			pointer.addEventListener('touchstart', () => {
-				console.log('touchstart');
-				clockBtn.classList.remove('active');
-					isclockActive = false;
-					window.dispatchEvent(new Event('filterchange'));
-			});
+				isclockActive = false;
+				window.dispatchEvent(new Event('filterchange'));
+			}
+			pointer.addEventListener('mousedown', onPointerDown);
+			pointer.addEventListener('touchstart', onPointerDown);
 
 			clockBtn.addEventListener('click', () => {
 				if (clockBtn.classList.contains('active')) {
