@@ -350,7 +350,7 @@ class DateFilter {
 			const now = new Date();
 			window.dispatchEvent(new CustomEvent('timelinemove', {detail: {date: now}}));
 
-			const time = now.getHours() + ':' + now.getMinutes() + ':' + now.getSeconds();
+			const time = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0') + ':' + now.getSeconds().toString().padStart(2, '0');
 			document.getElementById('timeDisplay').innerText = time;
 			timeValue = time.split(':').slice(0,2).join(':');
 			updateTimeSlider(timeValue);
@@ -377,6 +377,7 @@ class DateFilter {
 				valueElement.innerText = formatDate(now);
 			}
 		};
+
 		document.addEventListener('DOMContentLoaded', () => {
 			updateFilter();
 			const timeUpdate = setInterval(() => {
