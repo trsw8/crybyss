@@ -349,8 +349,6 @@ class DateFilter {
 		slider.addEventListener('input', handleTimeSliderChange);
 		time.addEventListener('input', handleTimeInputChange);
 
-		// let isTimerActive = true;
-
 		const updateFilter = () => {
 			const now = new Date();
 
