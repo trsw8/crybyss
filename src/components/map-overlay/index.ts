@@ -402,6 +402,21 @@ class DateFilter {
 			}, 1000);
 
 			const clockBtn = document.querySelector('.map-overlay--time') as HTMLElement;
+
+			const pointer = document.querySelector('.rs-pointer') as HTMLElement;
+			pointer.addEventListener('mousedown', () => {
+				console.log('pointer');
+				clockBtn.classList.remove('active');
+					isclockActive = false;
+					window.dispatchEvent(new Event('filterchange'));
+			});
+			pointer.addEventListener('touchstart', () => {
+				console.log('touchstart');
+				clockBtn.classList.remove('active');
+					isclockActive = false;
+					window.dispatchEvent(new Event('filterchange'));
+			});
+
 			clockBtn.addEventListener('click', () => {
 				if (clockBtn.classList.contains('active')) {
 					clockBtn.classList.remove('active');
@@ -429,7 +444,6 @@ class DateFilter {
 		});
 
 		window.addEventListener('timeline-change', (event: CustomEvent) => {
-			console.log('timeline-change', event.detail.date);
 			const currentDate = (event.detail.date.getMonth() + 1).toString() +'/' + event.detail.date.getDate().toString() + '/' + event.detail.date.getFullYear().toString();
 			dateValue = currentDate;
 		});
