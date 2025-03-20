@@ -428,6 +428,11 @@ class DateFilter {
 			}, 200);
 		});
 
+		window.addEventListener('timeline-change', (event: CustomEvent) => {
+			console.log('timeline-change', event.detail.date);
+			const currentDate = (event.detail.date.getMonth() + 1).toString() +'/' + event.detail.date.getDate().toString() + '/' + event.detail.date.getFullYear().toString();
+			dateValue = currentDate;
+		});
 	}
 }
 
