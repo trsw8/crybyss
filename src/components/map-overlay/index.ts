@@ -285,10 +285,9 @@ class DateFilter {
 			
 			if (timeValue) {
 				const [month, day, year] = dateValue.split('/');
-				const isoDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
-				const formattedTime = timeValue.includes(':') ? timeValue : `${timeValue}:00`;
+				const [hours, minutes] = timeValue.split(':');
 				
-				finalDate = new Date(`${isoDate}T${formattedTime}`);
+				finalDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day), parseInt(hours), parseInt(minutes));
 			} else {
 				const [month, day, year] = dateValue.split('/');
 				finalDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
@@ -298,6 +297,7 @@ class DateFilter {
 			shipSlider.setSlider(finalDate, cruiseMap);
 			cruiseMap.timelinePoint = finalDate;
 			shipSlider.setSlider(finalDate, cruiseMap);
+			window.dispatchEvent(new CustomEvent('timelinemove', {detail: {date: cruiseMap.timelinePoint}}));
 		};
 
 		const handleDateChange = (event: Event) => {
@@ -362,6 +362,9 @@ class DateFilter {
 			timeValue = time.split(':').slice(0,2).join(':');
 			updateTimeSlider(timeValue);
 
+			const currentDate = (now.getMonth() + 1).toString() +'/' + now.getDate().toString() + '/' + now.getFullYear().toString();
+			dateValue = currentDate;
+
 			const formatDate = (value: Date): string => {
 				return value.toLocaleDateString(undefined, {
 					day: '2-digit',
@@ -374,13 +377,17 @@ class DateFilter {
 			const valueElement = slider
 			.getElementsByClassName('rs-tooltip')[0] as HTMLElement;
 
+			// shipSlider.setSlider(now, cruiseMap);
+			// window.dispatchEvent(new CustomEvent('timelinemove', {detail: {date: now}}));
+			cruiseMap.timelinePoint = now;
+			shipSlider.setSlider(now, cruiseMap);
 			if (now > cruiseMap.timelineRange[0] && now < cruiseMap.timelineRange[1]) {
-				cruiseMap.timelinePoint = now;
+				// cruiseMap.timelinePoint = now;
 			} else if (now < cruiseMap.timelineRange[0]) {
-				cruiseMap.timelinePoint = cruiseMap.timelineRange[0];
+				// cruiseMap.timelinePoint = cruiseMap.timelineRange[0];
 				valueElement.innerText = formatDate(now);
 			} else if (now > cruiseMap.timelineRange[1]) {
-				cruiseMap.timelinePoint = cruiseMap.timelineRange[1];
+				// cruiseMap.timelinePoint = cruiseMap.timelineRange[1];
 				valueElement.innerText = formatDate(now);
 			}
 		};
@@ -406,6 +413,8 @@ class DateFilter {
 					updateFilter();
 					clockBtn.classList.add('active');
 					isclockActive = true;
+					cruiseMap.timelinePoint = new Date();
+					shipSlider.setSlider(new Date(), cruiseMap);
 				}
 			});
 			window.addEventListener('filterchange', () => {
