@@ -319,8 +319,8 @@ class DateFilter {
 			createDate();
 		});
 
-		const handleTimeInputChange = () => {
-			timeValue = time.value.split(':').slice(0,2).join(':');
+		const updateTimeSlider = (timeValue: string) => {
+			console.log('timeValue', timeValue)
 			const [hours, minutes] = timeValue.split(':');
 			const totalMinutes = parseInt(hours) * 60 + parseInt(minutes);
 			const sliderValue = Math.round(totalMinutes);
@@ -335,6 +335,11 @@ class DateFilter {
 			let newPosition = percent * (sliderRect.width - thumbWidth) + thumbWidth / 2;
 			timeTooltip.style.left = `${newPosition}px`;
 			timeTooltip.textContent = timeValue;
+		};
+
+		const handleTimeInputChange = () => {
+			timeValue = time.value.split(':').slice(0,2).join(':');
+			updateTimeSlider(timeValue);
 			createDate();
 		};
 
