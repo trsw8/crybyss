@@ -29,7 +29,7 @@ export default class MapOverlay extends DOMComponent {
 				domNode.getElementsByClassName(className)[0],
 				layer,
 			);
-		new TimelineSlider(
+		const shipSlider = new TimelineSlider(
 			domNode.getElementsByClassName(
 				'map-overlay--range-dates'
 			)[0] as HTMLElement,
@@ -44,6 +44,7 @@ export default class MapOverlay extends DOMComponent {
 			document.getElementById('datepicker-input'),
 			document.getElementById('time-slider'),
 			document.getElementById('timeInput'),
+			shipSlider,
 			cruiseMap, api,
 		);
 
@@ -269,7 +270,7 @@ class SearchBox extends DOMComponent {
 class DateFilter {
 	declare private cruiseMap: CruiseMap;
 
-	constructor(dateInput: Element, timeSlider: Element, timeInput: Element, cruiseMap: CruiseMap, api: CruiseAPI) {
+	constructor(dateInput: Element, timeSlider: Element, timeInput: Element, shipSlider: TimelineSlider, cruiseMap: CruiseMap,  api: CruiseAPI) {
 		this.cruiseMap = cruiseMap;
 
 		const date = dateInput as HTMLInputElement;
@@ -295,6 +296,7 @@ class DateFilter {
 			}
 			
 			console.log('Создана дата:', finalDate);
+			shipSlider.setSlider(finalDate, cruiseMap);
 			
 		};
 
@@ -430,6 +432,27 @@ class TimelineSlider extends DOMComponent {
 				moveTimeline(point);
 			}
 		}));
+	}
+
+	public setSlider(value: Date, cruiseMap: CruiseMap) {
+		const [from, to] = cruiseMap.timelineRange;
+		const timeRange = +to - +from;
+		const timePoint = +value - +from;
+		let point = timePoint / timeRange;
+		if (point < 0) {
+			point = 0;
+		} else if (point > 1) {
+			point = 1;
+		}
+		const element = this.domNode as HTMLElement;
+		element.style.setProperty(
+			'--map-overlay--range-dates_point',
+			`${point}`
+		);
+		const slider = element.getElementsByClassName('rs-container')[0];
+		const valueElement = slider
+			.getElementsByClassName('rs-tooltip')[0] as HTMLElement;
+		valueElement.innerText = TimelineSlider.formatDate(value);
 	}
 
 	private static formatDate(value: Date): string {
