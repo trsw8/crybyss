@@ -297,7 +297,7 @@ class DateFilter {
 			console.log('Создана дата:', finalDate);
 			shipSlider.setSlider(finalDate, cruiseMap);
 			cruiseMap.timelinePoint = finalDate;
-			// window.dispatchEvent(new Event('filterchange'));
+			shipSlider.setSlider(finalDate, cruiseMap);
 		};
 
 		const handleDateChange = (event: Event) => {
