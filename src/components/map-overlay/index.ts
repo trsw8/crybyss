@@ -297,6 +297,7 @@ class DateFilter {
 			console.log('Создана дата:', finalDate);
 			shipSlider.setSlider(finalDate, cruiseMap);
 			cruiseMap.timelinePoint = finalDate;
+			// window.dispatchEvent(new Event('filterchange'));
 		};
 
 		const handleDateChange = (event: Event) => {
@@ -304,6 +305,7 @@ class DateFilter {
 			const [day, month, year] = date.split('/');
 			dateValue = `${month}/${day}/${year}`;
 			createDate();
+			window.dispatchEvent(new Event('filterchange'));
 		};
 
 		const handleTimeSliderChange = debounce(400, () => {
@@ -317,6 +319,7 @@ class DateFilter {
 					document.getElementById('timeDisplay').innerText = timeValue;
 			}
 			createDate();
+			window.dispatchEvent(new Event('filterchange'));
 		});
 
 		const updateTimeSlider = (timeValue: string) => {
@@ -340,14 +343,18 @@ class DateFilter {
 			timeValue = time.value.split(':').slice(0,2).join(':');
 			updateTimeSlider(timeValue);
 			createDate();
+			window.dispatchEvent(new Event('filterchange'));
 		};
 
 		window.addEventListener('datepicker-change', handleDateChange);
 		slider.addEventListener('input', handleTimeSliderChange);
 		time.addEventListener('input', handleTimeInputChange);
 
+		// let isTimerActive = true;
+
 		const updateFilter = () => {
 			const now = new Date();
+
 			window.dispatchEvent(new CustomEvent('timelinemove', {detail: {date: now}}));
 
 			const time = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0') + ':' + now.getSeconds().toString().padStart(2, '0');
@@ -378,17 +385,39 @@ class DateFilter {
 			}
 		};
 
+		let isclockActive = true;
+
 		document.addEventListener('DOMContentLoaded', () => {
 			updateFilter();
-			const timeUpdate = setInterval(() => {
-				updateFilter();
+			const interval = setInterval(() => {
+				if (isclockActive) {
+					updateFilter();
+				}
 			}, 1000);
+
+			const clockBtn = document.querySelector('.map-overlay--time') as HTMLElement;
+			clockBtn.addEventListener('click', () => {
+				if (clockBtn.classList.contains('active')) {
+					clockBtn.classList.remove('active');
+					isclockActive = false;
+					window.dispatchEvent(new Event('filterchange'));
+				} else {
+					window.dispatchEvent(new Event('filterchange'));
+					updateFilter();
+					clockBtn.classList.add('active');
+					isclockActive = true;
+				}
+			});
+			window.addEventListener('filterchange', () => {
+				if (clockBtn) clockBtn.classList.remove('active');
+				isclockActive = false;
+			});
 		});
 
 		window.addEventListener('cruisesDataLoaded', () => {
 			setTimeout(() => {
 				updateFilter();
-			}, 1000);
+			}, 200);
 		});
 
 	}
