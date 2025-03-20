@@ -436,6 +436,7 @@ class TimelineSlider extends DOMComponent {
 
 	public setSlider(value: Date, cruiseMap: CruiseMap) {
 		const [from, to] = cruiseMap.timelineRange;
+		console.log('cruiseMap', cruiseMap)
 		const timeRange = +to - +from;
 		const timePoint = +value - +from;
 		let point = timePoint / timeRange;
@@ -449,6 +450,7 @@ class TimelineSlider extends DOMComponent {
 			'--map-overlay--range-dates_point',
 			`${point}`
 		);
+		cruiseMap.timelinePoint = value;
 		const slider = element.getElementsByClassName('rs-container')[0];
 		const valueElement = slider
 			.getElementsByClassName('rs-tooltip')[0] as HTMLElement;
