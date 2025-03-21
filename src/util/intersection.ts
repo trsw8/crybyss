@@ -131,7 +131,7 @@ export default class IntersectionSearchTree<TMarker extends Marker = Marker> {
 
 	private getRect(marker: TMarker, rectCache: Map<TMarker, Rect> = new Map()) {
 		if (!rectCache.has(marker))
-			rectCache.set(marker, marker.rect());
+			rectCache.set(marker, marker?.rect());
 		return rectCache.get(marker);
 	}
 
