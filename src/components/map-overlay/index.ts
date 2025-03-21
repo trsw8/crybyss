@@ -293,7 +293,6 @@ class DateFilter {
 				finalDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
 			}
 			
-			console.log('Создана дата:', finalDate);
 			cruiseMap.timelinePoint = finalDate;
 			shipSlider.setSlider(finalDate, cruiseMap);
 			window.dispatchEvent(new CustomEvent('timeline-change', {detail: {date: cruiseMap.timelinePoint}}));
@@ -374,17 +373,13 @@ class DateFilter {
 			const valueElement = slider
 			.getElementsByClassName('rs-tooltip')[0] as HTMLElement;
 
-			// shipSlider.setSlider(now, cruiseMap);
-			// window.dispatchEvent(new CustomEvent('timeline-change', {detail: {date: now}}));
 			cruiseMap.timelinePoint = now;
 			shipSlider.setSlider(now, cruiseMap);
 			if (now > cruiseMap.timelineRange[0] && now < cruiseMap.timelineRange[1]) {
 				// cruiseMap.timelinePoint = now;
 			} else if (now < cruiseMap.timelineRange[0]) {
-				// cruiseMap.timelinePoint = cruiseMap.timelineRange[0];
 				valueElement.innerText = formatDate(now);
 			} else if (now > cruiseMap.timelineRange[1]) {
-				// cruiseMap.timelinePoint = cruiseMap.timelineRange[1];
 				valueElement.innerText = formatDate(now);
 			}
 		};
