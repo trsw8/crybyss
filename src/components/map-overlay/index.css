@@ -396,7 +396,7 @@ body .map-overlay--range-dates .rs-container .rs-pointer {
   z-index: 33;
 }
 
-@media all and (max-width: 639px) {
+@media all and (max-width: 767px) {
   .map-overlay--search-box [type="text"] {
     min-width: 300px;
   }
@@ -525,7 +525,7 @@ body .map-overlay--range-dates .rs-container .rs-pointer {
   }
 }
 
-@media (max-width: 639px) {
+@media (max-width: 800px) {
   .map-overlay {
     height: calc(50dvh + 130px);
   }
