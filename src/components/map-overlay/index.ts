@@ -350,6 +350,7 @@ class DateFilter {
 
 		const updateFilter = () => {
 			const now = new Date();
+			now.setHours(now.getUTCHours() + 3);
 
 			window.dispatchEvent(new CustomEvent('timeline-change', {detail: {date: now}}));
 
@@ -406,6 +407,9 @@ class DateFilter {
 			pointer.addEventListener('touchstart', onPointerDown);
 
 			clockBtn.addEventListener('click', () => {
+				const now = new Date();
+				now.setHours(now.getUTCHours() + 3);
+
 				if (clockBtn.classList.contains('active')) {
 					clockBtn.classList.remove('active');
 					isclockActive = false;
@@ -415,8 +419,8 @@ class DateFilter {
 					updateFilter();
 					clockBtn.classList.add('active');
 					isclockActive = true;
-					cruiseMap.timelinePoint = new Date();
-					shipSlider.setSlider(new Date(), cruiseMap);
+					cruiseMap.timelinePoint = now;
+					shipSlider.setSlider(now, cruiseMap);
 				}
 			});
 			window.addEventListener('filterchange', () => {
