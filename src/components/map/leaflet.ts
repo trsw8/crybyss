@@ -52,7 +52,8 @@ export default abstract class LeafletMap extends Map {
 
 		// линейка начало
 
-		const measurePoints: L.Circle<any>[] = [];
+		const measurePoints: L.CircleMarker<any>[] = [];
+		let isLine: boolean = false;
 
 		const removeMeasure = () => {
 			measurePoints.forEach(point => point.remove());
@@ -81,14 +82,21 @@ export default abstract class LeafletMap extends Map {
 			}
 		})
 
+		this.map.on('mousedown', () => {
+			if (isLine) {
+				removeMeasure();
+				isLine = false;
+			}
+		})
+
 		this.map.on('click', (event) => {
 			if (!measureOpenButton.classList.contains('active')) return;
 
 			var lat = event.latlng.lat; 
 			var lng = event.latlng.lng; 
 
-			const circle = L.circle([lat, lng], {
-				radius: 50,
+			const circle = L.circleMarker([lat, lng], {
+				radius: 5,
 				color: 'red',
 				fillColor: 'red',
 				fillOpacity: 1
@@ -98,16 +106,13 @@ export default abstract class LeafletMap extends Map {
 			if (measurePoints.length > 1) {
 				const lastPoint = measurePoints[measurePoints.length - 2];
 				const line = L.polyline([lastPoint.getLatLng(), circle.getLatLng()], {color: 'red'}).addTo(this.map);
+				isLine = true;				
 				
 				const distance = lastPoint.getLatLng().distanceTo(circle.getLatLng());
 				const popupContent = `${(distance / 1000).toFixed(2)} км`;
 				line.bindPopup(popupContent, {
 					className: 'measure__popup'
 				}).openPopup();
-			}
-
-			if (measurePoints.length > 2) {
-				removeMeasure();
 			}
 		});
 
