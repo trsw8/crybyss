@@ -145,9 +145,16 @@ body .rs-tooltip {
   min-width: 440px;
 }
 
-@media (max-width: 800px) {
+@media (max-width: 639px) {
   .map-overlay--search-box [type="text"] {
     border: 1px solid #eee;
+  }
+}
+@media (max-width: 1599px) {
+  .map-overlay--search-box [type="text"] {
+    width: 299px;
+    min-width: 299px;
+    font-size: 12px;
   }
 }
 
@@ -168,6 +175,10 @@ body .rs-tooltip {
   background-color: #fff;
   border-radius: 10px;
   padding: 20px;
+
+  @media (max-width: 1599px) {
+    width: 299px;
+  }
 }
 
 .map-overlay--search-overflow {
