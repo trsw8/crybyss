@@ -147,7 +147,7 @@ body .rs-tooltip {
 
 @media (max-width: 800px) {
   .map-overlay--search-box [type="text"] {
-  border: 1px solid #eee;
+    border: 1px solid #eee;
   }
 }
 
@@ -213,6 +213,7 @@ body .rs-tooltip {
   font-size: 16px;
   letter-spacing: -0.5px;
 }
+
 .map-overlay--search-checks .map-overlay--search-check {
   font-size: 16px;
   letter-spacing: -0.5px;
@@ -222,7 +223,7 @@ body .rs-tooltip {
   width: 100%;
 }
 
-.map-overlay--search-checks .custom-checkbox + label::before {
+.map-overlay--search-checks .custom-checkbox+label::before {
   transform: translateY(-5px);
 }
 
@@ -264,8 +265,7 @@ body .rs-tooltip {
   transition: 0.4s;
 }
 
-.map-overlay--btn svg * {
-}
+.map-overlay--btn svg * {}
 
 .map-overlay--btn.active,
 .map-overlay--btn:hover {
@@ -322,12 +322,16 @@ body .rs-tooltip {
   border: 1px solid rgba(0, 0, 0, 0.5);
   background: #fff;
   position: absolute;
-  width: calc(100% - 10%);
+  width: calc(100% - 20%);
   bottom: 20px;
   left: 50%;
   transform: translateX(-50%);
   max-width: 1500px;
   min-height: var(--height);
+
+  @media (max-width: 1919px) {
+    width: calc(100% - 25%);
+  }
 }
 
 .range--deco {
@@ -417,7 +421,8 @@ body .map-overlay--range-dates .rs-container .rs-pointer {
   height: 995px;
   pointer-events: none;
 }
-.map-overlay > * {
+
+.map-overlay>* {
   pointer-events: auto;
 }
 
@@ -429,15 +434,18 @@ body .map-overlay--range-dates .rs-container .rs-pointer {
   visibility: hidden;
   pointer-events: none;
 }
+
 .map-overlay--range-dates .rs-container {
   display: flex;
   align-items: center;
   cursor: pointer;
   padding: 12.5px 0;
 }
+
 .map-overlay--range-dates .rs-container .rs-bg {
   inset: auto;
 }
+
 .map-overlay--range-dates .rs-container .rs-pointer {
   left: calc(var(--map-overlay--range-dates_point, 0) * 100% - 12px);
 }
@@ -447,45 +455,55 @@ body .map-overlay--range-dates .rs-container .rs-pointer {
 .map-overlay svg {
   transition: none;
 }
+
 .map-overlay--search-box svg {
   width: 24px;
   height: 24px;
 }
+
 .map-overlay--search-title svg {
   width: 16px;
   height: 8px;
 }
+
 .map-overlay--btn svg {
   width: 34px;
   height: 34px;
   transition-duration: 0.4s;
   transition-property: fill stroke;
 }
+
 .map-overlay--btn-primary-stroke.active svg,
 .map-overlay--btn-primary-stroke:hover svg {
   stroke: #ffffff;
 }
+
 .map-overlay--btn-primary-stroke svg,
 .map-overlay--btn-primary-stroke.active:hover svg {
   stroke: var(--main);
 }
+
 .map-overlay--btn-primary-fill.active svg,
 .map-overlay--btn-primary-fill:hover svg {
   fill: #ffffff;
 }
+
 .map-overlay--btn-primary-fill svg,
 .map-overlay--btn-primary-fill.active:hover svg {
   fill: var(--main);
 }
+
 .asteriks svg {
   width: 24px;
   height: 24px;
   fill: var(--main);
 }
+
 .map-overlay--range-dates .rs-container .rs-pointer {
   position: relative;
   padding: 2px;
 }
+
 .map-overlay--range-dates .rs-container .rs-pointer svg {
   position: absolute;
   width: 20px;
@@ -497,7 +515,9 @@ body .map-overlay--range-dates .rs-container .rs-pointer {
 .map-overlay--menu {
   display: none;
 }
+
 @media (max-width: 1200px) {
+
   .map-overlay--ship,
   .map-overlay--anchor,
   .map-overlay--place {
@@ -536,7 +556,7 @@ body .map-overlay--range-dates .rs-container .rs-pointer {
     top: 15px;
     border-radius: 6px;
 
-    > svg {
+    >svg {
       width: 20px;
       height: 20px;
     }

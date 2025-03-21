@@ -12,6 +12,10 @@
     padding: 0 11%;
     text-transform: uppercase;
     letter-spacing: -1.9px;
+
+    @media (max-width: 1919px) {
+      padding: 0 12.6%;
+    }
   }
 }
 
@@ -21,6 +25,10 @@
   flex-wrap: nowrap;
   padding: 0 11%;
   gap: 20px;
+
+  @media (max-width: 1919px) {
+    padding: 0 12.6%;
+  }
 }
 
 ._label {
@@ -33,10 +41,11 @@
     display: inline-block;
     border: 1px solid #32739d;
     color: #32739d;
-    padding: 0px 6px;
+    padding: 0px 4px;
     width: 17.5px;
     height: 17.5px;
     border-radius: 50%;
+    font-size: 14px;
   }
 
   p {
