@@ -168,6 +168,10 @@ body .rs-tooltip {
   background-color: #fff;
   border-radius: 10px;
   padding: 20px;
+
+  @media (max-width: 550px) {
+    width: calc(100% - 90px);
+  }
 }
 
 .map-overlay--search-overflow {
@@ -531,14 +535,15 @@ body .map-overlay--range-dates .rs-container .rs-pointer {
 
 @media (max-width: 800px) {
   .map-overlay {
-    height: calc(50dvh + 130px);
+    /* height: calc(50dvh + 130px); */
+    height: 1000px;
   }
 
   .map-overlay--search-box {
     position: absolute;
     top: -65px;
-    left: 5%;
-    width: 90%;
+    left: 20px;
+    width: calc(100% - 40px);
 
     svg {
       width: 18px;
@@ -551,9 +556,9 @@ body .map-overlay--range-dates .rs-container .rs-pointer {
     display: none;
   }
 
-  .map-overlay--search-results {
+  /* .map-overlay--search-results {
     display: none;
-  }
+  } */
 
   .map-overlay--btn {
     position: absolute;
