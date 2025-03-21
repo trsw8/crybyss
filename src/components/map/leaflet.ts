@@ -50,28 +50,56 @@ export default abstract class LeafletMap extends Map {
 			this.events.dispatchEvent(new PointerEvent('pointermove', lat, lng));
 		});
 
+		// линейка начало
+
 		const measurePoints: L.Circle<any>[] = [];
 
+		const removeMeasure = () => {
+			measurePoints.forEach(point => point.remove());
+			measurePoints.length = 0;
+			this.map.eachLayer(layer => {
+				if (layer instanceof L.Polyline && !(layer instanceof L.Circle)) {
+					layer.remove();
+				}
+			});
+		}
+
+		const measureOpenButton = document.querySelector('.map-overlay--line');
+		measureOpenButton?.addEventListener('click', () => {
+			measureOpenButton.classList.toggle('active');
+			if (!measureOpenButton.classList.contains('active')) {
+				removeMeasure();
+				this.map.getContainer().style.cursor = 'grab';
+				this.map.on('dragstart', () => {
+					this.map.getContainer().style.cursor = 'grabbing';
+				});
+				this.map.on('dragend', () => {
+					this.map.getContainer().style.cursor = 'grab';
+				});
+			} else {
+				this.map.getContainer().style.cursor = 'crosshair';
+			}
+		})
 
 		this.map.on('click', (event) => {
-			var lat = event.latlng.lat; // Широта
+			if (!measureOpenButton.classList.contains('active')) return;
+
+			var lat = event.latlng.lat; 
 			var lng = event.latlng.lng; 
+
 			const circle = L.circle([lat, lng], {
 				radius: 50,
 				color: 'red',
-				fillColor: '#f03',
-				fillOpacity: 0.5
+				fillColor: 'red',
+				fillOpacity: 1
 			}).addTo(this.map);
 			measurePoints.push(circle);
-			console.log(measurePoints);
 
 			if (measurePoints.length > 1) {
 				const lastPoint = measurePoints[measurePoints.length - 2];
 				const line = L.polyline([lastPoint.getLatLng(), circle.getLatLng()], {color: 'red'}).addTo(this.map);
 				
-				// Расчет расстояния
 				const distance = lastPoint.getLatLng().distanceTo(circle.getLatLng());
-				console.log('distance', distance)
 				const popupContent = `${(distance / 1000).toFixed(2)} км`;
 				line.bindPopup(popupContent, {
 					className: 'measure__popup'
@@ -79,15 +107,11 @@ export default abstract class LeafletMap extends Map {
 			}
 
 			if (measurePoints.length > 2) {
-				measurePoints.forEach(point => point.remove());
-				measurePoints.length = 0;
-				this.map.eachLayer(layer => {
-					if (layer instanceof L.Polyline && !(layer instanceof L.Circle)) {
-						layer.remove();
-					}
-				});
+				removeMeasure();
 			}
 		});
+
+		// линейка конец
 	}
 
 	addLayer() {
