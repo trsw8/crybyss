@@ -160,6 +160,7 @@
   top: 70px;
   left: 0;
   width: 400px;
+  max-width: calc(100vw - 40px);
   background: white;
   border: 1px solid #ddd;
   border-radius: 10px;
@@ -226,6 +227,14 @@
   border-radius: 50%;
   border: 1px solid transparent;
   transition: border-color 0.3s ease;
+}
+
+@media (max-width: 450px) {
+  .day {
+    width: 30px;
+    height: 30px;
+    line-height: 30px;
+  }
 }
 
 .day:hover {
