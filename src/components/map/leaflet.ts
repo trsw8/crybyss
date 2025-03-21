@@ -17,6 +17,7 @@ import Map, {
 } from '.';
 import './index.css';
 import './leaflet.css';
+import * as L from 'leaflet';
 
 export default abstract class LeafletMap extends Map {
 
@@ -47,6 +48,41 @@ export default abstract class LeafletMap extends Map {
 		});
 		this.map.on('mousemove', ({latlng: {lat, lng}}) => {
 			this.events.dispatchEvent(new PointerEvent('pointermove', lat, lng));
+		});
+
+		const measurePoints: L.Circle<any>[] = [];
+		this.map.on('click', (event) => {
+			console.log('click');
+			var lat = event.latlng.lat; // Широта
+			var lng = event.latlng.lng; 
+			console.log(lat, lng);
+			const circle = L.circle([lat, lng], {
+				radius: 40,
+				color: 'red',
+				fillColor: '#f03',
+				fillOpacity: 0.5
+			}).addTo(this.map);
+			measurePoints.push(circle);
+			console.log(measurePoints);
+			if (measurePoints.length > 1) {
+				const lastPoint = measurePoints[measurePoints.length - 2];
+				const line = L.polyline([lastPoint.getLatLng(), circle.getLatLng()], {color: 'red'}).addTo(this.map);
+				
+				// Расчет расстояния
+				const distance = lastPoint.getLatLng().distanceTo(circle.getLatLng());
+				console.log('distance', distance)
+				const popupContent = `${(distance / 1000).toFixed(2)} км`;
+				line.bindPopup(popupContent).openPopup();
+			}
+			if (measurePoints.length > 2) {
+				measurePoints.forEach(point => point.remove());
+				measurePoints.length = 0;
+				this.map.eachLayer(layer => {
+					if (layer instanceof L.Polyline && !(layer instanceof L.Circle)) {
+						layer.remove();
+					}
+				});
+			}
 		});
 	}
 

@@ -91,6 +91,7 @@ export default class IntersectionSearchTree<TMarker extends Marker = Marker> {
 		const stack = [tree.root()];
 		while (stack.length > 0) {
 			const node = stack.pop();
+			if (!node) return intersections;
 			const nMarker = node.getValue();
 			if (
 				exclude.has(nMarker)
@@ -136,6 +137,7 @@ export default class IntersectionSearchTree<TMarker extends Marker = Marker> {
 	}
 
 	private corners(rect: Rect, dimension: 'x' | 'y'): [number, number] {
+		if (!rect) return [0, 0];
 		const {x, y, width, height} = rect;
 		return [
 			dimension === 'x' ? x : y,
