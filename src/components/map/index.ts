@@ -1,3 +1,4 @@
+import {Marker} from 'leaflet';
 import {Graph} from '@datastructures-js/graph';
 import {TypedEventTarget} from 'typescript-event-target';
 import {DOMComponent} from '../dom';
@@ -48,8 +49,8 @@ export abstract class Layer<
 	TMarker extends MapMarker = MapMarker
 > implements VisibilityControl {
 
-	abstract addMarker(marker: TMarker): void;
-	abstract addInteractiveMarker(marker: TMarker & InteractiveMapMarker): void;
+	abstract addMarker(marker: TMarker): Marker;
+	abstract addInteractiveMarker(marker: TMarker & InteractiveMapMarker): Marker;
 	abstract removeMarker(marker: TMarker): void;
 	abstract drawPolyline(polyline: MapPolyline): void;
 	abstract clearPolyline(polyline: MapPolyline): void;
@@ -86,6 +87,10 @@ export interface InteractiveMapMarker extends MapMarker {
 export interface MapPolyline {
 	points: (MapPolylinePoint | InteractiveMapPolylinePoint)[];
 	color: number;
+}
+
+export interface InteractiveMapPolyline extends MapPolyline {
+	events: Record<string, (event: any) => void>;
 }
 
 export interface MapPolylinePoint {

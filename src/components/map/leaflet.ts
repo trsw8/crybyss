@@ -12,7 +12,7 @@ import IntersectionSearchTree, {
 import Map, {
 	Layer,
 	MapMarker, InteractiveMapMarker,
-	MapPolyline,
+	MapPolyline, InteractiveMapPolyline,
 	PointerEvent, IntersectionEvent,
 } from '.';
 import './index.css';
@@ -181,10 +181,14 @@ class LeafletPane<
 			pane: this.compositePaneName('markerPane'),
 		});
 		this.syncMarker(mapMarker, lMarker);
+		return lMarker;
 	}
 
 	addInteractiveMarker(interactiveMarker: TMarker & InteractiveMapMarker) {
-		const lMarker = marker([interactiveMarker.lat, interactiveMarker.lng], {
+		interface popupMarker extends Marker<any> {
+			isOpen?: boolean;
+		};
+		const lMarker: popupMarker = marker([interactiveMarker.lat, interactiveMarker.lng], {
 			icon: new DOMIcon({
 				html: interactiveMarker.icon,
 				iconSize: interactiveMarker.iconSize
@@ -194,6 +198,7 @@ class LeafletPane<
 		// Удаление одноразового маркера
 		lMarker.on('popupclose', () => {
 			lMarker.unbindPopup();
+			lMarker.isOpen = false;
 		});
 
 		const contentDiv = document.createElement('div');
@@ -207,48 +212,50 @@ class LeafletPane<
 
 		// Создание и открытие одноразового маркера
 		const open = async () => {
-			if (!contentTask)
-				contentTask = interactiveMarker.popupContent().then(element => {
-					contentDiv.appendChild(element);
-				});
-			await contentTask;
-			const [topLeft, bottomRight] = this.autoPan;
-			lMarker.bindPopup(contentDiv, {
-				closeButton: false,
-				offset: [0, 0],
-				maxWidth: window.innerWidth - bottomRight.x - topLeft.x,
-				maxHeight: window.innerHeight - bottomRight.y - topLeft.y,
-				autoPanPaddingTopLeft: topLeft,
-				autoPanPaddingBottomRight: bottomRight,
-				pane: this.compositePaneName('popupPane'),
-			}).openPopup();
+			if (!lMarker.isOpen) {
+				lMarker.isOpen = true;
+				if (!contentTask)
+					contentTask = interactiveMarker.popupContent().then(element => {
+						contentDiv.appendChild(element);
+					});
+				await contentTask;
+				const [topLeft, bottomRight] = this.autoPan;
+				lMarker.bindPopup(contentDiv, {
+					closeButton: false,
+					closeOnClick: false,
+					offset: [0, 0],
+					maxWidth: window.innerWidth - bottomRight.x - topLeft.x,
+					maxHeight: window.innerHeight - bottomRight.y - topLeft.y,
+					autoPanPaddingTopLeft: topLeft,
+					autoPanPaddingBottomRight: bottomRight,
+					pane: this.compositePaneName('popupPane'),
+				}).openPopup();
+			}
 		};
 
-		lMarker.on('click', () => {
-			// Когда привязанный попап открыт,
-			// по клику срабатывает стандартное неотменяемое событие его закрытия.
-			// С этим нужно что-то сделать...
-			if (!lMarker.getPopup())
+		lMarker.on('mouseover', () => {
+			if (!lMarker.isOpen)
 				open();
 		});
-		lMarker.on('mouseover', open);
 		// Закрытие попапа только при выходе мыши за его пределы либо пределы маркера
 		lMarker.on('mouseout', event => {
 			const popup = lMarker.getPopup();
 			if (popup) {
 				const container = popup.getElement();
 				if (container.contains(
-					event.originalEvent.relatedTarget as Node
+					event.originalEvent?.relatedTarget as Node
 				)) {
 					container.addEventListener('mouseleave', () => {
 						popup.close();
 					});
-				} else
+				} else {
 					popup.close();
+				}
 			}
 		});
 
 		this.syncMarker(interactiveMarker, lMarker);
+		return lMarker;
 	}
 
 	removeMarker(marker: TMarker) {
@@ -328,7 +335,7 @@ class LeafletPane<
 	}
 
 	/** В данный момент никак не реализован InteractiveMapPolylinePoint */
-	drawPolyline(mapPolyline: MapPolyline) {
+	drawPolyline(mapPolyline: MapPolyline | InteractiveMapPolyline) {
 		const {points} = mapPolyline;
 		const color = `#${mapPolyline.color.toString(16)}`;
 		const layers: LLayer[] = [polyline(
@@ -353,6 +360,15 @@ class LeafletPane<
 					fillOpacity: 1,
 					renderer: this.renderer,
 				}));
+		}
+
+		if (( mapPolyline as InteractiveMapPolyline).events) {
+			for (const layer of layers) {
+				const events = ( mapPolyline as InteractiveMapPolyline ).events;
+				for (const type of Object.keys( events )) {
+					layer.on( type, events[ type ] );
+				}
+			}
 		}
 
 		this.representations.set(mapPolyline, layers);
