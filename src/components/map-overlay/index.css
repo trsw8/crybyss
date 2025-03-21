@@ -332,6 +332,10 @@ body .rs-tooltip {
   @media (max-width: 1919px) {
     width: calc(100% - 25%);
   }
+
+  @media (max-width: 1599px) {
+    width: calc(100% - 20px);
+  }
 }
 
 .range--deco {

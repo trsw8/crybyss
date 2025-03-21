@@ -23,7 +23,8 @@
 
 @media (max-width: 800px) {
   .map-container__map {
-    height: 50dvh;
+    /* height: 50dvh; */
+    height: 1000px;
     margin-bottom: 100px;
   }
 }
