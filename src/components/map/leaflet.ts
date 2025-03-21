@@ -66,7 +66,8 @@ export default abstract class LeafletMap extends Map {
 		}
 
 		const measureOpenButton = document.querySelector('.map-overlay--line');
-		measureOpenButton?.addEventListener('click', () => {
+
+		const toggleMeasure = () => {
 			measureOpenButton.classList.toggle('active');
 			if (!measureOpenButton.classList.contains('active')) {
 				removeMeasure();
@@ -80,6 +81,11 @@ export default abstract class LeafletMap extends Map {
 			} else {
 				this.map.getContainer().style.cursor = 'crosshair';
 			}
+		}
+
+		measureOpenButton?.addEventListener('click', () => {
+			console.log('click')
+			setTimeout(toggleMeasure, 100);
 		})
 
 		this.map.on('mousedown', () => {

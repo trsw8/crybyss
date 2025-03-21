@@ -276,14 +276,25 @@ body .rs-tooltip {
 
 .map-overlay--btn svg * {}
 
-.map-overlay--btn.active,
-.map-overlay--btn:hover {
+.map-overlay--btn.active {
   background-color: var(--main);
 }
 
-.map-overlay--btn,
-.map-overlay--btn.active:hover {
+@media (min-width: 801px) {
+  .map-overlay--btn:hover {
+    background-color: var(--main);
+  }
+}
+
+
+.map-overlay--btn {
   background-color: #fff;
+}
+
+@media (min-width: 801px) {
+  .map-overlay--btn.active:hover {
+    background-color: #fff;
+  }
 }
 
 .map-overlay--ship {
@@ -486,24 +497,44 @@ body .map-overlay--range-dates .rs-container .rs-pointer {
   transition-property: fill stroke;
 }
 
-.map-overlay--btn-primary-stroke.active svg,
-.map-overlay--btn-primary-stroke:hover svg {
+.map-overlay--btn-primary-stroke.active svg {
   stroke: #ffffff;
 }
 
-.map-overlay--btn-primary-stroke svg,
-.map-overlay--btn-primary-stroke.active:hover svg {
+@media (min-width: 801px) {
+  .map-overlay--btn-primary-stroke:hover svg {
+    stroke: #ffffff;
+  }
+}
+
+.map-overlay--btn-primary-stroke svg {
   stroke: var(--main);
 }
 
-.map-overlay--btn-primary-fill.active svg,
-.map-overlay--btn-primary-fill:hover svg {
+@media (min-width: 801px) {
+  .map-overlay--btn-primary-stroke.active:hover svg {
+    stroke: var(--main);
+  }
+}
+
+.map-overlay--btn-primary-fill.active svg {
   fill: #ffffff;
 }
 
-.map-overlay--btn-primary-fill svg,
-.map-overlay--btn-primary-fill.active:hover svg {
+@media (max-width: 800px) {
+  .map-overlay--btn-primary-fill:hover svg {
+    fill: #ffffff;
+  }
+}
+
+.map-overlay--btn-primary-fill svgg {
   fill: var(--main);
+}
+
+@media (min-width: 801px) {
+  .map-overlay--btn-primary-fill.active:hover svg {
+    fill: var(--main);
+  }
 }
 
 .asteriks svg {
