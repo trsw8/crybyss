@@ -2,11 +2,6 @@
   position: relative;
   display: grid;
   min-height: 100%;
-
-  @media (max-width: 1599px) {
-    margin-top: -10px;
-    min-height: 1000px;
-  }
 }
 
 .map-container__map,
@@ -26,9 +21,9 @@
   inset: 0;
 }
 
-@media (max-width: 1599px) {
+@media (max-width: 800px) {
   .map-container__map {
-    height: 1000px;
+    height: 50dvh;
     margin-bottom: 100px;
   }
 }
