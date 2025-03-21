@@ -169,11 +169,6 @@ body .rs-tooltip {
   border-radius: 10px;
   padding: 20px;
 
-  @media (max-width: 800px) {
-    top: -140px;
-    z-index: 1000;
-  }
-
   @media (max-width: 550px) {
     width: calc(100% - 90px);
   }
@@ -547,7 +542,7 @@ body .map-overlay--range-dates .rs-container .rs-pointer {
 
   .map-overlay--search-box {
     position: absolute;
-    top: -190px;
+    top: -65px;
     left: 20px;
     width: calc(100% - 40px);
 
