@@ -51,19 +51,20 @@ export default abstract class LeafletMap extends Map {
 		});
 
 		const measurePoints: L.Circle<any>[] = [];
+
+
 		this.map.on('click', (event) => {
-			console.log('click');
 			var lat = event.latlng.lat; // Широта
 			var lng = event.latlng.lng; 
-			console.log(lat, lng);
 			const circle = L.circle([lat, lng], {
-				radius: 40,
+				radius: 50,
 				color: 'red',
 				fillColor: '#f03',
 				fillOpacity: 0.5
 			}).addTo(this.map);
 			measurePoints.push(circle);
 			console.log(measurePoints);
+
 			if (measurePoints.length > 1) {
 				const lastPoint = measurePoints[measurePoints.length - 2];
 				const line = L.polyline([lastPoint.getLatLng(), circle.getLatLng()], {color: 'red'}).addTo(this.map);
@@ -72,8 +73,11 @@ export default abstract class LeafletMap extends Map {
 				const distance = lastPoint.getLatLng().distanceTo(circle.getLatLng());
 				console.log('distance', distance)
 				const popupContent = `${(distance / 1000).toFixed(2)} км`;
-				line.bindPopup(popupContent).openPopup();
+				line.bindPopup(popupContent, {
+					className: 'measure__popup'
+				}).openPopup();
 			}
+
 			if (measurePoints.length > 2) {
 				measurePoints.forEach(point => point.remove());
 				measurePoints.length = 0;
@@ -332,7 +336,7 @@ class LeafletPane<
 					return;
 				const {entries, graph} = this.intersections.check(
 					markers,
-					({marker}) => marker,
+					(obj) => obj && obj.marker ? obj.marker : null
 				);
 				this.events.dispatchEvent(new IntersectionEvent(
 					'intersect', entries, graph
@@ -349,7 +353,7 @@ class LeafletPane<
 				return;
 			this.plannedIntersectionChecks = new Set();
 			const {entries, graph} = this.intersections.checkAll(
-				({marker}) => marker
+				(obj) => obj && obj.marker ? obj.marker : null
 			);
 			if (entries.size > 0)
 				this.events.dispatchEvent(new IntersectionEvent(
@@ -365,7 +369,7 @@ class LeafletPane<
 	private checkSiblingsIntersections(marker: TMarker): void {
 		const {entries: siblings} = this.intersections.check(
 			new Set([this.intersectionMarkers.get(marker)]),
-			({marker}) => marker,
+			(obj) => obj && obj.marker ? obj.marker : null,
 		);
 		this.checkIntersections([...siblings]);
 	}
