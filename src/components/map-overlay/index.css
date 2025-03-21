@@ -521,7 +521,7 @@ body .map-overlay--range-dates .rs-container .rs-pointer {
   fill: #ffffff;
 }
 
-@media (max-width: 800px) {
+@media (min-width: 801px) {
   .map-overlay--btn-primary-fill:hover svg {
     fill: #ffffff;
   }
