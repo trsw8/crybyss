@@ -4,8 +4,8 @@
   min-height: 100%;
 
   @media (max-width: 800px) {
-    min-height: 1000px;
-    height: 1000px;
+    min-height: 69dvh;
+    height: 69dvh;
   }
 }
 
@@ -29,7 +29,7 @@
 @media (max-width: 800px) {
   .map-container__map {
     /* height: 50dvh; */
-    height: 1000px;
+    height: 69dvh;
     margin-bottom: 100px;
   }
 }
