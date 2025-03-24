@@ -306,7 +306,7 @@ class DateFilter {
 			window.dispatchEvent(new Event('filterchange'));
 		};
 
-		const handleTimeSliderChange = debounce(20, () => {
+		const handleTimeSliderChange = () => {
 			const tooltip = document.getElementById('time-tooltip')
 			const tooltipTime = tooltip.innerText;
 			if (tooltipTime.match(/^\d{1,2}:\d{2}(:\d{2})?$/)) {
@@ -318,7 +318,7 @@ class DateFilter {
 			}
 			createDate();
 			window.dispatchEvent(new Event('filterchange'));
-		});
+		};
 
 		const updateTimeSlider = (timeValue: string) => {
 			const [hours, minutes] = timeValue.split(':');
