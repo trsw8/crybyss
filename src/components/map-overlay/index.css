@@ -304,7 +304,7 @@ body .rs-tooltip {
   background-color: #fff;
 }
 
-.map-overlay--layers-hidden {
+.map-overlay--layers .map-overlay--layers-hidden {
   display: none;
 }
 
