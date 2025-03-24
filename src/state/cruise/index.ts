@@ -26,6 +26,9 @@ export interface Cruise {
 	ship: () => Promise<Ship>;
 	company: () => Promise<Company>;
 	stops: TrackStop[];
+	sights: TrackStop[];
+	sunrises: TrackPoint[];
+	sunsets: TrackPoint[];
 	route: CruiseRoute;
 }
 
@@ -54,13 +57,14 @@ export interface TrackStop {
 	lat: number;
 	lng: number;
 	type: LocationType;
-	arrival: Date;
-	departure: Date;
+	arrival?: Date;
+	departure?: Date;
 	details: TrackStopDetails;
 }
 
 export interface TrackStopDetails {
 	name: string;
+	category?: string;
 	description: string;
 	image?: string;
 	link?: string;

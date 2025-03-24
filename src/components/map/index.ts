@@ -49,8 +49,8 @@ export abstract class Layer<
 	TMarker extends MapMarker = MapMarker
 > implements VisibilityControl {
 
-	abstract addMarker(marker: TMarker): Marker;
-	abstract addInteractiveMarker(marker: TMarker & InteractiveMapMarker): Marker;
+	abstract addMarker(marker: TMarker): void;
+	abstract addInteractiveMarker(marker: TMarker & InteractiveMapMarker): void;
 	abstract removeMarker(marker: TMarker): void;
 	abstract drawPolyline(polyline: MapPolyline): void;
 	abstract clearPolyline(polyline: MapPolyline): void;
@@ -78,6 +78,7 @@ export interface MapMarker {
 	events: TypedEventTarget<{
 		locationchange: Event,
 	}>;
+	marker?: Marker | undefined;
 }
 
 export interface InteractiveMapMarker extends MapMarker {

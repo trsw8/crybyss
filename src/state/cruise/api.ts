@@ -10,11 +10,15 @@ const apiURL = 'https://krubiss.ru/api';
 const apiEntries = {
 	start : 'cruis/start/',
 	cruiseByID : 'cruis/byID/',
+	ships : '/api/ship/all/',
 	shipByID : 'ship/byID/',
 	stopByID : 'stop/byID/',
 	search : 'search/title/',
 	cruisesByShipIDS : 'cruis/shipid/',
-	shipCompanies : 'ship/companies/'
+	shipCompanies : 'ship/companies/',
+	gateways : '/api/gateway/all/',
+	sights : '/api/pois/all/',
+	sightCategories : '/api/pois/cats/'
 };
 
 class SortedList<T extends { id: string }> implements Iterable<T> {
@@ -138,65 +142,83 @@ class CruiseData implements Cruise {
 	declare url: string;
 	declare shipId: string;
 	declare stops: TrackStop[];
+	declare sights: TrackStop[];
+	declare sunrises: TrackPoint[];
+	declare sunsets: TrackPoint[];
 	declare route: CruiseRoute;
 
 	constructor( data: any ) {
-		const route = new CruiseRoute(
-			data.POINTS
-				.filter(Boolean)
-				.map(({
-					isTrackStop,
-					pointArrivalDate,
-					Sunrise,
-					Sunset,
-					coordinates: {latitude: lat, longitude: lng},
-					angle
-				}: any) => ({
-					lat,
-					lng,
-					arrival: parseDate(pointArrivalDate),
-					isStop: !!isTrackStop,
-					sunrise: !!Sunrise,
-					sunset: !!Sunset,
-					angle: !isTrackStop && isFinite( angle ) ? Number( angle ) : undefined
-				}))
-				.sort( ( a: TrackPoint, b: TrackPoint ) => +a.arrival - +b.arrival )
-				.reduce( ( ret: TrackPoint[], point: TrackPoint ) => {
-					const lastPoint = ret.length ? ret[ ret.length - 1 ] : undefined;
-					if (!lastPoint ||
-						+point.arrival - +lastPoint.arrival >= 500 ||
-						lastPoint.isStop !== point.isStop ||
-						lastPoint.sunrise !== point.sunrise ||
-						lastPoint.sunset !== point.sunset
-					) {
-						ret.push( point );
-					}
-					return ret;
-				}, [] )
-		);
+		const [ points, sunrises, sunsets ] = data.POINTS
+			.filter(Boolean)
+			.map(({
+				isTrackStop,
+				pointArrivalDate,
+				Sunrise,
+				Sunset,
+				coordinates: {latitude: lat, longitude: lng},
+				angle
+			}: any) => ({
+				lat,
+				lng,
+				arrival: parseDate(pointArrivalDate),
+				isStop: !!isTrackStop,
+				sunrise: !!Sunrise,
+				sunset: !!Sunset,
+				angle: !isTrackStop && isFinite( angle ) ? Number( angle ) : undefined
+			}))
+			.sort( ( a: TrackPoint, b: TrackPoint ) => +a.arrival - +b.arrival )
+			.reduce( ( [ points, sunrises, sunsets ]: [ TrackPoint[], TrackPoint[], TrackPoint[] ], point: TrackPoint ) => {
+				if (point.sunrise) sunrises.push( point );
+				if (point.sunset) sunsets.push( point );
+				const lastPoint = points.length ? points[ points.length - 1 ] : undefined;
+				if (!lastPoint ||
+					+point.arrival - +lastPoint.arrival >= 500 ||
+					lastPoint.isStop !== point.isStop
+				) {
+					points.push( point );
+				}
+				return [ points, sunrises, sunsets ];
+			}, [ [], [], [] ] );
+		const route = new CruiseRoute( points );
 
 		const stops = ( data.PROPERTY_TRACKSTOPS_VALUE || [] ).map(
-			(data: any): TrackStop =>
-			({
-				id: data.CR_ID,
-				lat: data.DETAIL.coordinates.latitude,
-				lng: data.DETAIL.coordinates.longitude,
-				type: LocationType.REGULAR,
-				arrival: parseDate( data.CR_ARRIVAL ),
-				departure: parseDate( data.CR_DEPARTURE ),
-				details: {
-					name: data.DETAIL.NAME,
-					description: data.DETAIL.DETAIL_TEXT,
-					//~ image: data.DETAIL.DETAIL_PICTURE
-					// Это для тестирования. После переноса приложения на основной сайт проверку url можно будет убрать
-					image: ( /^https?:\/\//.test( data.DETAIL.DETAIL_PICTURE ) ? '' : siteURL ) + data.DETAIL.DETAIL_PICTURE,
-					//~ link: data.DETAIL.URL
-					// Это для тестирования. После переноса приложения на основной сайт проверку url можно будет убрать
-					link: ( /^https?:\/\//.test( data.DETAIL.URL ) ? '' : siteURL ) + data.DETAIL.URL,
+			(data: any): TrackStop => {
+				if (cache.stops[ data.CR_ID ]) {
+					return cache.stops[ data.CR_ID ];
 				}
-			})
+				else {
+					return {
+						id: data.CR_ID,
+						lat: data.DETAIL.coordinates.latitude,
+						lng: data.DETAIL.coordinates.longitude,
+						type: LocationType.REGULAR,
+						arrival: parseDate( data.CR_ARRIVAL ),
+						departure: parseDate( data.CR_DEPARTURE ),
+						details: {
+							name: data.DETAIL.NAME,
+							description: data.DETAIL.DETAIL_TEXT,
+							//~ image: data.DETAIL.DETAIL_PICTURE
+							// Это для тестирования. После переноса приложения на основной сайт проверку url можно будет убрать
+							image: ( /^https?:\/\//.test( data.DETAIL.DETAIL_PICTURE ) ? '' : siteURL ) + data.DETAIL.DETAIL_PICTURE,
+							//~ link: data.DETAIL.URL
+							// Это для тестирования. После переноса приложения на основной сайт проверку url можно будет убрать
+							link: ( /^https?:\/\//.test( data.DETAIL.URL ) ? '' : siteURL ) + data.DETAIL.URL,
+						}
+					};
+				}
+			}
 		);
-
+		
+		const sights = Object.values(
+			data.POIS.reduce( ( ret: Record<string, TrackStop>, item: any ) => {
+				if (!ret[ item.poiId ]) {
+					const sight = cache.sights[ item.poiId ];
+					if (sight) ret[ item.poiId ] = sight;
+				}
+				return ret;
+			}, {} )
+		);
+		
 		Object.assign( this, {
 			id: data.ID,
 			name: data.NAME,
@@ -208,6 +230,9 @@ class CruiseData implements Cruise {
 			url: data.PROPERTY_WEB_VALUE,
 			shipId: data.PROPERTY_SHIPID_VALUE,
 			stops,
+			sights,
+			sunsets,
+			sunrises,
 			route
 		} );
 	}
@@ -309,9 +334,9 @@ class APIConnector {
 	/// @todo: добавить обработку ошибок
 	async send(url: string, data: any = {}): Promise<any> {
 		const response = await fetch(`${this.baseUrl}/${url}`, {
-			method: 'POST',
-			body: JSON.stringify(data),
-			headers: {'content-type': 'application/json'},
+			//~ method: 'POST',
+			//~ body: JSON.stringify(data),
+			//~ headers: {'content-type': 'application/json'},
 		});
 		return await response.json();
 	}
@@ -359,21 +384,55 @@ async function fetchShip( id: string ) : Promise<Ship> {
 	return ret;
 }
 
-async function fetchStartCruises() : Promise<void> {
-	//~ const [ data, companies ] = await Promise.all([ connector.send( apiEntries.start ), fetchCompanies() ]);
-	const data = await connector.send( apiEntries.start );
-	const allShips: Record<string, any> = {};
-	for (const cruise of Object.values( data ?? {} ) as any) {
-		if (dataIsSane( 'cruise', cruise )) {
-			cache.cruises.add( new CruiseData( cruise ) );
-			if (cache.cruises.item( cruise.ID ).shipId) {
-				allShips[ cache.cruises.item( cruise.ID ).shipId ] = true;
-			}
+async function fetchAllShips() : Promise<void> {
+	const ships = Object.values( await connector.send( apiEntries.ships ) ) as any;
+	if (!ships) throw new Error( 'Invalid data' );
+	for (const ship of ships) {
+		const result = new ShipData( ship );
+		//~ if (ret.companyId) await cache.company( ret.companyId );
+		if (result?.id) {
+			cache.ships.add( result );
+		}
+		if (result.companyId && !cache.company( result.companyId )) {
+			cache.companies.add( new CompanyData( ship.COMPANY ) );
 		}
 	}
-	( await Promise.allSettled( Object.keys( allShips ).map( fetchShip ) ) )
-// @ts-ignore
-		.forEach( ({ value }) => { if (value?.id) cache.ships.add( value ) } );
+}
+
+async function fetchSights(): Promise<void> {
+	const data = await connector.send( apiEntries.sights );
+	cache.sights = ( Object.values( data ) || [] ).reduce(
+		( sights: Record<string, TrackStop>, data: any ) => {
+			sights[ data.XML_ID ] = {
+				id: data.XML_ID,
+				lat: data.coordinates.latitude,
+				lng: data.coordinates.longitude,
+				type: LocationType.SHOWPLACE,
+				//~ arrival: parseDate( data.CR_ARRIVAL ),
+				//~ departure: parseDate( data.CR_DEPARTURE ),
+				details: {
+					name: data.NAME,
+					description: data.DETAIL_TEXT,
+					//~ image: `/upload/api/pois/${data.IMAGE}`,
+					// Это для тестирования. После переноса приложения на основной сайт проверку url можно будет убрать
+					image: `${siteURL}/upload/api/pois/${data.IMAGE}`,
+					//~ link: data.DETAIL.URL
+					// Это для тестирования. После переноса приложения на основной сайт проверку url можно будет убрать
+					//~ link: ( /^https?:\/\//.test( data.DETAIL.URL ) ? '' : siteURL ) + data.DETAIL.URL,
+				}
+			};
+			return sights;
+		}, {}
+	) as Record<string, TrackStop>;
+}
+
+async function fetchStartCruises() : Promise<void> {
+	const [ cruises ] = await Promise.all([ connector.send( apiEntries.start ), fetchAllShips(), fetchSights() ]);
+	for (const cruise of Object.values( cruises ?? {} ) as any) {
+		if (dataIsSane( 'cruise', cruise )) {
+			cache.cruises.add( new CruiseData( cruise ) );
+		}
+	}
 	await cache.setFilter({});
 	return;
 }
@@ -387,6 +446,8 @@ class Cache {
 		+a.arrival - +b.arrival ||
 		a.name.localeCompare( b.name, 'ru', { ignorePunctuation: true } )
 	);
+	stops: Record<string, TrackStop> = {};
+	sights: Record<string, TrackStop> = {};
 }
 
 class CruiseAPICache extends Cache implements CruiseAPI {
@@ -418,7 +479,7 @@ class CruiseAPICache extends Cache implements CruiseAPI {
 			return ret;
 		}, undefined );
 	}
-
+	
 	//~ async company( id : string ) : Promise<Company> {
 	company( id : string ) : Company {
 		//~ if (this.companies[ id ]) return this.companies[ id ];

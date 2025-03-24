@@ -173,15 +173,14 @@ class LeafletPane<
 	}
 
 	addMarker(mapMarker: TMarker) {
-		const lMarker = marker([mapMarker.lat, mapMarker.lng], {
+		mapMarker.marker = marker([mapMarker.lat, mapMarker.lng], {
 			icon: new DOMIcon({
 				html: mapMarker.icon,
 				iconSize: mapMarker.iconSize
 			}),
 			pane: this.compositePaneName('markerPane'),
 		});
-		this.syncMarker(mapMarker, lMarker);
-		return lMarker;
+		this.syncMarker(mapMarker);
 	}
 
 	addInteractiveMarker(interactiveMarker: TMarker & InteractiveMapMarker) {
@@ -195,6 +194,7 @@ class LeafletPane<
 			}),
 			pane: this.compositePaneName('markerPane'),
 		});
+		interactiveMarker.marker = lMarker;
 		// Удаление одноразового маркера
 		lMarker.on('popupclose', () => {
 			lMarker.unbindPopup();
@@ -254,8 +254,7 @@ class LeafletPane<
 			}
 		});
 
-		this.syncMarker(interactiveMarker, lMarker);
-		return lMarker;
+		this.syncMarker(interactiveMarker);
 	}
 
 	removeMarker(marker: TMarker) {
@@ -263,12 +262,14 @@ class LeafletPane<
 		this.removePath(marker);
 		this.intersections.remove(this.intersectionMarkers.get(marker));
 		this.intersectionMarkers.delete(marker);
+		marker.marker = undefined;
 	}
 
 	/** Связать маркер приложения и маркер leaflet */
-	private syncMarker(marker: TMarker, lMarker: Marker): void {
+	private syncMarker(marker: TMarker): void {
+		const lMarker = marker.marker;
 		this.representations.set(marker, [lMarker]);
-		const intersectionMarker = new IntersectionMapMarker(marker, lMarker);
+		const intersectionMarker = new IntersectionMapMarker(marker);
 		this.intersectionMarkers.set(marker, intersectionMarker);
 		this.intersections.add(intersectionMarker);
 		marker.events.addEventListener('locationchange', () => {
@@ -336,48 +337,52 @@ class LeafletPane<
 
 	/** В данный момент никак не реализован InteractiveMapPolylinePoint */
 	drawPolyline(mapPolyline: MapPolyline | InteractiveMapPolyline) {
-		const {points} = mapPolyline;
-		const color = `#${mapPolyline.color.toString(16)}`;
-		const layers: LLayer[] = [polyline(
-			points,
-			{
-				color,
-				weight: 3,
-				renderer: this.renderer,
-			}
-		)];
-
-		if (points.length) {
-			for (const {lat, lng} of [
-				points[0],
-				points[points.length - 1],
-			])
-				layers.push(circleMarker([lat, lng], {
+		if (!this.representations.has( mapPolyline )) {
+			const {points} = mapPolyline;
+			const color = `#${mapPolyline.color.toString(16)}`;
+			const layers: LLayer[] = [polyline(
+				points,
+				{
 					color,
-					radius: 8,
-					stroke: false,
-					fill: true,
-					fillOpacity: 1,
+					weight: 3,
 					renderer: this.renderer,
-				}));
-		}
+				}
+			)];
 
-		if (( mapPolyline as InteractiveMapPolyline).events) {
-			for (const layer of layers) {
-				const events = ( mapPolyline as InteractiveMapPolyline ).events;
-				for (const type of Object.keys( events )) {
-					layer.on( type, events[ type ] );
+			if (points.length) {
+				for (const {lat, lng} of [
+					points[0],
+					points[points.length - 1],
+				])
+					layers.push(circleMarker([lat, lng], {
+						color,
+						radius: 8,
+						stroke: false,
+						fill: true,
+						fillOpacity: 1,
+						renderer: this.renderer,
+					}));
+			}
+
+			if (( mapPolyline as InteractiveMapPolyline).events) {
+				for (const layer of layers) {
+					const events = ( mapPolyline as InteractiveMapPolyline ).events;
+					for (const type of Object.keys( events )) {
+						layer.on( type, events[ type ] );
+					}
 				}
 			}
-		}
 
-		this.representations.set(mapPolyline, layers);
-		for (const path of layers)
-			path.addTo(this.map);
+			this.representations.set(mapPolyline, layers);
+			for (const path of layers)
+				path.addTo(this.map);
+		}
 	}
 
 	clearPolyline(polyline: MapPolyline) {
-		this.removePath(polyline);
+		if (this.representations.has( polyline )) {
+			this.removePath(polyline);
+		}
 	}
 
 	private *panes(): Iterable<HTMLElement> {
@@ -394,6 +399,7 @@ class LeafletPane<
 	private removePath(key: any): void {
 		for (const layer of this.representations.get(key) ?? [])
 			layer.removeFrom(this.map);
+		this.representations.delete(key);
 	}
 
 }
@@ -430,7 +436,6 @@ class IntersectionMapMarker<
 > implements IntersectionMarker {
 
 	declare marker: TMarker;
-	declare lMarker: Marker;
 
 	get x() {
 		return this.marker.lng;
@@ -440,13 +445,12 @@ class IntersectionMapMarker<
 		return -this.marker.lat;
 	}
 
-	constructor(marker: TMarker, lMarker: Marker) {
+	constructor(marker: TMarker) {
 		this.marker = marker;
-		this.lMarker = lMarker;
 	}
 
 	rect() {
-		const icon = this.lMarker.options.icon as ExposedDivIcon;
+		const icon = this.marker.marker.options.icon as ExposedDivIcon;
 		return icon.container.getBoundingClientRect();
 	}
 

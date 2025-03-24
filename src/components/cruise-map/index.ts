@@ -1,3 +1,4 @@
+import {Marker} from 'leaflet';
 import {TypedEventTarget} from 'typescript-event-target';
 import showplaceMarkerIcon from '../../icons/showplace-marker.png';
 import stopMarkerIcon from '../../icons/stop-marker.png';
@@ -5,13 +6,15 @@ import linerIcon from '../../icons/liner.svg';
 import linersIcon from '../../icons/liners.svg';
 import showplaceIcon from '../../icons/showplace.svg';
 import stopIcon from '../../icons/stop.svg';
+import sunriseIcon from '../../icons/sunrise.svg';
+import sunsetIcon from '../../icons/sunset.svg';
 import linerMarkerIcon from '../../icons/liner-marker.svg';
 import {svgAsset} from '../../util';
 import Text from '../../state/text';
-import {Cruise, Company, Ship, TrackStop, LocationType} from '../../state/cruise';
+import {Cruise, Company, Ship, TrackStop, TrackPoint, LocationType} from '../../state/cruise';
 import WorldMap, {
 	VisibilityControl, Layer,
-	InteractiveMapMarker, MapPolyline, InteractiveMapPolyline
+	MapMarker, InteractiveMapMarker, MapPolyline, InteractiveMapPolyline
 } from '../map';
 import LocatedItemDescription, {
 	LocatedItemDescriptionGroup,
@@ -32,35 +35,89 @@ export default class CruiseMap {
 
 	declare private _trackLayer: Layer;
 	get trackLayer(): VisibilityControl {return this._trackLayer;}
+	declare private _sunsetsLayer: Layer;
+	get sunsetsLayer(): VisibilityControl {return this._sunsetsLayer;}
+	declare private _sunrisesLayer: Layer;
+	get sunrisesLayer(): VisibilityControl {return this._sunrisesLayer;}
+	declare private _gatewaysLayer: Layer;
+	get gatewaysLayer(): VisibilityControl {return this._gatewaysLayer;}
 	declare private _shipLayer: Layer<ShipMarker>;
 	get shipLayer(): VisibilityControl {return this._shipLayer;}
-	declare private _stopLayer: Layer;
-	get stopLayer(): VisibilityControl {return this._stopLayer;}
-	declare private _showplaceLayer: Layer;
-	get showplaceLayer(): VisibilityControl {return this._showplaceLayer;}
-
-	private _cruises: Map<unknown, CruiseAssets> = new Map();
-	get cruises(): Cruise[] {
-		const result = [];
-		for (const {cruise} of this._cruises.values())
-			result.push(cruise);
-		return result;
+	declare private _stopsLayer: Layer;
+	get stopsLayer(): VisibilityControl {return this._stopsLayer;}
+	declare private _sightsLayer: Layer;
+	get sightsLayer(): VisibilityControl {return this._sightsLayer;}
+	
+	addInteractiveMarker(layer: 'track' | 'sunsets' | 'sunrises' | 'gateways' | 'ship' | 'stops' | 'sights', interactiveMarker: any) {
+		this[ `_${layer}Layer` ].addInteractiveMarker( interactiveMarker );
 	}
+
+	removeMarker(layer: 'track' | 'sunsets' | 'sunrises' | 'gateways' | 'ship' | 'stops' | 'sights', marker: any) {
+		this[ `_${layer}Layer` ].removeMarker( marker );
+	}
+
+	drawPolyline(layer: 'track' | 'sunsets' | 'sunrises' | 'gateways' | 'ship' | 'stops' | 'sights', polyline: MapPolyline) {
+		this[ `_${layer}Layer` ].drawPolyline( polyline );
+	}
+
+	clearPolyline(layer: 'track' | 'sunsets' | 'sunrises' | 'gateways' | 'ship' | 'stops' | 'sights', polyline: MapPolyline) {
+		this[ `_${layer}Layer` ].clearPolyline( polyline );
+	}
+
+	private _cruises: Map<string, CruiseAssets> = new Map();
+	cruiseAsset( id: string ) {
+		return this._cruises.get( id );
+	}
+	//~ get cruises(): Cruise[] {
+		//~ const result = [];
+		//~ for (const {cruise} of this._cruises.values())
+			//~ result.push(cruise);
+		//~ return result;
+	//~ }
 
 	private _ships: Map<string, ShipMarker> = new Map();
-	get ships(): Ship[] {
-		const result = [];
-		for (const {ship} of this._ships.values())
-			result.push(ship);
-		return result;
+	shipMarker( id: string ) {
+		return this._ships.get( id );
 	}
+	get ships(): Ship[] { return [ ...this._ships.values() ].map( item => item.ship ); }
 
-	declare private text: Text;
+	declare private _text: Text;
+	get text() { return this._text; }
 	/** Счетчики остановок / достопримечательностей для избежания повторного их добавления */
-	private attachedLocations: Map<unknown, {
+	private _attachedStops: Record<string, {
 		marker: InteractiveMapMarker,
 		timesAttached: number,
-	}> = new Map();
+	}> = {};
+	private _attachedSights: Record<string, {
+		marker: InteractiveMapMarker,
+		timesAttached: number,
+	}> = {};
+	
+	attachLocationMarker( id: string, type: LocationType, lat: number, lng: number, popup: InteractiveMapMarker['popupContent'] ): LocationMarker {
+		const counter = type === LocationType.SHOWPLACE ? this._attachedSights : this._attachedStops;
+		const layer = type === LocationType.SHOWPLACE ? this._sightsLayer : this._stopsLayer;
+		if (!!counter[ id ]) {
+			counter[ id ].timesAttached++;
+		}
+		else {
+			const marker = new LocationMarker( type, lat, lng, popup );
+			layer.addInteractiveMarker( marker );
+			counter[ id ] = { marker, timesAttached: 1 };
+		}
+		return counter[ id ].marker;
+	}
+	
+	detachLocationMarker( id: string, type: LocationType ) {
+		const counter = type === LocationType.SHOWPLACE ? this._attachedSights : this._attachedStops;
+		const layer = type === LocationType.SHOWPLACE ? this._sightsLayer : this._stopsLayer;
+		if (!!counter[ id ]) {
+			counter[ id ].timesAttached--;
+			if (!counter[ id ].timesAttached) {
+				layer.removeMarker( counter[ id ].marker );
+				delete counter[ id ];
+			}
+		}
+	}
 
 	private _timelineRange: [Date, Date] = [new Date(0), new Date(0)];
 	/** Начальная дата первого и конечная дата второго круиза */
@@ -81,27 +138,15 @@ export default class CruiseMap {
 			const cruise = shipMarker.ship.cruiseOn( value );
 			const { cruiseId } = shipMarker;
 			if (cruise?.id !== shipMarker.cruiseId) {
-				if (shipMarker.cruiseId) this.removeCruise( shipMarker.cruiseId );
-				if (cruise?.id) this.addCruise( cruise )
-				.then( () => {
-					shipMarker.cruiseId = cruise?.id;
-					this._shipLayer.removeMarker(shipMarker);
-					this.createShipMarker( shipMarker );
-
-					if (shipMarker.activeTrack || shipMarker.trackLocked) {
-						if (shipMarker.activeTrack) {
-							this._trackLayer.clearPolyline( shipMarker.activeTrack );
-						}
-						shipMarker.activeTrack = undefined;
-						if (shipMarker.cruiseId) {
-							const cruise = this._cruises.get( shipMarker.cruiseId );
-							if (cruise?.polyline) {
-								this._trackLayer.drawPolyline( cruise.polyline );
-								shipMarker.activeTrack = cruise.polyline;
-							}
-						}
-					}
-				} );
+				if (shipMarker.cruiseId){
+					this.removeCruise( shipMarker.cruiseId );
+					shipMarker.cruiseId = undefined;
+				}
+				if (cruise?.id) this.addCruise( cruise );
+				shipMarker.cruiseId = cruise?.id;
+				if (shipMarker.cruiseId && ( shipMarker.isHover || shipMarker.trackLocked )) {
+					this._cruises.get( shipMarker.cruiseId ).showTrack( shipMarker.marker );
+				}
 			}
 
 			shipMarker.move(value);
@@ -117,12 +162,27 @@ export default class CruiseMap {
 	constructor(map: WorldMap, text: Text) {
 		this.map = map;
 		this._trackLayer = map.addLayer();
+		this._sunsetsLayer = map.addLayer();
+		this._sunrisesLayer = map.addLayer();
+		this._gatewaysLayer = map.addLayer();
+		this._stopsLayer = map.addLayer();
+		this._sightsLayer = map.addLayer();
 		this._shipLayer = map.addLayer();
-		this._stopLayer = map.addLayer();
-		this._showplaceLayer = map.addLayer();
 
-		this.text = text;
+		this._text = text;
 
+		for (const layer of [ 'sunsets', 'sunrises', 'gateways', 'stops', 'sights' ]) {
+			const ucLayer = layer[0].toUpperCase() + layer.slice(1);
+			const mapLayer: VisibilityControl = ( this as any )[ `_${layer}Layer` ];
+			mapLayer.events.addEventListener( 'visibilitychange', () => {
+				if (mapLayer.visible) {
+					for (const cruise of this._cruises.values()) {
+						( cruise as any )[ `show${ucLayer}` ]();
+					}
+				}
+			} );
+		}
+		
 		// Пока n-ному маркеру из сегмента пересечений добавляется кратное n значение сдвига.
 		// Не самое красивое решение...
 		this._shipLayer.events.addEventListener('intersect', ({
@@ -142,115 +202,22 @@ export default class CruiseMap {
 		});
 	}
 
-	async addCruise(cruise: Cruise): Promise<void> {
-		const {id, stops} = cruise;
-		if (this._cruises.has(id))
+	addCruise(cruise: Cruise): Promise<void> {
+		if (this._cruises.has( cruise.id ))
 			return;
-		const company = await cruise.company();
 
-		const points = cruise.route.points.map(({lat, lng}) => ({lat, lng}));
-		const polyline = { points, color: company.color };
-
-		for (const stop of stops) {
-			const {id, lat, lng, type} = stop;
-			if (this.attachedLocations.has(id))
-				this.attachedLocations.get(id).timesAttached += 1;
-			else {
-				const marker = new LocationMarker(
-					type, lat, lng,
-					() => this.locationPopup(company, stop),
-				);
-				this.locationLayer(stop).addInteractiveMarker(marker);
-				this.attachedLocations.set(id, {marker, timesAttached: 1});
-			}
-		}
-
-		this._cruises.set(id, {cruise, polyline});
+		this._cruises.set( cruise.id, new CruiseAssets( this, cruise ) );
 	}
 
 	removeCruise(id: string): void {
 		if (!this._cruises.has(id))
 			return;
-		const {cruise, polyline} = this._cruises.get(id);
-		const {stops} = cruise;
-		this._cruises.delete(id);
-		
-		for (const stop of stops) {
-			const {id} = stop;
-			const attachedLocation = this.attachedLocations.get(id);
-			attachedLocation.timesAttached -= 1;
-			if (attachedLocation.timesAttached <= 0) {
-				this.attachedLocations.delete(id);
-				this.locationLayer(stop).removeMarker(attachedLocation.marker);
-			}
+		const cruise = this._cruises.get(id);
+		for (const layer of [ 'Track', 'Sunsets', 'Sunrises', 'Gateways', 'Stops', 'Sights' ]) {
+			( cruise as any)[ `hide${layer}` ]();
 		}
-	}
-	
-	createShipMarker( shipMarker: ShipMarker ): void {
-		const marker = this._shipLayer.addInteractiveMarker(shipMarker);
-		let timer: ReturnType<typeof setTimeout>;
-		const onMouseOver = () => {
-			if (timer) {
-				clearTimeout( timer );
-				timer = undefined;
-			}
-			if (shipMarker.cruiseId && !shipMarker.activeTrack) {
-				const cruise = this._cruises.get( shipMarker.cruiseId );
-				if (cruise?.polyline) {
-					let isHover = false;
-					const polyline = {
-						...cruise.polyline,
-						events: {
-							'mouseover mouseout click'( event ) {
-								marker.fire( event.type, event );
-							}
-						}
-					} as InteractiveMapPolyline;
-					this._trackLayer.drawPolyline( polyline );
-					shipMarker.activeTrack = polyline;
-				}
-			}
-		};
-		const onMouseOut = () => {
-			if (shipMarker.activeTrack && !shipMarker.trackLocked && !timer) {
-				timer = setTimeout( () => {
-					if (shipMarker.activeTrack && !shipMarker.trackLocked) {
-						this._trackLayer.clearPolyline( shipMarker.activeTrack );
-						shipMarker.activeTrack = undefined;
-					}
-					timer = undefined;
-				}, 300 );
-			}
-		};
-		marker.on( 'mouseover', onMouseOver );
-		marker.on( 'mouseout', onMouseOut );
-		let popupContainer: HTMLElement;
-		marker.on( 'popupopen', () => {
-			const popup = marker.getPopup();
-			if (popup) {
-				popupContainer = popup.getElement();
-				if (popupContainer) {
-					popupContainer.addEventListener( 'mouseover', onMouseOver );
-					popupContainer.addEventListener( 'mouseout', onMouseOut );
-				}
-			}
-		} );
-		marker.on( 'popupclose', () => {
-			if (popupContainer) {
-				popupContainer.removeEventListener( 'mouseover', onMouseOver );
-				popupContainer.removeEventListener( 'mouseout', onMouseOut );
-			}
-			onMouseOut();
-		} );
-		marker.on( 'click', () => {
-			shipMarker.trackLocked = !shipMarker.trackLocked;
-			if (shipMarker.trackLocked) {
-				onMouseOver();
-			}
-			else {
-				onMouseOut();
-			}
-		} );
+		
+		this._cruises.delete(id);
 	}
 	
 	async addShip(ship: Ship): Promise<void> {
@@ -275,13 +242,12 @@ export default class CruiseMap {
 		if (cruise) this.addCruise( cruise );
 
 		const shipMarker = new ShipMarker(
-			this.map, ship, company,
+			this, ship, company,
 			this.timelinePoint,
 			async () => this.shipPopup(ship),
 			cruise?.id
 		);
 		
-		this.createShipMarker( shipMarker );
 		this._ships.set( ship.id, shipMarker );
 		
 		this.events.dispatchEvent(new Event('timerangechanged'));
@@ -292,79 +258,12 @@ export default class CruiseMap {
 		const shipMarker = this._ships.get( id );
 		this._ships.delete( id )
 
-		if (shipMarker.activeTrack) {
-			this._trackLayer.clearPolyline( shipMarker.activeTrack );
-			shipMarker.activeTrack = undefined;
-		}
-
 		this.removeCruise( shipMarker.cruiseId );
 		this.fitTimeline();
 
 		this._shipLayer.removeMarker(shipMarker);
 		
 		this.events.dispatchEvent(new Event('timerangechanged'));
-	}
-
-	private locationLayer({type}: TrackStop): Layer {
-		return type === LocationType.SHOWPLACE ? this._showplaceLayer :
-			this._stopLayer;
-	}
-
-	private async locationPopup(
-		{color}: Company,
-		stop: TrackStop,
-	): Promise<Element> {
-		const {lat, lng, type, arrival} = stop;
-		const {name, description, image, link} = stop.details;
-		const imageElements = image ? [
-			LocatedItemDescriptionImage.create(image),
-		] : [];
-		//~ const categoryNameElements = categoryName ? [
-			//~ LocatedItemDescriptionText.create(categoryName),
-		//~ ] : [];
-		const descriptionElement = LocatedItemDescriptionText.create(description);
-		const itemDescription = LocatedItemDescription.create(
-			type === LocationType.SHOWPLACE ? [
-				...imageElements,
-				LocatedItemDescriptionGroup.create([
-					LocatedItemDescriptionText.create(name, undefined, {
-						title: true
-					}),
-					LocatedItemDescriptionIcon.create(svgAsset(
-						showplaceIcon,
-						'cruise-map__icon', 'cruise-map__icon_type_showplace',
-					)),
-					//~ ...categoryNameElements,
-				], LocatedItemDescriptionGap.MEDIUM),
-				descriptionElement,
-			] : [
-				...imageElements,
-				LocatedItemDescriptionButton.create(
-					this.text.GO_TO_TRACKSTOP,
-					() => {
-						location.assign( link );
-					},
-				),
-				LocatedItemDescriptionGroup.create([
-					LocatedItemDescriptionGroup.create([
-						LocatedItemDescriptionIcon.create(svgAsset(
-							stopIcon,
-							'cruise-map__icon', 'cruise-map__icon_type_stop',
-						)),
-						LocatedItemDescriptionText.create(name),
-					], LocatedItemDescriptionGap.SMALL),
-					LocatedItemDescriptionLocation.create(lat, lng),
-					descriptionElement,
-				], LocatedItemDescriptionGap.LARGE),
-			],
-			['cruise-map__popup'],
-			{
-				'--cruise-map__popup_company-color': `#${color.toString(16)}`
-			}
-		);
-		for (const image of imageElements)
-			await image.load();
-		return itemDescription.domNode;
 	}
 
 	private async shipPopup(ship: Ship) {
@@ -437,7 +336,6 @@ export default class CruiseMap {
 			Math.min(Math.max(+this.timelinePoint, +start), +end)
 		);
 	}
-
 }
 
 class LocationMarker implements InteractiveMapMarker {
@@ -470,13 +368,14 @@ class LocationMarker implements InteractiveMapMarker {
 
 class ShipMarker implements InteractiveMapMarker {
 
-	declare private map: WorldMap;
+	declare private map: CruiseMap;
 
 	declare lat: number;
 	declare lng: number;
 	declare popupContent: InteractiveMapMarker['popupContent'];
+	declare marker: Marker | undefined;
 	declare cruiseId: string | undefined;
-	declare activeTrack: MapPolyline | undefined;
+	declare isHover: boolean;
 	declare trackLocked: boolean;
 
 	icon = svgAsset(
@@ -491,7 +390,7 @@ class ShipMarker implements InteractiveMapMarker {
 	private intersectionIndex?: number = undefined;
 
 	constructor(
-		map: WorldMap,
+		map: CruiseMap,
 		ship: Ship,
 		company: Company,
 		datetime: Date,
@@ -507,19 +406,11 @@ class ShipMarker implements InteractiveMapMarker {
 		this.popupContent = popupContent;
 		this.cruiseId = cruiseId;
 		this.move(datetime);
+		this._createMarker();
 	}
 
 	/** Изменить координаты и угол поворота на точку в пути в указанное время */
 	move(datetime: Date): void {
-		//~ const cruise = this.ship.cruiseOn( datetime );
-		//~ const { cruiseId } = this;
-		//~ if (cruise?.id !== this.cruiseId) {
-			//~ if (this.cruiseId) this.removeCruise( this.cruiseId );
-			//~ if (cruise?.id) this.addCruise( cruise );
-			//~ this.cruiseId = cruise?.id;
-			//~ this.events.dispatchEvent( new Event( 'resetcontent' ) );
-		//~ }
-
 		const {lat, lng, angle} = this.ship.positionAt( datetime );
 		if (lat === this.lat && lng === this.lng)
 			return;
@@ -563,9 +454,284 @@ class ShipMarker implements InteractiveMapMarker {
 			this.icon.style.removeProperty('--cruise-map__marker_angle');
 	}
 
+	_createMarker(): void {
+		if (!this.marker) {
+			this.map.addInteractiveMarker( 'ship', this );
+			let timer: ReturnType<typeof setTimeout>;
+			const onMouseOver = () => {
+				if (timer) {
+					clearTimeout( timer );
+					timer = undefined;
+				}
+				if (!this.isHover) {
+					if (this.cruiseId) {
+						const cruise = this.map.cruiseAsset( this.cruiseId );
+						cruise?.showTrack( this.marker );
+					}
+					this.isHover = true;
+				}
+			};
+			const onMouseOut = () => {
+				if (this.isHover && !timer) {
+					timer = setTimeout( () => {
+						if (this.isHover) {
+							if (this.cruiseId && !this.trackLocked) {
+								const cruise = this.map.cruiseAsset( this.cruiseId );
+								cruise?.hideTrack();
+							}
+							this.isHover = false;
+						}
+						timer = undefined;
+					}, 300 );
+				}
+			};
+			this.marker.on( 'mouseover', onMouseOver );
+			this.marker.on( 'mouseout', onMouseOut );
+			let popupContainer: HTMLElement;
+			this.marker.on( 'popupopen', () => {
+				const popup = this.marker.getPopup();
+				if (popup) {
+					popupContainer = popup.getElement();
+					if (popupContainer) {
+						popupContainer.addEventListener( 'mouseover', onMouseOver );
+						popupContainer.addEventListener( 'mouseout', onMouseOut );
+					}
+				}
+			} );
+			this.marker.on( 'popupclose', () => {
+				if (popupContainer) {
+					popupContainer.removeEventListener( 'mouseover', onMouseOver );
+					popupContainer.removeEventListener( 'mouseout', onMouseOut );
+				}
+				onMouseOut();
+			} );
+			this.marker.on( 'click', () => {
+				this.trackLocked = !this.trackLocked;
+				if (this.trackLocked) {
+					onMouseOver();
+				}
+				else {
+					onMouseOut();
+				}
+			} );
+		}
+	}
 }
 
-interface CruiseAssets {
+class CruiseAssets {
+	map: CruiseMap;
 	cruise: Cruise;
-	polyline: MapPolyline;
+	polyline?: InteractiveMapPolyline | undefined;
+	stops: Record<string, InteractiveMapMarker> = {};
+	sights: Record<string, InteractiveMapMarker> = {};
+	sunsets: Record<string, InteractiveMapMarker> = {};
+	sunrises: Record<string, InteractiveMapMarker> = {};
+	gateways: Record<string, InteractiveMapMarker> = {};
+	
+	constructor( map: CruiseMap, cruise: Cruise ) {
+		this.map = map;
+		this.cruise = cruise;
+		
+		if (map.stopsLayer.visible) this.showStops();
+		for (const layer of [ 'sunsets', 'sunrises', 'gateways', 'stops', 'sights' ]) {
+			const ucLayer = layer[0].toUpperCase() + layer.slice(1);
+			const mapLayer: VisibilityControl = ( this.map as any )[ `${layer}Layer` ];
+			if (mapLayer.visible) {
+				( this as any )[ `show${ucLayer}`]();
+			}
+		}
+	}
+	
+	async showTrack( marker: Marker ) {
+		if (!this.polyline) {
+			const company = await this.cruise.company();
+
+			const points = this.cruise.route.points.map(({lat, lng}) => ({lat, lng}));
+			this.polyline = {
+				points,
+				color: company.color,
+				events: {}
+			};
+		}
+		this.polyline.events = {
+			'mouseover mouseout click'( event ) {
+				marker.fire( event.type, event );
+			}
+		}
+		this.map.drawPolyline( 'track', this.polyline );
+	}
+	
+	hideTrack() {
+		if (this.polyline) {
+			this.map.clearPolyline( 'track', this.polyline );
+		}
+	}
+	
+	private async locationPopup( stop: TrackStop ): Promise<Element> {
+		const {lat, lng, type, arrival} = stop;
+		const {name, category, description, image, link} = stop.details;
+		const company = await this.cruise.company();
+		const imageElements = image ? [
+			LocatedItemDescriptionImage.create(image),
+		] : [];
+		const categoryNameElements = category ? [
+			LocatedItemDescriptionText.create(category),
+		] : [];
+		const descriptionElement = LocatedItemDescriptionText.create(description);
+		const itemDescription = LocatedItemDescription.create(
+			type === LocationType.SHOWPLACE ? [
+				...imageElements,
+				LocatedItemDescriptionGroup.create([
+					LocatedItemDescriptionText.create(name, undefined, {
+						title: true
+					}),
+					LocatedItemDescriptionIcon.create(svgAsset(
+						showplaceIcon,
+						'cruise-map__icon', 'cruise-map__icon_type_showplace',
+					)),
+					...categoryNameElements,
+				], LocatedItemDescriptionGap.MEDIUM),
+				descriptionElement,
+			] : [
+				...imageElements,
+				LocatedItemDescriptionButton.create(
+					this.map.text.GO_TO_TRACKSTOP,
+					() => {
+						location.assign( link );
+					},
+				),
+				LocatedItemDescriptionGroup.create([
+					LocatedItemDescriptionGroup.create([
+						LocatedItemDescriptionIcon.create(svgAsset(
+							stopIcon,
+							'cruise-map__icon', 'cruise-map__icon_type_stop',
+						)),
+						LocatedItemDescriptionText.create(name),
+					], LocatedItemDescriptionGap.SMALL),
+					LocatedItemDescriptionLocation.create(lat, lng),
+					descriptionElement,
+				], LocatedItemDescriptionGap.LARGE),
+			],
+			['cruise-map__popup'],
+			{
+				'--cruise-map__popup_company-color': `#${company.color.toString(16)}`
+			}
+		);
+		//~ if (imageElements?.length) {
+			//~ await Promise.all( imageElements.map( image => image.load() ) );
+		//~ }
+		for (const image of imageElements) {
+			image.load();
+		}
+		return itemDescription.domNode;
+	}
+
+	private async sunriseSunsetPopup( point: TrackPoint ): Promise<Element> {
+		const {lat, lng, arrival, sunset} = point;
+		const side = '';
+		const title = sunset ? 'Закат' : 'Восход';
+		const icon = sunset ? sunsetIcon : sunriseIcon;
+		const itemDescription = LocatedItemDescription.create(
+			[
+				LocatedItemDescriptionText.create(title, undefined, { title: true }),
+				LocatedItemDescriptionIcon.create(svgAsset(
+					icon,
+					'cruise-map__icon'
+				)),
+				LocatedItemDescriptionText.create( arrival.toLocaleString( undefined, {
+						day: '2-digit',
+						month: '2-digit',
+						year: 'numeric',
+						hour12: false,
+						hour: '2-digit',
+						minute: '2-digit'
+					} )
+				),
+				...( side ? [ LocatedItemDescriptionText.create( side == 'left' ? 'С левой стороны борта' : 'С правой стороны борта' ) ] : [] ),
+			],
+			['cruise-map__popup'],
+			{}
+		);
+		return itemDescription.domNode;
+	}
+
+	showStops() {
+		for (const stop of this.cruise.stops) {
+			const { id, lat, lng } = stop;
+			if (!this.stops[ id ]) {
+				this.stops[ id ] = this.map.attachLocationMarker(
+					id, LocationType.REGULAR, lat, lng,
+					() => this.locationPopup(stop),
+				);
+			}
+		}
+	}
+	hideStops() {
+		for (const id of Object.keys( this.stops )) {
+			this.map.detachLocationMarker( id, LocationType.REGULAR );
+			delete this.stops[ id ];
+		}
+	}
+	
+	showSights() {
+		for (const sight of this.cruise.sights) {
+			const { id, lat, lng } = sight;
+			if (!this.sights[ id ]) {
+				this.sights[ id ] = this.map.attachLocationMarker(
+					id, LocationType.SHOWPLACE, lat, lng,
+					() => this.locationPopup(sight),
+				);
+			}
+		}
+	}
+	hideSights() {
+		for (const id of Object.keys( this.sights )) {
+			this.map.detachLocationMarker( id, LocationType.SHOWPLACE );
+			delete this.sights[ id ];
+		}
+	}
+
+	showSunsets() {
+		this.cruise.sunsets.forEach( ( point, index ) => {
+			if (!this.sunsets[ index ]) {
+				this.sunsets[ index ] = {
+					lat: point.lat,
+					lng: point.lng,
+					icon: svgAsset( sunsetIcon, 'cruise-map__icon' ),
+					iconSize: [ 24, 24 ],
+					events: new TypedEventTarget(),
+					popupContent: () => this.sunriseSunsetPopup( point )
+				}
+			}
+			this.map.addInteractiveMarker( 'sunsets', this.sunsets[ index ] );
+		} );
+	}
+	
+	hideSunsets() {
+		Object.values( this.sunsets ).forEach( marker => this.map.removeMarker( 'sunsets', marker ) );
+		this.sunsets = {};
+	}
+
+	showSunrises() {
+		this.cruise.sunrises.forEach( ( point, index ) => {
+			if (!this.sunrises[ index ]) {
+				this.sunrises[ index ] = {
+					lat: point.lat,
+					lng: point.lng,
+					icon: svgAsset( sunriseIcon, 'cruise-map__icon' ),
+					iconSize: [ 24, 24 ],
+					events: new TypedEventTarget(),
+					popupContent: () => this.sunriseSunsetPopup( point )
+				}
+			}
+			this.map.addInteractiveMarker( 'sunrises', this.sunrises[ index ] );
+		} );
+	}
+	hideSunrises() {
+		Object.values( this.sunrises ).forEach( marker => this.map.removeMarker( 'sunrises', marker ) );
+		this.sunrises = {};
+	}
+
+	showGateways() {}
+	hideGateways() {}
 }
