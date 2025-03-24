@@ -511,9 +511,11 @@ class TimelineSlider extends DOMComponent {
 			const [from, to] = cruiseMap.timelineRange;
 			cruiseMap.timelinePoint = new Date(+from + point * (+to - +from));
 		});
-		document.addEventListener('pointermove', ({
-			clientX
-		}) => window.requestAnimationFrame(() => {
+
+		document.addEventListener('pointermove', (event: PointerEvent) => window.requestAnimationFrame(() => {
+			const clientX = event.clientX;
+			const target = event.target as HTMLElement;
+			if (!target.closest('.rs-container')) return;
 			if (sliderPressed) {
 				const {x, width} = slider.getBoundingClientRect();
 				const point = Math.min(Math.max((clientX - x) / width, 0), 1);
@@ -524,6 +526,21 @@ class TimelineSlider extends DOMComponent {
 				moveTimeline(point);
 			}
 		}));
+
+		document.addEventListener('touchmove', (event: TouchEvent) => {
+			const target = event.target as HTMLElement;
+			if (!target.closest('.rs-container')) return;
+			const clientX = event.touches[0].clientX;
+			if (sliderPressed) {
+				const {x, width} = slider.getBoundingClientRect();
+				const point = Math.min(Math.max((clientX - x) / width, 0), 1);
+				domNode.style.setProperty(
+					'--map-overlay--range-dates_point',
+					`${point}`
+				);
+				moveTimeline(point);
+			}
+		});
 	}
 
 	public setSlider(value: Date, cruiseMap: CruiseMap) {
