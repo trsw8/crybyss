@@ -442,7 +442,7 @@ body .map-overlay--range-dates .rs-container .rs-pointer {
 
 .map-overlay {
   position: relative;
-  height: 995px;
+  height: calc(100vh - 280px);
   pointer-events: none;
 }
 

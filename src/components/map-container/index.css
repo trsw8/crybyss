@@ -1,7 +1,7 @@
 .map-container {
   position: relative;
   display: grid;
-  min-height: 100%;
+  /* min-height: 100%; */
 
   @media (max-width: 800px) {
     min-height: 69dvh;
@@ -19,6 +19,7 @@
   height: 100%;
   position: relative;
   height: 998px;
+  height: calc(100vh - 280px);
 }
 
 .map-container__overlay {
