@@ -10,15 +10,15 @@ const apiURL = 'https://krubiss.ru/api';
 const apiEntries = {
 	start : 'cruis/start/',
 	cruiseByID : 'cruis/byID/',
-	ships : '/api/ship/all/',
+	ships : 'ship/all/',
 	shipByID : 'ship/byID/',
 	stopByID : 'stop/byID/',
 	search : 'search/title/',
 	cruisesByShipIDS : 'cruis/shipid/',
 	shipCompanies : 'ship/companies/',
-	gateways : '/api/gateway/all/',
-	sights : '/api/pois/all/',
-	sightCategories : '/api/pois/cats/'
+	gateways : 'gateway/all/',
+	sights : 'pois/all/',
+	sightCategories : 'pois/cats/'
 };
 
 class SortedList<T extends { id: string }> implements Iterable<T> {
