@@ -17,6 +17,7 @@ import Map, {
 } from '.';
 import './index.css';
 import './leaflet.css';
+import * as L from 'leaflet';
 
 export default abstract class LeafletMap extends Map {
 
@@ -48,6 +49,80 @@ export default abstract class LeafletMap extends Map {
 		this.map.on('mousemove', ({latlng: {lat, lng}}) => {
 			this.events.dispatchEvent(new PointerEvent('pointermove', lat, lng));
 		});
+
+		// линейка начало
+
+		const measurePoints: L.CircleMarker<any>[] = [];
+		let isLine: boolean = false;
+
+		const removeMeasure = () => {
+			measurePoints.forEach(point => point.remove());
+			measurePoints.length = 0;
+			this.map.eachLayer(layer => {
+				if (layer instanceof L.Polyline && !(layer instanceof L.Circle)) {
+					layer.remove();
+				}
+			});
+		}
+
+		const measureOpenButton = document.querySelector('.map-overlay--line');
+
+		const toggleMeasure = () => {
+			measureOpenButton.classList.toggle('active');
+			if (!measureOpenButton.classList.contains('active')) {
+				removeMeasure();
+				this.map.getContainer().style.cursor = 'grab';
+				this.map.on('dragstart', () => {
+					this.map.getContainer().style.cursor = 'grabbing';
+				});
+				this.map.on('dragend', () => {
+					this.map.getContainer().style.cursor = 'grab';
+				});
+			} else {
+				this.map.getContainer().style.cursor = 'crosshair';
+			}
+		}
+
+		measureOpenButton?.addEventListener('click', () => {
+			console.log('click')
+			setTimeout(toggleMeasure, 100);
+		})
+
+		this.map.on('mousedown', () => {
+			if (isLine) {
+				removeMeasure();
+				isLine = false;
+			}
+		})
+
+		this.map.on('click', (event) => {
+			if (!measureOpenButton.classList.contains('active')) return;
+
+			var lat = event.latlng.lat; 
+			var lng = event.latlng.lng; 
+
+			const circle = L.circleMarker([lat, lng], {
+				radius: 5,
+				color: 'red',
+				fillColor: 'red',
+				fillOpacity: 1
+			}).addTo(this.map);
+			measurePoints.push(circle);
+
+			if (measurePoints.length > 1) {
+				const lastPoint = measurePoints[measurePoints.length - 2];
+				const line = L.polyline([lastPoint.getLatLng(), circle.getLatLng()], {color: 'red'}).addTo(this.map);
+				isLine = true;				
+				
+				const distance = lastPoint.getLatLng().distanceTo(circle.getLatLng());
+				const popupContent = `${(distance / 1000).toFixed(2)} км`;
+				line.bindPopup(popupContent, {
+					className: 'measure__popup'
+				}).openPopup();
+			}
+		});
+
+		// линейка конец
 	}
 
 	addLayer() {
@@ -296,7 +371,7 @@ class LeafletPane<
 					return;
 				const {entries, graph} = this.intersections.check(
 					markers,
-					({marker}) => marker,
+					(obj) => obj && obj.marker ? obj.marker : null
 				);
 				this.events.dispatchEvent(new IntersectionEvent(
 					'intersect', entries, graph
@@ -313,7 +388,7 @@ class LeafletPane<
 				return;
 			this.plannedIntersectionChecks = new Set();
 			const {entries, graph} = this.intersections.checkAll(
-				({marker}) => marker
+				(obj) => obj && obj.marker ? obj.marker : null
 			);
 			if (entries.size > 0)
 				this.events.dispatchEvent(new IntersectionEvent(
@@ -329,7 +404,7 @@ class LeafletPane<
 	private checkSiblingsIntersections(marker: TMarker): void {
 		const {entries: siblings} = this.intersections.check(
 			new Set([this.intersectionMarkers.get(marker)]),
-			({marker}) => marker,
+			(obj) => obj && obj.marker ? obj.marker : null,
 		);
 		this.checkIntersections([...siblings]);
 	}

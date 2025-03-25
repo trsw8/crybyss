@@ -362,6 +362,7 @@ async function fetchShip( id: string ) : Promise<Ship> {
 async function fetchStartCruises() : Promise<void> {
 	//~ const [ data, companies ] = await Promise.all([ connector.send( apiEntries.start ), fetchCompanies() ]);
 	const data = await connector.send( apiEntries.start );
+	window.dispatchEvent(new Event('cruisesDataLoaded'));
 	const allShips: Record<string, any> = {};
 	for (const cruise of Object.values( data ?? {} ) as any) {
 		if (dataIsSane( 'cruise', cruise )) {

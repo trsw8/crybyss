@@ -2,44 +2,140 @@
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 30px;
+  gap: 32px;
   padding: 5% 0% 2%;
   overflow-y: auto;
 
-  > h2 {
+  >h2 {
     font-weight: 600;
     font-size: 30px;
-    padding: 0 10%;
+    padding: 0 11%;
     text-transform: uppercase;
+    letter-spacing: -1.9px;
+
+    @media (max-width: 1919px) {
+      padding: 0 12.6%;
+    }
+
+    @media (max-width: 1599px) {
+      padding: 0 20px;
+    }
+  }
+
+  @media (max-width: 1599px) {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  @media (max-width: 800px) {
+    gap: 20px;
   }
 }
 
 .filter-box {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
-  padding: 0 10%;
+  flex-wrap: nowrap;
+  padding: 0 11%;
   gap: 20px;
+
+  @media (max-width: 1919px) {
+    padding: 0 12.6%;
+  }
+
+  @media (max-width: 1599px) {
+    flex-wrap: wrap;
+    padding: 0 20px;
+  }
+
+  @media (max-width: 800px) {
+    padding: 0;
+  }
 }
 
 ._label {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 7px;
   font-weight: 600;
 
+  @media (max-width: 800px) {
+    width: calc(100% - 40px);
+  }
+
   .symbol {
+    display: inline-block;
     border: 1px solid #32739d;
     color: #32739d;
-    padding: 0px 6px;
+    padding: 0px 4px;
+    width: 17.5px;
+    height: 17.5px;
     border-radius: 50%;
+    font-size: 14px;
+  }
+
+  p {
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 120%;
+    letter-spacing: -0.3px;
+    text-align: left;
+  }
+}
+
+._label:nth-child(1) {
+  flex: 1 1 487px;
+
+  @media (max-width: 1599px) {
+    flex: 0 0 448px;
+  }
+
+  @media (max-width: 800px) {
+    flex: auto;
+  }
+}
+
+._label:nth-child(2) {
+  flex: 1 1 740px;
+
+  @media (max-width: 1599px) {
+    flex: 0 0 448px;
+  }
+
+  @media (max-width: 800px) {
+    flex: auto;
+  }
+}
+
+._label:nth-child(3) {
+  flex: 1 1 233px;
+
+  @media (max-width: 1599px) {
+    flex: 0 0 136px;
+  }
+
+  @media (max-width: 800px) {
+    flex: auto;
+  }
+
+
+  p {
+    text-align: center;
+    margin-left: -10px;
+    margin-right: -10px;
+
+    @media (max-width: 800px) {
+      text-align: left;
+      margin: 0;
+    }
   }
 }
 
 .datepicker-container {
   position: relative;
-  width: 400px;
+  /* width: 400px; */
 }
+
 .datepicker-label {
   width: 100%;
   height: 58px;
@@ -50,6 +146,7 @@
   border: 1px solid #00000075;
   overflow: hidden;
 }
+
 #datepicker-input {
   width: 100%;
   padding: 10px;
@@ -63,14 +160,15 @@
   top: 70px;
   left: 0;
   width: 400px;
+  max-width: calc(100vw - 40px);
   background: white;
   border: 1px solid #ddd;
   border-radius: 10px;
   box-shadow: 0 0px 4px rgba(0, 0, 0, 0.226);
   padding: 10px 20px 20px;
-  z-index: 100;
+  z-index: 1000;
 
-  > button {
+  >button {
     width: 100%;
     height: 50px;
     border-radius: 10px;
@@ -131,6 +229,14 @@
   transition: border-color 0.3s ease;
 }
 
+@media (max-width: 450px) {
+  .day {
+    width: 30px;
+    height: 30px;
+    line-height: 30px;
+  }
+}
+
 .day:hover {
   border-color: #32739d;
 }
@@ -141,7 +247,7 @@
 
 .range-container {
   position: relative;
-  width: 500px;
+  /* width: 500px; */
   height: 58px;
   display: flex;
   flex-direction: column;
@@ -232,7 +338,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 200px;
+  /* width: 200px; */
   height: 58px;
   border: 1px solid #00000075;
   border-radius: 10px;
@@ -258,6 +364,7 @@
   ._label:nth-child(2) {
     order: 3;
   }
+
   .range-container {
     width: calc(100vw - 20vw);
   }
@@ -267,17 +374,18 @@
   .filter-overlay {
     padding: 10% 0;
 
-    > h2 {
-      font-size: 20px;
-      padding: 0 5% 55px;
-      text-align: center;
+    >h2 {
+      /* font-size: 20px; */
+      padding: 0 20px 200px;
+      /* text-align: center; */
     }
   }
+
   .filter-box {
     order: 3;
     flex-direction: column;
     gap: 20px;
-    padding: 5% 0;
+    padding: 0;
   }
 
   ._label:nth-child(2) {
@@ -287,7 +395,8 @@
   .datepicker-container,
   .range-container,
   .time-picker-container {
-    width: 90vw !important;
+    /* width: 90vw !important; */
+    width: 100%;
     height: 54px;
   }
 }
