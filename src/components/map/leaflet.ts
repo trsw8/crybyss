@@ -278,10 +278,6 @@ class LeafletPane<
 
 		const popupDiv = document.createElement('div');
 		popupDiv.classList.add('map__popup', 'map__popup_loaded');
-		popupDiv.style.setProperty(
-			'--map__popup_offset',
-			`${interactiveMarker.iconSize[1] / 2}px`
-		);
 		const contentDiv = document.createElement('div');
 		contentDiv.classList.add('map__popup-scroller');
 		popupDiv.appendChild( contentDiv );
@@ -299,53 +295,78 @@ class LeafletPane<
 					});
 				await contentTask;
 				
+				// Ищем оптимальное положение попапа
+				popupDiv.style.maxWidth = null;
+				popupDiv.style.maxHeight = null;
+				contentDiv.style.maxWidth = null;
+				contentDiv.style.maxHeight = null;
+				document.body.appendChild(popupDiv);
+				const popupSize = point([ popupDiv.offsetWidth, popupDiv.offsetHeight ]);
+				document.body.removeChild(popupDiv);
+
 				const coord = this.map.latLngToContainerPoint( lMarker.getLatLng() );
 				const size = this.map.getSize();
 				const iconSize = point( lMarker.getIcon().options.iconSize );
-				const left = coord.x - ( iconSize.x / 2 );
-				const right = size.x - coord.x - ( iconSize.x / 2 );
-				const top = coord.y;
-				const bottom = size.y - coord.y - iconSize.y;
+				const left = coord.x - popupSize.x;
+				const right = size.x - coord.x - popupSize.x;
+				const top = coord.y - popupSize.y;
+				const bottom = size.y - coord.y - popupSize.y;
 				const max = Math.max( left, right, top, bottom );
-				
+
 				let offset: PointExpression;
-				if (top == max) {
+				if (top == max || coord.y >= popupSize.y + 30 + iconSize.y / 2) {
 					let x = 0;
-					if (coord.x < 300) x = 300 - coord.x;
-					offset = [ x, 0 ];
+					if (size.x - coord.x < popupSize.x / 2 + 20) x = size.x - coord.x - popupSize.x / 2 - 20;
+					if (coord.x < popupSize.x / 2 + 20) x = popupSize.x / 2 + 20 - coord.x;
+					offset = [ x, -10 - iconSize.y / 2 ];
+					if (coord.y - iconSize.y / 2 - popupSize.y < 30) {
+						const height = coord.y - iconSize.y / 2 - 30;
+						contentDiv.style.maxHeight = `${height - 40}px`;
+					}
 				}
 				else if (left == max) {
-					let y = 0;
-					if (coord.y < 500) y = 500 - coord.y;
-					offset = [ -150 - iconSize.x / 2, y ];
+					let y = iconSize.y / 2;
+					if (coord.y < popupSize.y + 20) y = popupSize.y + 20 - coord.y;
+					offset = [ -10 - popupSize.x / 2 - iconSize.x / 2, y ];
+					if (coord.x - iconSize.x / 2 - popupSize.x < 30) {
+						const width = coord.x - iconSize.x / 2 - 30;
+						offset[0] += ( popupSize.x - width ) / 2;
+						popupDiv.style.maxWidth = `${width}px`;
+					}
 				}
 				else if (right == max) {
-					let y = 0;
-					if (coord.y < 500) y = coord.y - 500;
-					offset = [ 150 + iconSize.x / 2, y ];
+					let y = iconSize.y / 2;
+					if (coord.y < popupSize.y + 20) y = popupSize.y + 20 - coord.y;
+					offset = [ popupSize.x / 2 + 10 + iconSize.x / 2, y ];
+					if (size.x - coord.x - iconSize.x / 2 - popupSize.x < 30) {
+						const width = size.x - coord.x - iconSize.x / 2 - 30;
+						offset[0] -= ( popupSize.x - width ) / 2;
+						popupDiv.style.maxWidth = `${width}px`;
+					}
 				}
 				else {
 					let x = 0;
-					if (coord.x < 300) x = 300 - coord.x;
-					offset = [ x, 500 + iconSize.y ];
+					if (size.x - coord.x < popupSize.x / 2 + 20) x = size.x - coord.x - popupSize.x / 2 - 20;
+					if (coord.x < popupSize.x / 2 + 20) x = popupSize.x / 2 + 20 - coord.x;
+					offset = [ x, popupSize.y + 10 + iconSize.y / 2 ];
+					if (size.y - coord.y - iconSize.y / 2 - popupSize.y < 30) {
+						const height = size.y - coord.y - iconSize.y / 2 - 30;
+						offset[1] -= popupSize.y - height;
+						contentDiv.style.maxHeight = `${height - 40}px`;
+					}
 				}
 				
-				//~ const [topLeft, bottomRight] = this.autoPan;
 				lMarker.bindPopup(popupDiv, {
 					closeButton: false,
 					closeOnClick: false,
 					autoPan: false,
 					offset,
-					//~ maxWidth: window.innerWidth - bottomRight.x - topLeft.x,
-					//~ maxHeight: window.innerHeight - bottomRight.y - topLeft.y,
-					//~ autoPanPaddingTopLeft: topLeft,
-					//~ autoPanPaddingBottomRight: bottomRight,
 					pane: this.compositePaneName('popupPane'),
 				}).openPopup();
 			}
 		};
 
-		lMarker.on('mouseover', () => {
+		lMarker.on('mouseover click', () => {
 			if (!lMarker.isOpen)
 				open();
 		});

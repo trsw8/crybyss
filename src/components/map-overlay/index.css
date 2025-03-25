@@ -593,7 +593,7 @@ body .map-overlay--range-dates .rs-container .rs-pointer {
 
 .map-overlay {
   position: relative;
-  height: calc(100vh - 280px);
+  height: 100%;
   pointer-events: none;
 }
 
@@ -711,6 +711,7 @@ body .map-overlay--range-dates .rs-container .rs-pointer {
   .map-overlay {
     /* height: calc(50dvh + 130px); */
     /* height: 1000px; */
+    height: 69vh;
     height: 69dvh;
   }
 
