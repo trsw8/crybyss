@@ -3,7 +3,7 @@ import {
 	Layer as LLayer,
 	marker, Marker, DivIcon,
 	polyline, circleMarker,
-	point, Point, LatLngExpression,
+	point, Point, PointExpression, LatLngExpression,
 } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import IntersectionSearchTree, {
@@ -248,15 +248,14 @@ class LeafletPane<
 	}
 
 	addMarker(mapMarker: TMarker) {
-		const lMarker = marker([mapMarker.lat, mapMarker.lng], {
+		mapMarker.marker = marker([mapMarker.lat, mapMarker.lng], {
 			icon: new DOMIcon({
 				html: mapMarker.icon,
 				iconSize: mapMarker.iconSize
 			}),
 			pane: this.compositePaneName('markerPane'),
 		});
-		this.syncMarker(mapMarker, lMarker);
-		return lMarker;
+		this.syncMarker(mapMarker);
 	}
 
 	addInteractiveMarker(interactiveMarker: TMarker & InteractiveMapMarker) {
@@ -270,18 +269,19 @@ class LeafletPane<
 			}),
 			pane: this.compositePaneName('markerPane'),
 		});
+		interactiveMarker.marker = lMarker;
 		// Удаление одноразового маркера
 		lMarker.on('popupclose', () => {
 			lMarker.unbindPopup();
 			lMarker.isOpen = false;
 		});
 
+		const popupDiv = document.createElement('div');
+		popupDiv.classList.add('map__popup', 'map__popup_loaded');
 		const contentDiv = document.createElement('div');
-		contentDiv.classList.add('map__popup', 'map__popup_loaded');
-		contentDiv.style.setProperty(
-			'--map__popup_offset',
-			`${interactiveMarker.iconSize[1] / 2}px`
-		);
+		contentDiv.classList.add('map__popup-scroller');
+		popupDiv.appendChild( contentDiv );
+
 		// Ожидание получения контента
 		let contentTask: Promise<unknown> | undefined;
 
@@ -294,21 +294,79 @@ class LeafletPane<
 						contentDiv.appendChild(element);
 					});
 				await contentTask;
-				const [topLeft, bottomRight] = this.autoPan;
-				lMarker.bindPopup(contentDiv, {
+				
+				// Ищем оптимальное положение попапа
+				popupDiv.style.maxWidth = null;
+				popupDiv.style.maxHeight = null;
+				contentDiv.style.maxWidth = null;
+				contentDiv.style.maxHeight = null;
+				document.body.appendChild(popupDiv);
+				const popupSize = point([ popupDiv.offsetWidth, popupDiv.offsetHeight ]);
+				document.body.removeChild(popupDiv);
+
+				const coord = this.map.latLngToContainerPoint( lMarker.getLatLng() );
+				const size = this.map.getSize();
+				const iconSize = point( lMarker.getIcon().options.iconSize );
+				const left = coord.x - popupSize.x;
+				const right = size.x - coord.x - popupSize.x;
+				const top = coord.y - popupSize.y;
+				const bottom = size.y - coord.y - popupSize.y;
+				const max = Math.max( left, right, top, bottom );
+
+				let offset: PointExpression;
+				if (top == max || coord.y >= popupSize.y + 30 + iconSize.y / 2) {
+					let x = 0;
+					if (size.x - coord.x < popupSize.x / 2 + 20) x = size.x - coord.x - popupSize.x / 2 - 20;
+					if (coord.x < popupSize.x / 2 + 20) x = popupSize.x / 2 + 20 - coord.x;
+					offset = [ x, -10 - iconSize.y / 2 ];
+					if (coord.y - iconSize.y / 2 - popupSize.y < 30) {
+						const height = coord.y - iconSize.y / 2 - 30;
+						contentDiv.style.maxHeight = `${height - 40}px`;
+					}
+				}
+				else if (left == max) {
+					let y = iconSize.y / 2;
+					if (coord.y < popupSize.y + 20) y = popupSize.y + 20 - coord.y;
+					offset = [ -10 - popupSize.x / 2 - iconSize.x / 2, y ];
+					if (coord.x - iconSize.x / 2 - popupSize.x < 30) {
+						const width = coord.x - iconSize.x / 2 - 30;
+						offset[0] += ( popupSize.x - width ) / 2;
+						popupDiv.style.maxWidth = `${width}px`;
+					}
+				}
+				else if (right == max) {
+					let y = iconSize.y / 2;
+					if (coord.y < popupSize.y + 20) y = popupSize.y + 20 - coord.y;
+					offset = [ popupSize.x / 2 + 10 + iconSize.x / 2, y ];
+					if (size.x - coord.x - iconSize.x / 2 - popupSize.x < 30) {
+						const width = size.x - coord.x - iconSize.x / 2 - 30;
+						offset[0] -= ( popupSize.x - width ) / 2;
+						popupDiv.style.maxWidth = `${width}px`;
+					}
+				}
+				else {
+					let x = 0;
+					if (size.x - coord.x < popupSize.x / 2 + 20) x = size.x - coord.x - popupSize.x / 2 - 20;
+					if (coord.x < popupSize.x / 2 + 20) x = popupSize.x / 2 + 20 - coord.x;
+					offset = [ x, popupSize.y + 10 + iconSize.y / 2 ];
+					if (size.y - coord.y - iconSize.y / 2 - popupSize.y < 30) {
+						const height = size.y - coord.y - iconSize.y / 2 - 30;
+						offset[1] -= popupSize.y - height;
+						contentDiv.style.maxHeight = `${height - 40}px`;
+					}
+				}
+				
+				lMarker.bindPopup(popupDiv, {
 					closeButton: false,
 					closeOnClick: false,
-					offset: [0, 0],
-					maxWidth: window.innerWidth - bottomRight.x - topLeft.x,
-					maxHeight: window.innerHeight - bottomRight.y - topLeft.y,
-					autoPanPaddingTopLeft: topLeft,
-					autoPanPaddingBottomRight: bottomRight,
+					autoPan: false,
+					offset,
 					pane: this.compositePaneName('popupPane'),
 				}).openPopup();
 			}
 		};
 
-		lMarker.on('mouseover', () => {
+		lMarker.on('mouseover click', () => {
 			if (!lMarker.isOpen)
 				open();
 		});
@@ -329,8 +387,7 @@ class LeafletPane<
 			}
 		});
 
-		this.syncMarker(interactiveMarker, lMarker);
-		return lMarker;
+		this.syncMarker(interactiveMarker);
 	}
 
 	removeMarker(marker: TMarker) {
@@ -338,12 +395,14 @@ class LeafletPane<
 		this.removePath(marker);
 		this.intersections.remove(this.intersectionMarkers.get(marker));
 		this.intersectionMarkers.delete(marker);
+		marker.marker = undefined;
 	}
 
 	/** Связать маркер приложения и маркер leaflet */
-	private syncMarker(marker: TMarker, lMarker: Marker): void {
+	private syncMarker(marker: TMarker): void {
+		const lMarker = marker.marker;
 		this.representations.set(marker, [lMarker]);
-		const intersectionMarker = new IntersectionMapMarker(marker, lMarker);
+		const intersectionMarker = new IntersectionMapMarker(marker);
 		this.intersectionMarkers.set(marker, intersectionMarker);
 		this.intersections.add(intersectionMarker);
 		marker.events.addEventListener('locationchange', () => {
@@ -411,48 +470,52 @@ class LeafletPane<
 
 	/** В данный момент никак не реализован InteractiveMapPolylinePoint */
 	drawPolyline(mapPolyline: MapPolyline | InteractiveMapPolyline) {
-		const {points} = mapPolyline;
-		const color = `#${mapPolyline.color.toString(16)}`;
-		const layers: LLayer[] = [polyline(
-			points,
-			{
-				color,
-				weight: 3,
-				renderer: this.renderer,
-			}
-		)];
-
-		if (points.length) {
-			for (const {lat, lng} of [
-				points[0],
-				points[points.length - 1],
-			])
-				layers.push(circleMarker([lat, lng], {
+		if (!this.representations.has( mapPolyline )) {
+			const {points} = mapPolyline;
+			const color = `#${mapPolyline.color.toString(16)}`;
+			const layers: LLayer[] = [polyline(
+				points,
+				{
 					color,
-					radius: 8,
-					stroke: false,
-					fill: true,
-					fillOpacity: 1,
+					weight: 3,
 					renderer: this.renderer,
-				}));
-		}
+				}
+			)];
 
-		if (( mapPolyline as InteractiveMapPolyline).events) {
-			for (const layer of layers) {
-				const events = ( mapPolyline as InteractiveMapPolyline ).events;
-				for (const type of Object.keys( events )) {
-					layer.on( type, events[ type ] );
+			if (points.length) {
+				for (const {lat, lng} of [
+					points[0],
+					points[points.length - 1],
+				])
+					layers.push(circleMarker([lat, lng], {
+						color,
+						radius: 8,
+						stroke: false,
+						fill: true,
+						fillOpacity: 1,
+						renderer: this.renderer,
+					}));
+			}
+
+			if (( mapPolyline as InteractiveMapPolyline).events) {
+				for (const layer of layers) {
+					const events = ( mapPolyline as InteractiveMapPolyline ).events;
+					for (const type of Object.keys( events )) {
+						layer.on( type, events[ type ] );
+					}
 				}
 			}
-		}
 
-		this.representations.set(mapPolyline, layers);
-		for (const path of layers)
-			path.addTo(this.map);
+			this.representations.set(mapPolyline, layers);
+			for (const path of layers)
+				path.addTo(this.map);
+		}
 	}
 
 	clearPolyline(polyline: MapPolyline) {
-		this.removePath(polyline);
+		if (this.representations.has( polyline )) {
+			this.removePath(polyline);
+		}
 	}
 
 	private *panes(): Iterable<HTMLElement> {
@@ -469,6 +532,7 @@ class LeafletPane<
 	private removePath(key: any): void {
 		for (const layer of this.representations.get(key) ?? [])
 			layer.removeFrom(this.map);
+		this.representations.delete(key);
 	}
 
 }
@@ -505,7 +569,6 @@ class IntersectionMapMarker<
 > implements IntersectionMarker {
 
 	declare marker: TMarker;
-	declare lMarker: Marker;
 
 	get x() {
 		return this.marker.lng;
@@ -515,14 +578,13 @@ class IntersectionMapMarker<
 		return -this.marker.lat;
 	}
 
-	constructor(marker: TMarker, lMarker: Marker) {
+	constructor(marker: TMarker) {
 		this.marker = marker;
-		this.lMarker = lMarker;
 	}
 
 	rect() {
-		const icon = this.lMarker.options.icon as ExposedDivIcon;
-		return icon.container.getBoundingClientRect();
+		const icon = this.marker.marker?.options.icon as ExposedDivIcon;
+		return icon?.container.getBoundingClientRect() || new DOMRect;
 	}
 
 }

@@ -20,15 +20,23 @@ export default class MapOverlay extends DOMComponent {
 		api: CruiseAPI,
 	) {
 		super(domNode);
-		for (const [className, layer] of [
-			['map-overlay--ship', cruiseMap.shipLayer],
-			['map-overlay--anchor', cruiseMap.stopLayer],
-			['map-overlay--place', cruiseMap.showplaceLayer],
-		] as [string, CruiseMap['shipLayer']][])
-			new LayerVisibilityButton(
-				domNode.getElementsByClassName(className)[0],
-				layer,
+		for (const [ className, id, layer ] of [
+			[ 'map-overlay--ship', 'ship-layer-checkbox', cruiseMap.shipLayer ],
+			[ 'map-overlay--anchor', 'stops-layer-checkbox', cruiseMap.stopsLayer ],
+			[ 'map-overlay--place', 'sights-layer-checkbox', cruiseMap.sightsLayer ],
+		] as [ string, string, VisibilityControl ][]) {
+			new LayerVisibilityButton( 
+				domNode.getElementsByClassName( className )[0],
+				document.getElementById( id ) as HTMLInputElement,
+				layer
 			);
+		}
+		for (const checkbox of domNode.getElementsByClassName( 'map-overlay--layers-checkbox' ) as HTMLCollectionOf<HTMLInputElement>) {
+			const layer = checkbox.id.split( '-' )[0];
+			new LayerVisibilityCheckbox( checkbox, ( cruiseMap as any )[ `${layer}Layer` ] as VisibilityControl );
+		}
+		new ToggleButton( domNode.getElementsByClassName( 'map-overlay--menu' )[0] );
+
 		const shipSlider = new TimelineSlider(
 			domNode.getElementsByClassName(
 				'map-overlay--range-dates'
@@ -266,6 +274,18 @@ class SearchBox extends DOMComponent {
 
 }
 
+class ToggleButton extends DOMComponent {
+	constructor(domNode: Element) {
+		super(domNode);
+		domNode.addEventListener('click', () => {
+			if (domNode.classList.contains( 'active' ))
+				domNode.classList.remove( 'active' );
+			else
+				domNode.classList.add( 'active' );
+		});
+	}
+}
+
 class DateFilter {
 	declare private cruiseMap: CruiseMap;
 
@@ -444,7 +464,7 @@ class DateFilter {
 
 class LayerVisibilityButton extends DOMComponent {
 
-	constructor(domNode: Element, layer: VisibilityControl) {
+	constructor(domNode: Element, checkbox: HTMLInputElement, layer: VisibilityControl) {
 		super(domNode);
 		const onVisibilityChange = () => {
 			if (layer.visible)
@@ -455,8 +475,22 @@ class LayerVisibilityButton extends DOMComponent {
 		onVisibilityChange();
 		layer.events.addEventListener('visibilitychange', onVisibilityChange);
 		domNode.addEventListener('click', () => {
-			layer.toggle();
+			checkbox.click();
 		});
+	}
+
+}
+
+class LayerVisibilityCheckbox extends DOMComponent {
+
+	constructor(domNode: HTMLInputElement, layer: VisibilityControl) {
+		super(domNode);
+		const onChange = () => {
+			if (domNode.checked) layer.show();
+			else layer.hide();
+		};
+		onChange();
+		domNode.addEventListener( 'change', onChange );
 	}
 
 }
