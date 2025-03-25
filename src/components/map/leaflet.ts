@@ -358,10 +358,10 @@ class LeafletPane<
 					event.originalEvent?.relatedTarget as Node
 				)) {
 					container.addEventListener('mouseleave', () => {
-						//~ popup.close();
+						popup.close();
 					});
 				} else {
-					//~ popup.close();
+					popup.close();
 				}
 			}
 		});
