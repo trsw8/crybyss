@@ -1,6 +1,6 @@
 import {
 	CruiseAPI,
-	Cruise, Company, Ship, LocationType,
+	Cruise, Company, Ship, TrackLocation, LocationType,
 	CruiseRoute, TrackPoint, TrackStop, TrackStopDetails
 } from '.';
 
@@ -143,12 +143,14 @@ class CruiseData implements Cruise {
 	declare shipId: string;
 	declare stops: TrackStop[];
 	declare sights: TrackStop[];
+	declare gateways: { gateway: TrackLocation, trackpoint: TrackPoint }[];
 	declare sunrises: TrackPoint[];
 	declare sunsets: TrackPoint[];
 	declare route: CruiseRoute;
 
 	constructor( data: any ) {
-		const [ points, sunrises, sunsets ] = data.POINTS
+		let lastGatewayFilterPoint: TrackPoint;
+		const [ points, sunrises, sunsets, gateways ] = data.POINTS
 			.filter(Boolean)
 			.map(({
 				isTrackStop,
@@ -167,7 +169,12 @@ class CruiseData implements Cruise {
 				angle: !isTrackStop && isFinite( angle ) ? Number( angle ) : undefined
 			}))
 			.sort( ( a: TrackPoint, b: TrackPoint ) => +a.arrival - +b.arrival )
-			.reduce( ( [ points, sunrises, sunsets ]: [ TrackPoint[], TrackPoint[], TrackPoint[] ], point: TrackPoint ) => {
+			.reduce( (
+				[ points, sunrises, sunsets, gateways ]: [ TrackPoint[], TrackPoint[], TrackPoint[], Record<string, { gateway: TrackLocation, trackpoint: TrackPoint }> ],
+				point: TrackPoint,
+				index: number,
+				allPoints: TrackPoint[]
+			) => {
 				if (point.sunrise) sunrises.push( point );
 				if (point.sunset) sunsets.push( point );
 				const lastPoint = points.length ? points[ points.length - 1 ] : undefined;
@@ -177,8 +184,45 @@ class CruiseData implements Cruise {
 				) {
 					points.push( point );
 				}
-				return [ points, sunrises, sunsets ];
-			}, [ [], [], [] ] );
+				
+				
+				// Поиск шлюзов. Для ускорения проверяем квадратами приблизительно 20х20 км
+				// Временное решение. Лучше выполнить на сервере один раз и записать в БД.
+				let dx: number, dy: number;
+				if (lastGatewayFilterPoint) {
+					dx = Math.abs( 111 * ( lastGatewayFilterPoint.lng - point.lng ) * Math.cos( point.lng * Math.PI / 180 ) );
+					dy = Math.abs( 111 * ( lastGatewayFilterPoint.lat - point.lat ) );
+				}
+				if (!lastGatewayFilterPoint || dx >= 10 || dy >= 10) {
+					lastGatewayFilterPoint = point;
+					for (const gateway of Object.values( cache.gateways )) {
+						if (!gateways[ gateway.id ]) {
+							const dx = Math.abs( 111 * ( gateway.lng - point.lng ) * Math.cos( point.lat * Math.PI / 180 ) );
+							const dy = Math.abs( 111 * ( gateway.lat - point.lat ) );
+							if (dx < 15 || dy < 15) {
+								// Поиск ближайшей точки
+								let mindist = dx * dx + dy * dy;
+								let foundPoint = point;
+								for (let i = index + 1; i < allPoints.length; i++) {
+									const point = allPoints[ i ];
+									const dx = 111 * ( gateway.lng - point.lng ) * Math.cos( point.lat * Math.PI / 180 );
+									const dy = 111 * ( gateway.lat - point.lat );
+									const sqdist = dx * dx + dy * dy;
+									if (sqdist < mindist) {
+										mindist = sqdist;
+										foundPoint = point;
+									}
+									else if (sqdist > 450) break;
+								}
+								if (mindist < 10) gateways[ gateway.id ] = { gateway, trackpoint: foundPoint };
+							}
+						}
+					}
+				}
+				
+				
+				return [ points, sunrises, sunsets, gateways ];
+			}, [ [], [], [], {} ] );
 		const route = new CruiseRoute( points );
 
 		const stops = ( data.PROPERTY_TRACKSTOPS_VALUE || [] ).map(
@@ -189,13 +233,13 @@ class CruiseData implements Cruise {
 				else {
 					return {
 						id: data.CR_ID,
+						type: LocationType.REGULAR,
 						lat: data.DETAIL.coordinates.latitude,
 						lng: data.DETAIL.coordinates.longitude,
-						type: LocationType.REGULAR,
+						name: data.DETAIL.NAME,
 						arrival: parseDate( data.CR_ARRIVAL ),
 						departure: parseDate( data.CR_DEPARTURE ),
 						details: {
-							name: data.DETAIL.NAME,
 							description: data.DETAIL.DETAIL_TEXT,
 							//~ image: data.DETAIL.DETAIL_PICTURE
 							// Это для тестирования. После переноса приложения на основной сайт проверку url можно будет убрать
@@ -218,7 +262,7 @@ class CruiseData implements Cruise {
 				return ret;
 			}, {} )
 		);
-		
+
 		Object.assign( this, {
 			id: data.ID,
 			name: data.NAME,
@@ -231,6 +275,7 @@ class CruiseData implements Cruise {
 			shipId: data.PROPERTY_SHIPID_VALUE,
 			stops,
 			sights,
+			gateways: Object.values( gateways ),
 			sunsets,
 			sunrises,
 			route
@@ -334,9 +379,9 @@ class APIConnector {
 	/// @todo: добавить обработку ошибок
 	async send(url: string, data: any = {}): Promise<any> {
 		const response = await fetch(`${this.baseUrl}/${url}`, {
-			//~ method: 'POST',
-			//~ body: JSON.stringify(data),
-			//~ headers: {'content-type': 'application/json'},
+			method: 'POST',
+			body: JSON.stringify(data),
+			headers: {'content-type': 'application/json'},
 		});
 		return await response.json();
 	}
@@ -405,13 +450,13 @@ async function fetchSights(): Promise<void> {
 		( sights: Record<string, TrackStop>, data: any ) => {
 			sights[ data.XML_ID ] = {
 				id: data.XML_ID,
+				type: LocationType.SHOWPLACE,
 				lat: data.coordinates.latitude,
 				lng: data.coordinates.longitude,
-				type: LocationType.SHOWPLACE,
+				name: data.NAME,
 				//~ arrival: parseDate( data.CR_ARRIVAL ),
 				//~ departure: parseDate( data.CR_DEPARTURE ),
 				details: {
-					name: data.NAME,
 					description: data.DETAIL_TEXT,
 					//~ image: `/upload/api/pois/${data.IMAGE}`,
 					// Это для тестирования. После переноса приложения на основной сайт проверку url можно будет убрать
@@ -426,8 +471,24 @@ async function fetchSights(): Promise<void> {
 	) as Record<string, TrackStop>;
 }
 
+async function fetchGateways(): Promise<void> {
+	const data = await connector.send( apiEntries.gateways );
+	cache.gateways = ( Object.values( data ) || [] ).reduce(
+		( gateways: Record<string, TrackLocation>, data: any ) => {
+			gateways[ data.ID ] = {
+				id: data.ID,
+				type: LocationType.GATEWAY,
+				lat: data.coordinates.latitude,
+				lng: data.coordinates.longitude,
+				name: data.NAME,
+			};
+			return gateways;
+		}, {}
+	) as Record<string, TrackLocation>;
+}
+
 async function fetchStartCruises() : Promise<void> {
-	const [ cruises ] = await Promise.all([ connector.send( apiEntries.start ), fetchAllShips(), fetchSights() ]);
+	const [ cruises ] = await Promise.all([ connector.send( apiEntries.start ), fetchAllShips(), fetchSights(), fetchGateways() ]);
 	for (const cruise of Object.values( cruises ?? {} ) as any) {
 		if (dataIsSane( 'cruise', cruise )) {
 			cache.cruises.add( new CruiseData( cruise ) );
@@ -448,6 +509,7 @@ class Cache {
 	);
 	stops: Record<string, TrackStop> = {};
 	sights: Record<string, TrackStop> = {};
+	gateways: Record<string, TrackLocation> = {};
 }
 
 class CruiseAPICache extends Cache implements CruiseAPI {

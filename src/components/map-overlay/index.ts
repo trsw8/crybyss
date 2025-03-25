@@ -278,25 +278,6 @@ class ToggleButton extends DOMComponent {
 	}
 }
 
-//~ class LayerVisibilityButton extends DOMComponent {
-
-	//~ constructor(domNode: Element, layer: VisibilityControl) {
-		//~ super(domNode);
-		//~ const onVisibilityChange = () => {
-			//~ if (layer.visible)
-				//~ domNode.classList.add('active');
-			//~ else
-				//~ domNode.classList.remove('active');
-		//~ };
-		//~ onVisibilityChange();
-		//~ layer.events.addEventListener('visibilitychange', onVisibilityChange);
-		//~ domNode.addEventListener('click', () => {
-			//~ layer.toggle();
-		//~ });
-	//~ }
-
-//~ }
-
 class LayerVisibilityButton extends DOMComponent {
 
 	constructor(domNode: Element, checkbox: HTMLInputElement, layer: VisibilityControl) {

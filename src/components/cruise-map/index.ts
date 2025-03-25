@@ -2,6 +2,7 @@ import {Marker} from 'leaflet';
 import {TypedEventTarget} from 'typescript-event-target';
 import showplaceMarkerIcon from '../../icons/showplace-marker.png';
 import stopMarkerIcon from '../../icons/stop-marker.png';
+import gatewayMarkerIcon from '../../icons/gateway.svg';
 import linerIcon from '../../icons/liner.svg';
 import linersIcon from '../../icons/liners.svg';
 import showplaceIcon from '../../icons/showplace.svg';
@@ -11,7 +12,7 @@ import sunsetIcon from '../../icons/sunset.svg';
 import linerMarkerIcon from '../../icons/liner-marker.svg';
 import {svgAsset} from '../../util';
 import Text from '../../state/text';
-import {Cruise, Company, Ship, TrackStop, TrackPoint, LocationType} from '../../state/cruise';
+import {Cruise, Company, Ship, TrackStop, TrackPoint, TrackLocation, LocationType} from '../../state/cruise';
 import WorldMap, {
 	VisibilityControl, Layer,
 	MapMarker, InteractiveMapMarker, MapPolyline, InteractiveMapPolyline
@@ -92,10 +93,14 @@ export default class CruiseMap {
 		marker: InteractiveMapMarker,
 		timesAttached: number,
 	}> = {};
+	private _attachedGateways: Record<string, {
+		marker: InteractiveMapMarker,
+		timesAttached: number,
+	}> = {};
 	
 	attachLocationMarker( id: string, type: LocationType, lat: number, lng: number, popup: InteractiveMapMarker['popupContent'] ): LocationMarker {
-		const counter = type === LocationType.SHOWPLACE ? this._attachedSights : this._attachedStops;
-		const layer = type === LocationType.SHOWPLACE ? this._sightsLayer : this._stopsLayer;
+		const counter = [ this._attachedStops, this._attachedSights, this._attachedGateways ][ type ];
+		const layer = [ this._stopsLayer, this._sightsLayer, this._gatewaysLayer ][ type ];
 		if (!!counter[ id ]) {
 			counter[ id ].timesAttached++;
 		}
@@ -108,8 +113,8 @@ export default class CruiseMap {
 	}
 	
 	detachLocationMarker( id: string, type: LocationType ) {
-		const counter = type === LocationType.SHOWPLACE ? this._attachedSights : this._attachedStops;
-		const layer = type === LocationType.SHOWPLACE ? this._sightsLayer : this._stopsLayer;
+		const counter = [ this._attachedStops, this._attachedSights, this._attachedGateways ][ type ];
+		const layer = [ this._stopsLayer, this._sightsLayer, this._gatewaysLayer ][ type ];
 		if (!!counter[ id ]) {
 			counter[ id ].timesAttached--;
 			if (!counter[ id ].timesAttached) {
@@ -214,7 +219,7 @@ export default class CruiseMap {
 			return;
 		const cruise = this._cruises.get(id);
 		for (const layer of [ 'Track', 'Sunsets', 'Sunrises', 'Gateways', 'Stops', 'Sights' ]) {
-			( cruise as any)[ `hide${layer}` ]();
+			( cruise as any )[ `hide${layer}` ]();
 		}
 		
 		this._cruises.delete(id);
@@ -354,11 +359,15 @@ class LocationMarker implements InteractiveMapMarker {
 		lng: number,
 		popupContent: InteractiveMapMarker['popupContent'],
 	) {
-		const icon = this.icon = document.createElement('img');
-		icon.src =
-			locationType === LocationType.SHOWPLACE ? showplaceMarkerIcon :
-			stopMarkerIcon;
-		icon.classList.add('cruise-map__marker');
+		const iconString = [ stopMarkerIcon, showplaceMarkerIcon, gatewayMarkerIcon ][ locationType ];
+		if (iconString.startsWith( '<svg' )) {
+			this.icon = svgAsset( iconString, 'cruise-map__marker' );
+		}
+		else {
+			const icon = this.icon = document.createElement('img');
+			icon.src = iconString;
+			icon.classList.add('cruise-map__marker');
+		}
 		this.lat = lat;
 		this.lng = lng;
 		this.popupContent = popupContent;
@@ -568,8 +577,8 @@ class CruiseAssets {
 	}
 	
 	private async locationPopup( stop: TrackStop ): Promise<Element> {
-		const {lat, lng, type, arrival} = stop;
-		const {name, category, description, image, link} = stop.details;
+		const {lat, lng, type, arrival, name} = stop;
+		const {category, description, image, link} = stop.details;
 		const company = await this.cruise.company();
 		const imageElements = image ? [
 			LocatedItemDescriptionImage.create(image),
@@ -655,6 +664,31 @@ class CruiseAssets {
 		return itemDescription.domNode;
 	}
 
+	private async gatewayPopup( gateway: TrackLocation ): Promise<Element> {
+		const {lat, lng, name} = gateway;
+		const itemDescription = LocatedItemDescription.create(
+			[
+				LocatedItemDescriptionText.create(name, undefined, { title: true }),
+				LocatedItemDescriptionIcon.create(svgAsset(
+					gatewayMarkerIcon,
+					'cruise-map__icon'
+				)),
+				//~ LocatedItemDescriptionText.create( arrival.toLocaleString( undefined, {
+						//~ day: '2-digit',
+						//~ month: '2-digit',
+						//~ year: 'numeric',
+						//~ hour12: false,
+						//~ hour: '2-digit',
+						//~ minute: '2-digit'
+					//~ } )
+				//~ ),
+			],
+			['cruise-map__popup'],
+			{}
+		);
+		return itemDescription.domNode;
+	}
+
 	showStops() {
 		for (const stop of this.cruise.stops) {
 			const { id, lat, lng } = stop;
@@ -732,6 +766,21 @@ class CruiseAssets {
 		this.sunrises = {};
 	}
 
-	showGateways() {}
-	hideGateways() {}
+	showGateways() {
+		for (const { gateway } of this.cruise.gateways) {
+			const { id, lat, lng } = gateway;
+			if (!this.gateways[ id ]) {
+				this.gateways[ id ] = this.map.attachLocationMarker(
+					id, LocationType.GATEWAY, lat, lng,
+					() => this.gatewayPopup(gateway),
+				);
+			}
+		}
+	}
+	hideGateways() {
+		for (const id of Object.keys( this.gateways )) {
+			this.map.detachLocationMarker( id, LocationType.GATEWAY );
+			delete this.gateways[ id ];
+		}
+	}
 }
