@@ -3,7 +3,7 @@ import {
 	Layer as LLayer,
 	marker, Marker, DivIcon,
 	polyline, circleMarker,
-	point, Point, LatLngExpression,
+	point, Point, PointExpression, LatLngExpression,
 } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import IntersectionSearchTree, {
@@ -276,12 +276,16 @@ class LeafletPane<
 			lMarker.isOpen = false;
 		});
 
-		const contentDiv = document.createElement('div');
-		contentDiv.classList.add('map__popup', 'map__popup_loaded');
-		contentDiv.style.setProperty(
+		const popupDiv = document.createElement('div');
+		popupDiv.classList.add('map__popup', 'map__popup_loaded');
+		popupDiv.style.setProperty(
 			'--map__popup_offset',
 			`${interactiveMarker.iconSize[1] / 2}px`
 		);
+		const contentDiv = document.createElement('div');
+		contentDiv.classList.add('map__popup-scroller');
+		popupDiv.appendChild( contentDiv );
+
 		// Ожидание получения контента
 		let contentTask: Promise<unknown> | undefined;
 
@@ -294,15 +298,48 @@ class LeafletPane<
 						contentDiv.appendChild(element);
 					});
 				await contentTask;
-				const [topLeft, bottomRight] = this.autoPan;
-				lMarker.bindPopup(contentDiv, {
+				
+				const coord = this.map.latLngToContainerPoint( lMarker.getLatLng() );
+				const size = this.map.getSize();
+				const iconSize = point( lMarker.getIcon().options.iconSize );
+				const left = coord.x - ( iconSize.x / 2 );
+				const right = size.x - coord.x - ( iconSize.x / 2 );
+				const top = coord.y;
+				const bottom = size.y - coord.y - iconSize.y;
+				const max = Math.max( left, right, top, bottom );
+				
+				let offset: PointExpression;
+				if (top == max) {
+					let x = 0;
+					if (coord.x < 300) x = 300 - coord.x;
+					offset = [ x, 0 ];
+				}
+				else if (left == max) {
+					let y = 0;
+					if (coord.y < 500) y = 500 - coord.y;
+					offset = [ -150 - iconSize.x / 2, y ];
+				}
+				else if (right == max) {
+					let y = 0;
+					if (coord.y < 500) y = coord.y - 500;
+					offset = [ 150 + iconSize.x / 2, y ];
+				}
+				else {
+					let x = 0;
+					if (coord.x < 300) x = 300 - coord.x;
+					offset = [ x, 500 + iconSize.y ];
+				}
+				
+				//~ const [topLeft, bottomRight] = this.autoPan;
+				lMarker.bindPopup(popupDiv, {
 					closeButton: false,
 					closeOnClick: false,
-					offset: [0, 0],
-					maxWidth: window.innerWidth - bottomRight.x - topLeft.x,
-					maxHeight: window.innerHeight - bottomRight.y - topLeft.y,
-					autoPanPaddingTopLeft: topLeft,
-					autoPanPaddingBottomRight: bottomRight,
+					autoPan: false,
+					offset,
+					//~ maxWidth: window.innerWidth - bottomRight.x - topLeft.x,
+					//~ maxHeight: window.innerHeight - bottomRight.y - topLeft.y,
+					//~ autoPanPaddingTopLeft: topLeft,
+					//~ autoPanPaddingBottomRight: bottomRight,
 					pane: this.compositePaneName('popupPane'),
 				}).openPopup();
 			}
@@ -321,10 +358,10 @@ class LeafletPane<
 					event.originalEvent?.relatedTarget as Node
 				)) {
 					container.addEventListener('mouseleave', () => {
-						popup.close();
+						//~ popup.close();
 					});
 				} else {
-					popup.close();
+					//~ popup.close();
 				}
 			}
 		});

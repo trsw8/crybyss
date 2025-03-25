@@ -69,12 +69,6 @@ export default class CruiseMap {
 	cruiseAsset( id: string ) {
 		return this._cruises.get( id );
 	}
-	//~ get cruises(): Cruise[] {
-		//~ const result = [];
-		//~ for (const {cruise} of this._cruises.values())
-			//~ result.push(cruise);
-		//~ return result;
-	//~ }
 
 	private _ships: Map<string, ShipMarker> = new Map();
 	shipMarker( id: string ) {

@@ -20,18 +20,19 @@
 }
 
 .map__popup {
-	overflow: auto;
+	overflow: hidden;
 	width: 300px;
-	max-width: 100%;
-	height: 500px;
-	max-height: 100%;
+	height: auto;
 	margin-bottom: calc(12px + var(--map__popup_offset));
-	padding: 20px;
+	padding-top: 20px;
+	padding-bottom: 20px;
 	border-radius: 10px;
 	background-color: var(--theme-background);
 }
 
-.map__popup_loaded {
-	height: auto;
-	max-height: min(500px, 100%);
+.map__popup-scroller {
+	overflow: auto;
+	max-height: 460px;
+	padding-left: 20px;
+	padding-right: 20px;
 }
