@@ -176,25 +176,26 @@ body .rs-tooltip {
   background-color: #fff;
   border-radius: 10px;
   padding: 20px;
-
-/*
-  @media (max-width: 550px) {
-    width: calc(100% - 90px);
-  }
-*/
 }
 
 @media (max-width: 800px) {
-.map-overlay--search-results {
+  .map-overlay--search-results {
     top: calc(var(--height) + 35px);
   }
 }
 
 @media (max-width: 700px) {
-.map-overlay--search-results {
+  .map-overlay--search-results {
     top: calc(var(--height) * 2 + 50px);
   }
 }
+
+@media (max-width: 550px) {
+  .map-overlay--search-results {
+    width: calc(100% - var(--height) - 55px);
+  }
+}
+
 
 .map-overlay--search-overflow {
   max-height: 256px;
