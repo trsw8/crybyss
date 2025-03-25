@@ -34,6 +34,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 selectedDate.setDate(day);
                 // seleced date value
                 input.value = `${day}/${month + 1}/${year}`;
+                window.dispatchEvent(new CustomEvent('datepicker-change', {
+                    detail: {
+                        date: input.value
+                    }
+                }));
                 dayElement.classList.add("selected");
 
                 const days = document.querySelectorAll(".day");
@@ -115,6 +120,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
     timeDisplay.addEventListener("click", function () {
         timeInput.showPicker(); //
+    });
+
+    window.addEventListener('timeline-change', function (event) {
+        const date = event.detail.date;
+        const day = date.getDate();
+        const month = date.getMonth() + 1;
+        const year = date.getFullYear();
+        const formattedDate = `${day}/${month}/${year}`;
+        input.value = formattedDate;
     });
 });
 

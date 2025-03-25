@@ -134,20 +134,28 @@ body .rs-tooltip {
 
 .map-overlay--search-box [type="text"] {
   border-radius: 10px;
-  border: 1px solid #eee;
+  /* border: 1px solid #eee; */
   background: #fff;
   height: var(--height);
   line-height: var(--height);
+  font-size: 18px;
+  letter-spacing: -0.5px;
   padding: 0 50px 0 20px;
   width: 100%;
   min-width: 440px;
+}
+
+@media (max-width: 800px) {
+  .map-overlay--search-box [type="text"] {
+    border: 1px solid #eee;
+  }
 }
 
 .map-overlay--search-box svg {
   position: absolute;
   top: 50%;
   right: 10px;
-  transform: translateY(-50%);
+  transform: translate(-50%, -50%);
   cursor: pointer;
 }
 
@@ -160,6 +168,15 @@ body .rs-tooltip {
   background-color: #fff;
   border-radius: 10px;
   padding: 20px;
+
+  @media (max-width: 800px) {
+    top: -140px;
+    z-index: 1000;
+  }
+
+  @media (max-width: 550px) {
+    width: calc(100% - 90px);
+  }
 }
 
 .map-overlay--search-overflow {
@@ -178,6 +195,8 @@ body .rs-tooltip {
 .map-overlay--search-title {
   cursor: pointer;
   margin-bottom: 15px;
+  font-size: 18px;
+  letter-spacing: -0.5px;
   user-select: none;
   display: inline-block;
   width: 200px;
@@ -190,7 +209,9 @@ body .rs-tooltip {
 
 .map-overlay--search-select {
   cursor: pointer;
-  margin-bottom: 15px;
+  margin-bottom: 21px;
+  font-size: 18px;
+  letter-spacing: -1.3px;
   user-select: none;
 }
 
@@ -198,13 +219,20 @@ body .rs-tooltip {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  font-size: 16px;
+  letter-spacing: -0.5px;
+}
+
+.map-overlay--search-checks .map-overlay--search-check {
+  font-size: 16px;
+  letter-spacing: -0.5px;
 }
 
 .map-overlay--search-checks label {
   width: 100%;
 }
 
-.map-overlay--search-checks .custom-checkbox + label::before {
+.map-overlay--search-checks .custom-checkbox+label::before {
   transform: translateY(-5px);
 }
 
@@ -246,17 +274,27 @@ body .rs-tooltip {
   transition: 0.4s;
 }
 
-.map-overlay--btn svg * {
-}
+.map-overlay--btn svg * {}
 
-.map-overlay--btn.active,
-.map-overlay--btn:hover {
+.map-overlay--btn.active {
   background-color: var(--main);
 }
 
-.map-overlay--btn,
-.map-overlay--btn.active:hover {
+@media (min-width: 801px) {
+  .map-overlay--btn:hover {
+    background-color: var(--main);
+  }
+}
+
+
+.map-overlay--btn {
   background-color: #fff;
+}
+
+@media (min-width: 801px) {
+  .map-overlay--btn.active:hover {
+    background-color: #fff;
+  }
 }
 
 .map-overlay--ship {
@@ -329,12 +367,20 @@ body .rs-tooltip {
   border: 1px solid rgba(0, 0, 0, 0.5);
   background: #fff;
   position: absolute;
-  width: calc(100% - 10%);
+  width: calc(100% - 20%);
   bottom: 20px;
   left: 50%;
   transform: translateX(-50%);
   max-width: 1500px;
   min-height: var(--height);
+
+  @media (max-width: 1919px) {
+    width: calc(100% - 25%);
+  }
+
+  @media (max-width: 1599px) {
+    width: calc(100% - 20px);
+  }
 }
 
 .range--deco {
@@ -425,10 +471,11 @@ body .map-overlay--range-dates .rs-container .rs-pointer {
 
 .map-overlay {
   position: relative;
-  height: 995px;
+  height: calc(100vh - 280px);
   pointer-events: none;
 }
-.map-overlay > * {
+
+.map-overlay>* {
   pointer-events: auto;
 }
 
@@ -440,15 +487,18 @@ body .map-overlay--range-dates .rs-container .rs-pointer {
   visibility: hidden;
   pointer-events: none;
 }
+
 .map-overlay--range-dates .rs-container {
   display: flex;
   align-items: center;
   cursor: pointer;
   padding: 12.5px 0;
 }
+
 .map-overlay--range-dates .rs-container .rs-bg {
   inset: auto;
 }
+
 .map-overlay--range-dates .rs-container .rs-pointer {
   left: calc(var(--map-overlay--range-dates_point, 0) * 100% - 12px);
 }
@@ -458,45 +508,75 @@ body .map-overlay--range-dates .rs-container .rs-pointer {
 .map-overlay svg {
   transition: none;
 }
+
 .map-overlay--search-box svg {
   width: 24px;
   height: 24px;
 }
+
 .map-overlay--search-title svg {
   width: 16px;
   height: 8px;
 }
+
 .map-overlay--btn svg {
   width: 34px;
   height: 34px;
   transition-duration: 0.4s;
   transition-property: fill stroke;
 }
-.map-overlay--btn-primary-stroke.active svg,
-.map-overlay--btn-primary-stroke:hover svg {
+
+.map-overlay--btn-primary-stroke.active svg {
   stroke: #ffffff;
 }
-.map-overlay--btn-primary-stroke svg,
-.map-overlay--btn-primary-stroke.active:hover svg {
+
+@media (min-width: 801px) {
+  .map-overlay--btn-primary-stroke:hover svg {
+    stroke: #ffffff;
+  }
+}
+
+.map-overlay--btn-primary-stroke svg {
   stroke: var(--main);
 }
-.map-overlay--btn-primary-fill.active svg,
-.map-overlay--btn-primary-fill:hover svg {
+
+@media (min-width: 801px) {
+  .map-overlay--btn-primary-stroke.active:hover svg {
+    stroke: var(--main);
+  }
+}
+
+.map-overlay--btn-primary-fill.active svg {
   fill: #ffffff;
 }
-.map-overlay--btn-primary-fill svg,
-.map-overlay--btn-primary-fill.active:hover svg {
+
+@media (min-width: 801px) {
+  .map-overlay--btn-primary-fill:hover svg {
+    fill: #ffffff;
+  }
+}
+
+.map-overlay--btn-primary-fill svgg {
   fill: var(--main);
 }
+
+@media (min-width: 801px) {
+  .map-overlay--btn-primary-fill.active:hover svg {
+    fill: var(--main);
+  }
+}
+
 .asteriks svg {
   width: 24px;
   height: 24px;
   fill: var(--main);
 }
+
 .map-overlay--range-dates .rs-container .rs-pointer {
   position: relative;
   padding: 2px;
 }
+
 .map-overlay--range-dates .rs-container .rs-pointer svg {
   position: absolute;
   width: 20px;
@@ -506,6 +586,7 @@ body .map-overlay--range-dates .rs-container .rs-pointer {
 }
 
 @media (max-width: 1200px) {
+
   .map-overlay--ship,
   .map-overlay--anchor,
   .map-overlay--place,
@@ -516,14 +597,16 @@ body .map-overlay--range-dates .rs-container .rs-pointer {
 
 @media (max-width: 800px) {
   .map-overlay {
-    height: calc(50dvh + 130px);
+    /* height: calc(50dvh + 130px); */
+    /* height: 1000px; */
+    height: 69dvh;
   }
 
   .map-overlay--search-box {
     position: absolute;
-    top: -65px;
-    left: 5%;
-    width: 90%;
+    top: -190px;
+    left: 20px;
+    width: calc(100% - 40px);
 
     svg {
       width: 18px;
@@ -536,16 +619,16 @@ body .map-overlay--range-dates .rs-container .rs-pointer {
     display: none;
   }
 
-  .map-overlay--search-results {
+  /* .map-overlay--search-results {
     display: none;
-  }
+  } */
 
   .map-overlay--btn {
     position: absolute;
     top: 15px;
     border-radius: 6px;
 
-    > svg {
+    >svg {
       width: 20px;
       height: 20px;
     }
