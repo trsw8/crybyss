@@ -134,7 +134,7 @@ export default abstract class LeafletMap extends Map {
 		`);
 		this.map.getContainer().appendChild(coordsDiv);
 
-		function convertToDMS(coordinate: number): string {
+		function convertToDMS(coordinate: number, digits: number): string {
 			const absolute = Math.abs(coordinate);
 			const degrees = Math.floor(absolute);
 			const minutesFloat = (absolute - degrees) * 60;
@@ -144,19 +144,21 @@ export default abstract class LeafletMap extends Map {
 			const secondsDecimal = seconds.split('.')[1];
 
 			
-			return `${degrees.toString().padStart(2, '0')}° ${minutes.toString().padStart(2, '0')}' ${secondsFull.padStart(2, '0')}.${secondsDecimal}`;
+			return `${degrees.toString().padStart(digits, '0')}° ${minutes.toString().padStart(2, '0')}' ${secondsFull.padStart(2, '0')}.${secondsDecimal}`;
 		}
 
 		this.map.on('mousemove', (event) => {
 			const lat = event.latlng.lat;
 			const lng = event.latlng.lng;
+			const lngFull = lng.toFixed(4).toString().split('.')[0];
+			const lngDecimal = lng.toFixed(4).toString().split('.')[1];
 			const coordsLat = document.querySelector('.leaflet-control-coords__lat');
 			const coordsLng = document.querySelector('.leaflet-control-coords__lng');
 			const coordsTotal = document.querySelector('.leaflet-control-coords__total');
 			if (coordsLat && coordsLng && coordsTotal) {
-				coordsLat.textContent = `N${convertToDMS(lat)}`;
-				coordsLng.textContent = `E${convertToDMS(lng)}`;	
-				coordsTotal.textContent = `(${lat.toFixed(4)}, ${lng.toFixed(4)})`;
+				coordsLat.textContent = `N${convertToDMS(lat, 2)}`;
+				coordsLng.textContent = `E${convertToDMS(lng, 3)}`;	
+				coordsTotal.textContent = `(${lat.toFixed(4)}, ${lngFull.padStart(3, '0')}.${lngDecimal})`;
 			}
 		});
 		// курсор конец

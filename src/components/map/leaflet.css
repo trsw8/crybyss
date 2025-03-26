@@ -63,6 +63,7 @@
 	position: absolute;
 	display: flex;
 	flex-direction: column;
+	width: 120px;
 	gap: 3px;
 	bottom: 20px;
 	right: 20px;
