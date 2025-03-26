@@ -125,6 +125,41 @@ export default abstract class LeafletMap extends Map {
 		});
 
 		// линейка конец
+		// курсор начало
+		const coordsDiv = L.DomUtil.create('div', 'leaflet-control-coords');
+		coordsDiv.insertAdjacentHTML('afterbegin', `
+			<div class="leaflet-control-coords__lat"></div>
+			<div class="leaflet-control-coords__lng"></div>
+			<div class="leaflet-control-coords__total"></div>
+		`);
+		this.map.getContainer().appendChild(coordsDiv);
+
+		function convertToDMS(coordinate: number): string {
+			const absolute = Math.abs(coordinate);
+			const degrees = Math.floor(absolute);
+			const minutesFloat = (absolute - degrees) * 60;
+			const minutes = Math.floor(minutesFloat);
+			const seconds = ((minutesFloat - minutes) * 60).toFixed(2);
+			const secondsFull = seconds.split('.')[0];
+			const secondsDecimal = seconds.split('.')[1];
+
+			
+			return `${degrees.toString().padStart(2, '0')}° ${minutes.toString().padStart(2, '0')}' ${secondsFull.padStart(2, '0')}.${secondsDecimal}`;
+		}
+
+		this.map.on('mousemove', (event) => {
+			const lat = event.latlng.lat;
+			const lng = event.latlng.lng;
+			const coordsLat = document.querySelector('.leaflet-control-coords__lat');
+			const coordsLng = document.querySelector('.leaflet-control-coords__lng');
+			const coordsTotal = document.querySelector('.leaflet-control-coords__total');
+			if (coordsLat && coordsLng && coordsTotal) {
+				coordsLat.textContent = `N${convertToDMS(lat)}`;
+				coordsLng.textContent = `E${convertToDMS(lng)}`;	
+				coordsTotal.textContent = `(${lat.toFixed(4)}, ${lng.toFixed(4)})`;
+			}
+		});
+		// курсор конец
 	}
 
 	addLayer() {

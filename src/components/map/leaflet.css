@@ -58,3 +58,9 @@
 	background-color: red;
 	border-radius: 50%;
 }
+.leaflet-control-coords {
+	position: absolute;
+	bottom: 20px;
+	right: 20px;
+	z-index: 1000;
+}
