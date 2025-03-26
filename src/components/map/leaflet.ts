@@ -69,22 +69,24 @@ export default abstract class LeafletMap extends Map {
 
 		const toggleMeasure = () => {
 			measureOpenButton.classList.toggle('active');
-			if (!measureOpenButton.classList.contains('active')) {
-				removeMeasure();
-				this.map.getContainer().style.cursor = 'grab';
-				this.map.on('dragstart', () => {
-					this.map.getContainer().style.cursor = 'grabbing';
-				});
-				this.map.on('dragend', () => {
+			setTimeout(() => {
+				const measureButton = document.querySelector('.map-overlay--line');
+				if (!measureButton.classList.contains('active')) {
+					removeMeasure();
 					this.map.getContainer().style.cursor = 'grab';
-				});
-			} else {
-				this.map.getContainer().style.cursor = 'crosshair';
-			}
+					this.map.on('dragstart', () => {
+						this.map.getContainer().style.cursor = 'grabbing';
+					});
+					this.map.on('dragend', () => {
+						this.map.getContainer().style.cursor = 'grab';
+					});
+				} else {
+					this.map.getContainer().style.cursor = 'crosshair';
+				}
+			}, 100);
 		}
 
 		measureOpenButton?.addEventListener('click', () => {
-			console.log('click')
 			setTimeout(toggleMeasure, 100);
 		})
 
