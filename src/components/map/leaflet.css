@@ -58,9 +58,15 @@
 	background-color: red;
 	border-radius: 50%;
 }
+
 .leaflet-control-coords {
 	position: absolute;
+	display: flex;
+	flex-direction: column;
+	gap: 3px;
 	bottom: 20px;
 	right: 20px;
 	z-index: 1000;
+	font-size: 12px;
+	line-height: 120%;
 }
