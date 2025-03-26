@@ -348,9 +348,29 @@ class DateFilter {
 		slider.addEventListener('input', handleTimeSliderChange);
 		time.addEventListener('input', handleTimeInputChange);
 
+		// Функция для получения текущего часового пояса в минутах
+		function getCurrentTimezoneOffset(): number {
+			return new Date().getTimezoneOffset();
+		}
+
+		// Функция для получения timestamp по московскому времени (UTC+3)
+		function getMoscowTimestamp(): number {
+			const now = Date.now();
+			const currentOffset = getCurrentTimezoneOffset();
+			const moscowOffset = -180; // UTC+3 в минутах
+			const offsetDiff = (currentOffset - moscowOffset) * 60 * 1000; // разница в миллисекундах
+			
+			return now + offsetDiff;
+		}
+
+		// Функция для создания Date объекта с московским временем
+		function createMoscowDate(): Date {
+			const moscowTimestamp = getMoscowTimestamp();
+			return new Date(moscowTimestamp);
+		}
+
 		const updateFilter = () => {
-			const now = new Date();
-			now.setHours(now.getUTCHours() + 3);
+			const now = createMoscowDate();
 
 			window.dispatchEvent(new CustomEvent('timeline-change', {detail: {date: now}}));
 
@@ -406,9 +426,10 @@ class DateFilter {
 			pointer.addEventListener('mousedown', onPointerDown);
 			pointer.addEventListener('touchstart', onPointerDown);
 
+			
+
 			clockBtn.addEventListener('click', () => {
-				const now = new Date();
-				now.setHours(now.getUTCHours() + 3);
+				const now = createMoscowDate();
 
 				if (clockBtn.classList.contains('active')) {
 					clockBtn.classList.remove('active');
