@@ -282,37 +282,49 @@ export default abstract class LeafletMap extends Map {
     const TWOGIS_TILE_LAYER_URL =
       "https://tile2.maps.2gis.com/tiles?x={x}&y={y}&z={z}";
 
-	const changeTileLayer = (url: string) => {
-		const currentTileLayer = this.map.eachLayer((layer) => {
-    		if (layer instanceof L.TileLayer) {
-    			layer.remove();
-    		}
-    	});
-		new L.TileLayer(url).addTo(this.map);
-	};
+    const changeTileLayer = (url: string) => {
+      const currentTileLayer = this.map.eachLayer((layer) => {
+        if (layer instanceof L.TileLayer) {
+          layer.remove();
+        }
+      });
+      new L.TileLayer(url).addTo(this.map);
+    };
 
     const radioInputs = document.querySelectorAll('input[name="over"]');
-    radioInputs.forEach(input => {
-      input.addEventListener('change', (e) => {
+    radioInputs.forEach((input) => {
+      input.addEventListener("change", (e) => {
         const target = e.target as HTMLInputElement;
         if (target.checked) {
-          switch(target.id) {
-            case 'over1':
+          switch (target.id) {
+            case "over1":
               changeTileLayer(OSM_TILE_LAYER_URL);
               break;
-            case 'over2': 
+            case "over2":
               changeTileLayer(YANDEX_TILE_LAYER_URL);
               break;
-            case 'over3':
-              changeTileLayer(YANDEX_SATELLITE_TILE_LAYER_URL); 
+            case "over3":
+              changeTileLayer(YANDEX_SATELLITE_TILE_LAYER_URL);
               break;
-            case 'over4':
+            case "over4":
               changeTileLayer(TWOGIS_TILE_LAYER_URL);
               break;
           }
         }
       });
     });
+
+    const copyElement = document.querySelector(".map-overlay--copy");
+    if (copyElement) {
+      copyElement.addEventListener("click", () => {
+        copyElement.classList.toggle("active");
+        const popin = document.querySelector(".map-overlay--overlays");
+		console.log('popin', popin)
+		if (popin) {
+			popin.classList.toggle('map-overlay--overlays_hidden');
+		}
+      });
+    }
     // подложка конец
   }
 

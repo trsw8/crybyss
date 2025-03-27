@@ -330,6 +330,10 @@ body .rs-tooltip {
   background-color: #fff;
 }
 
+.map-overlay--overlays_hidden {
+  display: none;
+}
+
 .map-overlay--overlays-box {
   display: flex;
   flex-direction: column;
