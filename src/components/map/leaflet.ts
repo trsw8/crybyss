@@ -30,6 +30,7 @@ import Map, {
 import "./index.css";
 import "./leaflet.css";
 import * as L from "leaflet";
+import "./yandex.js";
 
 export default abstract class LeafletMap extends Map {
   // protected abstract tileLayer(): TileLayer;
@@ -275,21 +276,33 @@ export default abstract class LeafletMap extends Map {
     // отрезок конец
     // подложка начало
     const OSM_TILE_LAYER_URL = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
-    const YANDEX_TILE_LAYER_URL =
-      "https://core-renderer-tiles.maps.yandex.net/tiles?l=map&x={x}&y={y}&z={z}";
-    const YANDEX_SATELLITE_TILE_LAYER_URL =
       "https://core-sat.maps.yandex.net/tiles?l=sat&x={x}&y={y}&z={z}";
     const TWOGIS_TILE_LAYER_URL =
       "https://tile2.maps.2gis.com/tiles?x={x}&y={y}&z={z}";
 
     const changeTileLayer = (url: string) => {
-      const currentTileLayer = this.map.eachLayer((layer) => {
-        if (layer instanceof L.TileLayer) {
+      this.map.eachLayer((layer) => {
+        if (layer instanceof L.TileLayer || layer instanceof L.Yandex) {
           layer.remove();
         }
       });
       new L.TileLayer(url).addTo(this.map);
     };
+
+	const changeYandexLayer = (type: string) => {
+		this.map.eachLayer((layer) => {
+			if (layer instanceof L.TileLayer || layer instanceof L.Yandex) {
+			  layer.remove();
+			}
+		  });
+		  // @ts-ignore
+		  const yandexLayer = new L.Yandex(type, {
+			apiParams: {
+			  apikey: "<your API-key>",
+			},
+		  });
+		  this.map.addLayer(yandexLayer);
+		}
 
     const radioInputs = document.querySelectorAll('input[name="over"]');
     radioInputs.forEach((input) => {
@@ -299,12 +312,13 @@ export default abstract class LeafletMap extends Map {
           switch (target.id) {
             case "over1":
               changeTileLayer(OSM_TILE_LAYER_URL);
+              console.log("this.map", this.map.options.crs);
               break;
             case "over2":
-              changeTileLayer(YANDEX_TILE_LAYER_URL);
+              changeYandexLayer("map");
               break;
             case "over3":
-              changeTileLayer(YANDEX_SATELLITE_TILE_LAYER_URL);
+			  changeYandexLayer("satellite");
               break;
             case "over4":
               changeTileLayer(TWOGIS_TILE_LAYER_URL);
@@ -319,10 +333,10 @@ export default abstract class LeafletMap extends Map {
       copyElement.addEventListener("click", () => {
         copyElement.classList.toggle("active");
         const popin = document.querySelector(".map-overlay--overlays");
-		console.log('popin', popin)
-		if (popin) {
-			popin.classList.toggle('map-overlay--overlays_hidden');
-		}
+        console.log("popin", popin);
+        if (popin) {
+          popin.classList.toggle("map-overlay--overlays_hidden");
+        }
       });
     }
     // подложка конец
