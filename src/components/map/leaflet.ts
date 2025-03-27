@@ -239,6 +239,54 @@ export default abstract class LeafletMap extends Map {
 		// отрезок конец
 		// подложка начало
 
+		// protected tileLayer() {
+	// 	// let key = false
+	// 	// document.addEventListener('click', (e) => {
+	// 	// 	console.log(e);
+	// 	// 	key = !key;
+	// 	// });
+	// 	// if (key) {
+	// 	// 	return tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png');
+	// 	// }
+	// 	// return tileLayer('https://core-renderer-tiles.maps.yandex.net/tiles?l=map&x={x}&y={y}&z={z}', {
+	// 	// 	maxZoom: 19,
+	// 	// 	attribution: '© Яндекс'
+	// 	// });
+	// 	return tileLayer('https://core-sat.maps.yandex.net/tiles?l=sat&x={x}&y={y}&z={z}');
+	// 	// return tileLayer('https://tile2.maps.2gis.com/tiles?x={x}&y={y}&z={z}', {
+	// 	// 	maxZoom: 18,
+	// 	// 	attribution: '© 2ГИС'
+	// 	// });
+	// }
+	
+		const OSM_TILE_LAYER_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+		const YANDEX_TILE_LAYER_URL = 'https://core-renderer-tiles.maps.yandex.net/tiles?l=map&x={x}&y={y}&z={z}';
+		const YANDEX_SATELLITE_TILE_LAYER_URL = 'https://core-sat.maps.yandex.net/tiles?l=sat&x={x}&y={y}&z={z}';
+		const TWOGIS_TILE_LAYER_URL = 'https://tile2.maps.2gis.com/tiles?x={x}&y={y}&z={z}';
+
+		let key = false;
+		document.addEventListener('click', (e) => {
+			console.log(e);
+			key = !key;
+			const currentTileLayer = this.map.eachLayer((layer) => {
+				if (layer instanceof L.TileLayer) {
+					layer.remove();
+				}
+			});
+
+			if (key) {
+				new L.TileLayer(YANDEX_SATELLITE_TILE_LAYER_URL).addTo(this.map);
+			} else {
+				new L.TileLayer(OSM_TILE_LAYER_URL).addTo(this.map);
+			}
+		});
+
+
+
+    // const tileLayer(): TileLayer {
+    //     return new TileLayer(LeafletMap.OSM_TILE_LAYER_URL);
+    // }
+
 		// подложка конец
 	}
 
