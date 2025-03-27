@@ -21,7 +21,13 @@ import * as L from 'leaflet';
 
 export default abstract class LeafletMap extends Map {
 
-	protected abstract tileLayer(): TileLayer;
+	// protected abstract tileLayer(): TileLayer;
+
+	private static readonly TILE_LAYER_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+
+    protected tileLayer(): TileLayer {
+        return new TileLayer(LeafletMap.TILE_LAYER_URL);
+    }
 
 	declare private map: LMap;
 	declare private renderer: Renderer;
@@ -39,7 +45,7 @@ export default abstract class LeafletMap extends Map {
 			renderer: canvas(),
 		});
 		this.mainLayer = new LeafletPane(this.map, this.autoPan);
-
+		
 		this.tileLayer().addTo(this.map);
 
 		this.map.on('move', () => {
@@ -231,6 +237,9 @@ export default abstract class LeafletMap extends Map {
 		updateMileWidth();
 		this.map.getContainer().appendChild(mileDiv);
 		// отрезок конец
+		// подложка начало
+
+		// подложка конец
 	}
 
 	addLayer() {
