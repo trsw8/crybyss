@@ -71,3 +71,39 @@
 	font-size: 12px;
 	line-height: 120%;
 }
+
+.leaflet-mile {
+	position: absolute;
+	bottom: 20px;
+	left: 20px;
+	display: flex;
+	flex-direction: column;
+	gap: 5px;
+	align-items: center;
+	z-index: 1000;
+}
+
+.leaflet-mile__block {
+	display: flex;
+	align-items: center;
+}
+
+.leaflet-mile__block-marker {
+	width: 1px;
+	height: 7px;
+	background-color: rgba(0, 0, 0, 0.5);
+}
+
+.leaflet-mile__block-line {
+	display: block;
+	flex: auto;
+	height: 1px;
+	background-color: rgba(0, 0, 0, 0.5);
+}
+
+.leaflet-mile__block-text {
+	padding: 0 2px;
+	color: rgba(0, 0, 0, 0.7);
+	font-size: 12px;
+	line-height: 120%;
+}

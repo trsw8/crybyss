@@ -162,6 +162,68 @@ export default abstract class LeafletMap extends Map {
 			}
 		});
 		// курсор конец
+		// отрезок начало
+		const mileDiv = L.DomUtil.create('div', 'leaflet-mile');
+		mileDiv.insertAdjacentHTML('afterbegin', `
+			<div class="leaflet-mile__block leaflet-mile__block_type_km">
+				<div class="leaflet-mile__block-marker"></div>
+				<div class="leaflet-mile__block-line"></div>
+				<div class="leaflet-mile__block-text leaflet-mile__block-text_type_km"></div>
+				<div class="leaflet-mile__block-line"></div>
+				<div class="leaflet-mile__block-marker"></div>
+			</div>
+			<div class="leaflet-mile__block leaflet-mile__block_type_mile">
+				<div class="leaflet-mile__block-marker"></div>
+				<div class="leaflet-mile__block-line"></div>
+				<div class="leaflet-mile__block-text leaflet-mile__block-text_type_mile"></div>
+				<div class="leaflet-mile__block-line"></div>
+				<div class="leaflet-mile__block-marker"></div>
+			</div>
+		`);
+
+		const updateMileWidth = () => {
+			const zoom = this.map.getZoom();
+			const center = this.map.getCenter();
+			const point1 = this.map.project(center);
+
+			const kmWidth = 60;
+			let distance = 1000;
+
+			// Находим точку на расстоянии distance метров от центра
+			const point2 = this.map.project([
+				center.lat,
+				center.lng + (distance / (111320 * Math.cos(center.lat * Math.PI / 180)))
+			]);
+			
+			// Вычисляем ширину в пикселях
+			const width = Math.abs(point2.x - point1.x);
+
+			const precent = width / kmWidth * 100;
+			const kmValue = distance * 100 / precent / 1000;
+			let kmValueText = kmValue;
+			if (kmValue > 1) {
+				kmValueText = Math.round(kmValue);
+			} else {
+				kmValueText = Math.round(kmValue * 100) / 100;
+			}
+			
+			const kmBlock = mileDiv.querySelector('.leaflet-mile__block_type_km');
+			const mileBlock = mileDiv.querySelector('.leaflet-mile__block_type_mile');
+			const kmTextBlock = kmBlock?.querySelector('.leaflet-mile__block-text_type_km');
+			const mileTextBlock = mileBlock?.querySelector('.leaflet-mile__block-text_type_mile');
+
+			if (kmBlock && mileBlock && kmTextBlock && mileTextBlock) {
+				kmTextBlock.textContent = `${kmValueText} km`;
+				mileTextBlock.textContent = `${kmValueText} ml`;
+				(kmBlock as HTMLElement).style.width = `${width * 100 / precent}px`;
+				(mileBlock as HTMLElement).style.width = `${width * 100 / precent * 1.609}px`;
+			}
+		};
+
+		this.map.on('zoomend', updateMileWidth);
+		updateMileWidth();
+		this.map.getContainer().appendChild(mileDiv);
+		// отрезок конец
 	}
 
 	addLayer() {
