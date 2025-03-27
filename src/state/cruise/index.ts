@@ -27,7 +27,7 @@ export interface Cruise {
 	company: () => Promise<Company>;
 	stops: TrackStop[];
 	sights: TrackStop[];
-	gateways: { gateway: TrackLocation, trackpoint: TrackPoint }[];
+	gateways: Record<string, { gateway: TrackLocation, trackpoint: TrackPoint }>;
 	sunrises: TrackPoint[];
 	sunsets: TrackPoint[];
 	route: CruiseRoute;

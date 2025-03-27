@@ -84,7 +84,6 @@ export default abstract class LeafletMap extends Map {
 		}
 
 		measureOpenButton?.addEventListener('click', () => {
-			console.log('click')
 			setTimeout(toggleMeasure, 100);
 		})
 
@@ -276,24 +275,18 @@ class LeafletPane<
 			lMarker.isOpen = false;
 		});
 
-		const popupDiv = document.createElement('div');
-		popupDiv.classList.add('map__popup', 'map__popup_loaded');
-		const contentDiv = document.createElement('div');
-		contentDiv.classList.add('map__popup-scroller');
-		popupDiv.appendChild( contentDiv );
-
-		// Ожидание получения контента
-		let contentTask: Promise<unknown> | undefined;
-
 		// Создание и открытие одноразового маркера
 		const open = async () => {
 			if (!lMarker.isOpen) {
 				lMarker.isOpen = true;
-				if (!contentTask)
-					contentTask = interactiveMarker.popupContent().then(element => {
-						contentDiv.appendChild(element);
-					});
-				await contentTask;
+				const content = await interactiveMarker.popupContent();
+
+				const contentDiv = document.createElement('div');
+				contentDiv.classList.add('map__popup-scroller');
+				contentDiv.appendChild( content );
+				const popupDiv = document.createElement('div');
+				popupDiv.classList.add('map__popup', 'map__popup_loaded');
+				popupDiv.appendChild( contentDiv );
 				
 				// Ищем оптимальное положение попапа
 				popupDiv.style.maxWidth = null;
