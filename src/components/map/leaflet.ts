@@ -128,7 +128,7 @@ export default abstract class LeafletMap extends Map {
         radius: 5,
         color: "red",
         fillColor: "red",
-        fillOpacity: 1,
+        fillOpacity: 1
       }).addTo(this.map);
       measurePoints.push(circle);
 
@@ -475,24 +475,18 @@ class LeafletPane<
       lMarker.isOpen = false;
     });
 
-    const popupDiv = document.createElement('div');
-    popupDiv.classList.add('map__popup', 'map__popup_loaded');
-    const contentDiv = document.createElement("div");
-    contentDiv.classList.add("map__popup-scroller");
-    popupDiv.appendChild( contentDiv );
-
-    // Ожидание получения контента
-    let contentTask: Promise<unknown> | undefined;
-
     // Создание и открытие одноразового маркера
     const open = async () => {
       if (!lMarker.isOpen) {
         lMarker.isOpen = true;
-        if (!contentTask)
-          contentTask = interactiveMarker.popupContent().then(element => {
-            contentDiv.appendChild(element);
-          });
-        await contentTask;
+        const content = await interactiveMarker.popupContent();
+
+        const contentDiv = document.createElement("div");
+        contentDiv.classList.add("map__popup-scroller");
+        contentDiv.appendChild( content );
+        const popupDiv = document.createElement("div");
+        popupDiv.classList.add("map__popup", "map__popup_loaded");
+        popupDiv.appendChild( contentDiv );
         
         // Ищем оптимальное положение попапа
         popupDiv.style.maxWidth = null;
@@ -569,7 +563,7 @@ class LeafletPane<
       if (!lMarker.isOpen) open();
     });
     // Закрытие попапа только при выходе мыши за его пределы либо пределы маркера
-    lMarker.on("mouseout", (event) => {
+    lMarker.on("mouseout", event => {
       const popup = lMarker.getPopup();
       if (popup) {
         const container = popup.getElement();
@@ -686,7 +680,7 @@ class LeafletPane<
         }
       }
 
-      if (( mapPolyline as InteractiveMapPolyline).events ) {
+      if (( mapPolyline as InteractiveMapPolyline ).events) {
         for (const layer of layers) {
           const events = ( mapPolyline as InteractiveMapPolyline ).events;
           for (const type of Object.keys( events )) {

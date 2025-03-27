@@ -143,7 +143,7 @@ class CruiseData implements Cruise {
 	declare shipId: string;
 	declare stops: TrackStop[];
 	declare sights: TrackStop[];
-	declare gateways: { gateway: TrackLocation, trackpoint: TrackPoint }[];
+	declare gateways: Record<string, { gateway: TrackLocation, trackpoint: TrackPoint }>;
 	declare sunrises: TrackPoint[];
 	declare sunsets: TrackPoint[];
 	declare route: CruiseRoute;
@@ -275,7 +275,7 @@ class CruiseData implements Cruise {
 			shipId: data.PROPERTY_SHIPID_VALUE,
 			stops,
 			sights,
-			gateways: Object.values( gateways ),
+			gateways,
 			sunsets,
 			sunrises,
 			route
