@@ -38,7 +38,7 @@
 	<div class="map-overlay--place map-overlay--btn map-overlay--btn-primary-stroke">
 		<%- include('../../icons/showplace.svg') %>
 	</div>
-	<div class="map-overlay--menu map-overlay--btn map-overlay--btn-primary-stroke active">
+	<div class="map-overlay--menu map-overlay--btn map-overlay--toggle-btn map-overlay--btn-primary-stroke active">
 		<div class="open"><%- include('../../icons/menu.svg') %></div>
 		<div class="close"><%- include('../../icons/close.svg') %></div>
 	</div>
@@ -65,7 +65,7 @@
 	<div class="map-overlay--line map-overlay--btn map-overlay--btn-primary-stroke">
 		<%- include('../../icons/ruler.svg') %>
 	</div>
-	<div class="map-overlay--copy map-overlay--btn map-overlay--btn-primary-stroke active">
+	<div class="map-overlay--copy map-overlay--btn map-overlay--toggle-btn map-overlay--btn-primary-stroke active">
 		<%- include('../../icons/layers.svg') %>
 	</div>
 	<div class="map-overlay--overlays">
@@ -76,6 +76,8 @@
 			<label for="over2">Яндекс</label>
 			<input type="radio" name="over" id="over3" class="custom-radio">
 			<label for="over3">Яндекс. Спутник</label>
+			<input type="radio" name="over" id="over4" class="custom-radio">
+			<label for="over4">2GIS</label>
 		</div>
 	</div>
 

@@ -35,7 +35,9 @@ export default class MapOverlay extends DOMComponent {
 			const layer = checkbox.id.split( '-' )[0];
 			new LayerVisibilityCheckbox( checkbox, ( cruiseMap as any )[ `${layer}Layer` ] as VisibilityControl );
 		}
-		new ToggleButton( domNode.getElementsByClassName( 'map-overlay--menu' )[0] );
+		for (const button of domNode.getElementsByClassName( 'map-overlay--toggle-btn' )) {
+			new ToggleButton( button );
+		}
 
 		const shipSlider = new TimelineSlider(
 			domNode.getElementsByClassName(
@@ -277,12 +279,7 @@ class SearchBox extends DOMComponent {
 class ToggleButton extends DOMComponent {
 	constructor(domNode: Element) {
 		super(domNode);
-		domNode.addEventListener('click', () => {
-			if (domNode.classList.contains( 'active' ))
-				domNode.classList.remove( 'active' );
-			else
-				domNode.classList.add( 'active' );
-		});
+		domNode.addEventListener( 'click', () => { domNode.classList.toggle( 'active' ) } );
 	}
 }
 
@@ -368,9 +365,29 @@ class DateFilter {
 		slider.addEventListener('input', handleTimeSliderChange);
 		time.addEventListener('input', handleTimeInputChange);
 
+		// Функция для получения текущего часового пояса в минутах
+		function getCurrentTimezoneOffset(): number {
+			return new Date().getTimezoneOffset();
+		}
+
+		// Функция для получения timestamp по московскому времени (UTC+3)
+		function getMoscowTimestamp(): number {
+			const now = Date.now();
+			const currentOffset = getCurrentTimezoneOffset();
+			const moscowOffset = -180; // UTC+3 в минутах
+			const offsetDiff = (currentOffset - moscowOffset) * 60 * 1000; // разница в миллисекундах
+			
+			return now + offsetDiff;
+		}
+
+		// Функция для создания Date объекта с московским временем
+		function createMoscowDate(): Date {
+			const moscowTimestamp = getMoscowTimestamp();
+			return new Date(moscowTimestamp);
+		}
+
 		const updateFilter = () => {
-			const now = new Date();
-			now.setHours(now.getUTCHours() + 3);
+			const now = createMoscowDate();
 
 			window.dispatchEvent(new CustomEvent('timeline-change', {detail: {date: now}}));
 
@@ -426,9 +443,10 @@ class DateFilter {
 			pointer.addEventListener('mousedown', onPointerDown);
 			pointer.addEventListener('touchstart', onPointerDown);
 
+			
+
 			clockBtn.addEventListener('click', () => {
-				const now = new Date();
-				now.setHours(now.getUTCHours() + 3);
+				const now = createMoscowDate();
 
 				if (clockBtn.classList.contains('active')) {
 					clockBtn.classList.remove('active');

@@ -369,7 +369,7 @@ body .rs-tooltip {
   line-height: 0;
 }
 
-.map-overlay--menu:not(.active) .close, .map-overlay--menu.active .open, .map-overlay--menu:not(.active) + .map-overlay--layers {
+.map-overlay--menu:not(.active) .close, .map-overlay--menu.active .open, .map-overlay--toggle-btn:not(.active) + div {
   display: none;
 }
 
@@ -471,12 +471,6 @@ body .rs-tooltip {
   padding: 20px;
   border-radius: 10px;
   background-color: #fff;
-}
-
-@media (max-width: 1100px) {
-  .map-overlay--overlays {
-    display: none;
-  }
 }
 
 .map-overlay--overlays-box {
