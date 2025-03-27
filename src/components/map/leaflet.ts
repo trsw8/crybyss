@@ -147,9 +147,7 @@ export default abstract class LeafletMap extends Map {
 			return `${degrees.toString().padStart(digits, '0')}° ${minutes.toString().padStart(2, '0')}' ${secondsFull.padStart(2, '0')}.${secondsDecimal}`;
 		}
 
-		this.map.on('mousemove', (event) => {
-			const lat = event.latlng.lat;
-			const lng = event.latlng.lng;
+		const checkCoords = (lat: number, lng: number) => {
 			const lngFull = lng.toFixed(4).toString().split('.')[0];
 			const lngDecimal = lng.toFixed(4).toString().split('.')[1];
 			const coordsLat = document.querySelector('.leaflet-control-coords__lat');
@@ -160,7 +158,16 @@ export default abstract class LeafletMap extends Map {
 				coordsLng.textContent = `E${convertToDMS(lng, 3)}`;	
 				coordsTotal.textContent = `(${lat.toFixed(4)}, ${lngFull.padStart(3, '0')}.${lngDecimal})`;
 			}
+		}
+
+		this.map.on('mousemove', (event) => {
+			const lat = event.latlng.lat;
+			const lng = event.latlng.lng;
+			checkCoords(lat, lng);
 		});
+
+		const mapCenter = this.map.getCenter();
+		checkCoords(mapCenter.lat, mapCenter.lng);
 		// курсор конец
 		// отрезок начало
 		const mileDiv = L.DomUtil.create('div', 'leaflet-mile');
