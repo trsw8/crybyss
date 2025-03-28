@@ -2,8 +2,7 @@
 	fill: var(--cruise-map__marker_color);
 	transform:
 		translateY(calc(var(--cruise-map__marker_intersection-index, 0) * 12px))
-		rotate(var(--cruise-map__marker_angle, 0deg))
-		translateY(-10px);
+		rotate(var(--cruise-map__marker_angle, 0deg));
 }
 
 .cruise-map__icon_type_stop {
