@@ -21,6 +21,34 @@ const apiEntries = {
 	sightCategories : 'pois/cats/'
 };
 
+const defaultCompanyColor = 0xD9D9D9;
+const brandColors: Record<string, number> = {
+	'ООО "Туроператор Азурит"': 0x31739D
+};
+const otherColors = [
+	0x8CE4CB,
+	0xFFC4A4,
+	0xFEBC43,
+	0xC84457,
+	0xB9D252,
+	0xE137C2,
+	0x9F9CB9,
+	0x8CB7B5,
+	0xF5AAB4,
+	0xFFFF00,
+	0x76AA74,
+	0x715E7C,
+	0xFFA79B,
+	0x59637F,
+	0xEE5C48,
+	0x25E6E3,
+	0xDCF4E6,
+	0xDEF5AF,
+	0xFF0022,
+	0x936A60
+];
+let usedColors = 0;
+
 class SortedList<T extends { id: string }> implements Iterable<T> {
 	declare compareFunc: ( a: T, b: T ) => number;
 	declare sortingOrder: Record<string, number>;
@@ -108,7 +136,10 @@ class CompanyData implements Company {
 		Object.assign( this, {
 			id: data.ID,
 			name: data.NAME,
-			color: 0x31739D,
+			color:
+				brandColors[ data.NAME ] ??
+				otherColors[ usedColors++ ] ??
+				defaultCompanyColor
 		} );
 	}
 
