@@ -1,3 +1,4 @@
+import {TypedEventTarget} from 'typescript-event-target';
 import {
   map,
   Map as LMap,
@@ -16,6 +17,7 @@ import {
   LatLngExpression,
 } from "leaflet";
 import "leaflet/dist/leaflet.css";
+import {AuditableEventTarget} from "../../util/events";
 import IntersectionSearchTree, {
   Marker as IntersectionMarker,
 } from "../../util/intersection";
@@ -398,6 +400,10 @@ class LeafletPane<
    */
   private plannedIntersectionChecks: Set<TMarker> | true = new Set();
 
+  events: AuditableEventTarget<
+    Layer<TMarker>['events'] extends TypedEventTarget<infer E> ? E : never
+  > = new AuditableEventTarget();
+
   constructor(map: LMap, autoPan: [Point, Point], paneName = "") {
     super();
     this.visible = true;
@@ -614,7 +620,10 @@ class LeafletPane<
           if (this.intersectionMarkers.has(marker))
             markers.add(this.intersectionMarkers.get(marker));
         this.plannedIntersectionChecks.clear();
-        if (markers.size === 0) return;
+        if (
+          this.events.listenersCount("intersect") === 0
+          || markers.size === 0
+        ) return;
         const { entries, graph } = this.intersections.check(markers, (obj) =>
           obj && obj.marker ? obj.marker : null
         );
@@ -630,6 +639,7 @@ class LeafletPane<
     window.queueMicrotask(() => {
       if (this.plannedIntersectionChecks !== true) return;
       this.plannedIntersectionChecks = new Set();
+      if (this.events.listenersCount("intersect") === 0) return;
       const { entries, graph } = this.intersections.checkAll((obj) =>
         obj && obj.marker ? obj.marker : null
       );
