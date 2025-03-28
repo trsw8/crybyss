@@ -672,4 +672,19 @@ body .map-overlay--range-dates .rs-container .rs-pointer {
   .map-overlay--zoom-block-button-reset {
     display: flex;
   }
+
+  .map-overlay--zoom-block-button {
+    width: 32px;
+    height: 32px;
+    margin-bottom: 6px;
+  }
+
+  .map-overlay--zoom-block-button-reset {
+    margin-top: 16px;
+  }
+
+  .map-overlay--zoom-block-button-reset svg {
+    width: 16px;
+    height: 16px;
+  }
 }
