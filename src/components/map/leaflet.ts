@@ -335,6 +335,34 @@ export default abstract class LeafletMap extends Map {
       });
     }
     // подложка конец
+    // блок с кнопками масштабирования начало
+    const plusButton = document.querySelector(".map-overlay--zoom-block-button-plus");
+    const minusButton = document.querySelector(".map-overlay--zoom-block-button-minus");
+    const resetButton = document.querySelector(".map-overlay--zoom-block-button-reset");
+
+    if (plusButton) {
+      plusButton.addEventListener("click", () => {
+        this.map.zoomIn();
+      });
+    }
+
+    if (minusButton) {
+      minusButton.addEventListener("click", () => {
+        this.map.zoomOut();
+      });
+    }
+
+    if (resetButton) {
+      resetButton.addEventListener("click", () => {
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition((position) => {
+            const { latitude, longitude } = position.coords;
+            this.map.setView([latitude, longitude]);
+          });
+        }
+      });
+    }
+    // блок с кнопками масштабирования конец
   }
 
   addLayer() {
