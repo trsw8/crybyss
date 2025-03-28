@@ -279,9 +279,7 @@ export default abstract class LeafletMap extends Map {
     // отрезок конец
     // подложка начало
     const OSM_TILE_LAYER_URL = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
-      "https://core-sat.maps.yandex.net/tiles?l=sat&x={x}&y={y}&z={z}";
-    const TWOGIS_TILE_LAYER_URL =
-      "https://tile2.maps.2gis.com/tiles?x={x}&y={y}&z={z}";
+    ("https://core-sat.maps.yandex.net/tiles?l=sat&x={x}&y={y}&z={z}");
 
     const changeTileLayer = (url: string) => {
       this.map.eachLayer((layer) => {
@@ -292,20 +290,20 @@ export default abstract class LeafletMap extends Map {
       new L.TileLayer(url).addTo(this.map);
     };
 
-	const changeYandexLayer = (type: string) => {
-		this.map.eachLayer((layer) => {
-			if (layer instanceof L.TileLayer || layer instanceof L.Yandex) {
-			  layer.remove();
-			}
-		  });
-		  // @ts-ignore
-		  const yandexLayer = new L.Yandex(type, {
-			apiParams: {
-			  apikey: "<your API-key>",
-			},
-		  });
-		  this.map.addLayer(yandexLayer);
-		}
+    const changeYandexLayer = (type: string) => {
+      this.map.eachLayer((layer) => {
+        if (layer instanceof L.TileLayer || layer instanceof L.Yandex) {
+          layer.remove();
+        }
+      });
+      // @ts-ignore
+      const yandexLayer = new L.Yandex(type, {
+        apiParams: {
+          apikey: "<your API-key>",
+        },
+      });
+      this.map.addLayer(yandexLayer);
+    };
 
     const radioInputs = document.querySelectorAll('input[name="over"]');
     radioInputs.forEach((input) => {
@@ -320,10 +318,7 @@ export default abstract class LeafletMap extends Map {
               changeYandexLayer("map");
               break;
             case "over3":
-			  changeYandexLayer("satellite");
-              break;
-            case "over4":
-              changeTileLayer(TWOGIS_TILE_LAYER_URL);
+              changeYandexLayer("satellite");
               break;
           }
         }
@@ -331,6 +326,34 @@ export default abstract class LeafletMap extends Map {
     });
 
     // подложка конец
+    // блок с кнопками масштабирования начало
+    const plusButton = document.querySelector(".map-overlay--zoom-block-button-plus");
+    const minusButton = document.querySelector(".map-overlay--zoom-block-button-minus");
+    const resetButton = document.querySelector(".map-overlay--zoom-block-button-reset");
+
+    if (plusButton) {
+      plusButton.addEventListener("click", () => {
+        this.map.zoomIn();
+      });
+    }
+
+    if (minusButton) {
+      minusButton.addEventListener("click", () => {
+        this.map.zoomOut();
+      });
+    }
+
+    if (resetButton) {
+      resetButton.addEventListener("click", () => {
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition((position) => {
+            const { latitude, longitude } = position.coords;
+            this.map.setView([latitude, longitude]);
+          });
+        }
+      });
+    }
+    // блок с кнопками масштабирования конец
   }
 
   addLayer() {
