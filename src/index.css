@@ -303,6 +303,7 @@
   cursor: pointer;
   text-align: center;
   position: relative;
+  margin-bottom: 83px;
 }
 
 #timeInput {
@@ -363,4 +364,18 @@
 #timeDisplay {
   color: black;
   opacity: 0.5;
+}
+
+.timepicker-hide-button {
+  width: 100%;
+  padding: 15px;
+  text-align: center;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 120%;
+  text-transform: uppercase;
+  border-radius: 10px;
+  background: var(--main);
+  cursor: pointer;
 }
