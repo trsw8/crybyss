@@ -479,11 +479,11 @@ class DateFilter {
         now.getFullYear().toString();
       dateValue = currentDate;
 
-      const formatDate = (value: Date): string => {
+      const formatDate = (value: Date, isYear: boolean = false): string => {
         return value.toLocaleDateString(undefined, {
           day: "2-digit",
           month: "2-digit",
-          year: "numeric",
+          year: isYear ? "numeric" : undefined,
         });
       };
 
@@ -633,7 +633,7 @@ class TimelineSlider extends DOMComponent {
           [cruiseMap.timelineRange[0], fromElement],
           [cruiseMap.timelineRange[1], toElement],
         ] as [Date, HTMLElement][])
-          element.innerText = TimelineSlider.formatDate(value);
+          element.innerText = TimelineSlider.formatDate(value, true);
         domNode.classList.remove("map-overlay--range-dates-hidden");
       } else domNode.classList.add("map-overlay--range-dates-hidden");
     };
@@ -723,11 +723,11 @@ class TimelineSlider extends DOMComponent {
     valueElement.innerText = TimelineSlider.formatDate(value);
   }
 
-  private static formatDate(value: Date): string {
+  private static formatDate(value: Date, isYear: boolean = false): string {
     return value.toLocaleDateString(undefined, {
       day: "2-digit",
       month: "2-digit",
-      year: "numeric",
+      year: isYear ? "numeric" : undefined,
     });
   }
 }

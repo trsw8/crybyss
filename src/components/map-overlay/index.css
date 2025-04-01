@@ -577,9 +577,10 @@ body .map-overlay--range-dates .rs-container:before {
 }
 
 body .map-overlay--range-dates .rs-tooltip {
-  transform: translate(-50%, 20px);
-  top: 5px;
+  transform: translate(-50%, 0);
+  top: -28px;
   font-size: 13px;
+  background: #fff;
 }
 
 body .map-overlay--range-dates .rs-container:after {
