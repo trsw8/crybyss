@@ -457,6 +457,7 @@ body .rs-tooltip {
 }
 
 .map-overlay--layers {
+  display: none;
   position: absolute;
   left: calc(480px + 3 * (var(--height) + 15px));
   top: calc(20px + var(--height) + 15px);
@@ -670,22 +671,22 @@ body .map-overlay--range-dates .rs-container .rs-pointer {
   transition-property: fill stroke;
 }
 
-.map-overlay--btn-primary-stroke.active svg {
+.map-overlay--btn-primary-stroke.active svg path {
   stroke: #ffffff;
 }
 
 @media (min-width: 801px) {
-  .map-overlay--btn-primary-stroke:hover svg {
+  .map-overlay--btn-primary-stroke:hover svg path {
     stroke: #ffffff;
   }
 }
 
-.map-overlay--btn-primary-stroke svg {
+.map-overlay--btn-primary-stroke svg path {
   stroke: var(--main);
 }
 
 @media (min-width: 801px) {
-  .map-overlay--btn-primary-stroke.active:hover svg {
+  .map-overlay--btn-primary-stroke.active:hover svg path {
     stroke: var(--main);
   }
 }

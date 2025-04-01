@@ -24,6 +24,9 @@ export default class MapOverlay extends DOMComponent {
 			[ 'map-overlay--ship', 'ship-layer-checkbox', cruiseMap.shipLayer ],
 			[ 'map-overlay--anchor', 'stops-layer-checkbox', cruiseMap.stopsLayer ],
 			[ 'map-overlay--place', 'sights-layer-checkbox', cruiseMap.sightsLayer ],
+			[ 'map-overlay--gateways', 'gateways-layer-checkbox', cruiseMap.gatewaysLayer ],
+			[ 'map-overlay--sunrise', 'sunrises-layer-checkbox', cruiseMap.sunrisesLayer ],
+			[ 'map-overlay--sunset', 'sunsets-layer-checkbox', cruiseMap.sunsetsLayer ],
 		] as [ string, string, VisibilityControl ][]) {
 			new LayerVisibilityButton( 
 				domNode.getElementsByClassName( className )[0],
