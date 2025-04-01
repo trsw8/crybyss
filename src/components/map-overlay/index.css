@@ -69,7 +69,9 @@ body .rs-container .rs-pointer {
   height: 16px;
   border-radius: 50%;
   box-shadow: none;
-  border: 1px solid #808080;
+  box-sizing: border-box;
+  border: 3.23px solid rgb(50, 115, 157);
+  box-shadow: 0 0 0 5px rgba(50, 115, 157, 0.4);;
 }
 
 body .rs-container .rs-pointer::after,
@@ -84,7 +86,8 @@ body .rs-container .rs-scale {
 
 body .rs-container .rs-bg,
 body .rs-container .rs-selected {
-  height: 1px;
+  height: 6px;
+  background-color: rgba(50, 115, 157, 0.4);
 }
 
 body .rs-container {
@@ -94,12 +97,7 @@ body .rs-container {
 
 body .rs-container .rs-selected,
 body .rs-container .rs-bg {
-  background-color: #808080;
   border: none;
-}
-
-body .rs-container .rs-bg {
-  background-color: #f6f6f6;
 }
 
 .map-overlay--range-box {
@@ -522,14 +520,12 @@ body .rs-tooltip {
 .map-overlay--range-dates {
   padding: 20px;
   border-radius: 10px;
-  border: 1px solid rgba(0, 0, 0, 0.5);
-  background: #fff;
   position: absolute;
   width: calc(100% - 20%);
   bottom: 20px;
   left: 50%;
   transform: translateX(-50%);
-  max-width: 1500px;
+  max-width: 1052px;
   min-height: var(--height);
 
   @media (max-width: 1919px) {
@@ -573,11 +569,10 @@ body .map-overlay--range-dates .rs-container:after,
 body .map-overlay--range-dates .rs-container:before {
   position: absolute;
   border-radius: 50%;
-  width: 14px;
-  height: 14px;
+  width: 6px;
+  height: 6px;
   background-color: #fff;
   z-index: 10;
-  border: 1px solid rgba(0, 0, 0, 0.5);
   content: "";
 }
 
@@ -588,18 +583,21 @@ body .map-overlay--range-dates .rs-tooltip {
 }
 
 body .map-overlay--range-dates .rs-container:after {
-  right: -8px;
+  right: 0;
 }
 
 body .map-overlay--range-dates .rs-container:before {
-  left: -8px;
+  left: 0;
 }
 
 body .map-overlay--range-dates .rs-container .rs-pointer {
-  border: none;
-  border-radius: none;
-  width: 24px;
-  height: 24px;
+  /* border: none;
+  border-radius: none; */
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   z-index: 33;
 }
 
@@ -741,8 +739,8 @@ body .map-overlay--range-dates .rs-container .rs-pointer {
   position: absolute;
   width: 20px;
   height: 20px;
-  fill: var(--main);
-  stroke: #ffffff;
+  fill: #ffffff;
+  stroke: var(--main);
 }
 
 @media (max-width: 800px) {
@@ -761,20 +759,20 @@ body .map-overlay--range-dates .rs-container .rs-pointer {
 .map-overlay--zoom-block {
   position: absolute;
   top: 50%;
-  right: 15px;
+  right: 24px;
   transform: translateY(-50%);
 }
 
 .map-overlay--zoom-block-button {
   background: #fff;
   border-radius: 50%;
-  width: 48px;
-  height: 48px;
+  width: 42px;
+  height: 42px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
 .map-overlay--zoom-block-button svg {
@@ -782,9 +780,9 @@ body .map-overlay--range-dates .rs-container .rs-pointer {
 }
 
 .map-overlay--zoom-block-button-reset {
-  margin-top: 25px;
+  margin-top: 18px;
   border: 1px solid #32739D;
-  display: none;
+  /* display: none; */
 }
 
 @media (max-width: 800px) {
