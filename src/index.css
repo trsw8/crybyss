@@ -35,12 +35,13 @@
 }
 
 .filter-box {
+  visibility: hidden;
+  display: flex;
   position: absolute;
   top: 185px;
   right: 146px;
   width: 320px;
   padding: 20px;
-  display: flex;
   flex-direction: column;
   align-items: center;
   flex-wrap: nowrap;
@@ -48,6 +49,10 @@
   background-color: #fff;
   border-radius: 10px;
   z-index: 1000;
+}
+
+.filter-box.active {
+  visibility: visible;
 }
 
 ._label {
@@ -303,7 +308,7 @@
   cursor: pointer;
   text-align: center;
   position: relative;
-  margin-bottom: 83px;
+  margin-bottom: 63px;
 }
 
 #timeInput {
@@ -368,7 +373,7 @@
 
 .timepicker-hide-button {
   width: 100%;
-  padding: 15px;
+  padding: 19px;
   text-align: center;
   color: #ffffff;
   font-size: 14px;
