@@ -519,11 +519,11 @@ body .rs-tooltip {
 }
 
 .map-overlay--range-dates {
-  padding: 20px;
+  padding: 20px 5px;
   border-radius: 10px;
   position: absolute;
   width: calc(100% - 20%);
-  bottom: 20px;
+  bottom: 10px;
   left: 50%;
   transform: translateX(-50%);
   max-width: 1052px;
@@ -540,10 +540,20 @@ body .rs-tooltip {
 
 .range--deco {
   position: absolute;
-  top: 10px;
+  top: 68px;
   display: flex;
   align-items: center;
   gap: 10px;
+  color: var(--main);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 120%;
+  text-align: center;
+  text-transform: uppercase;
+  height: 18px;
+  width: 60px;
+  border-radius: 3px;
+  background: #fff;
 }
 
 .range--deco span {
@@ -555,11 +565,11 @@ body .rs-tooltip {
 }
 
 .range--deco-left {
-  left: 10px;
+  left: 0;
 }
 
 .range--deco-right {
-  right: 10px;
+  right: 0;
 }
 
 body .map-overlay--range-dates .rs-container {
@@ -591,6 +601,7 @@ body .map-overlay--range-dates .rs-tooltip {
   height: 18px;
   width: 60px;
   border-radius: 3px;
+  padding-top: 3px;
 }
 
 body .map-overlay--range-dates .rs-container:after {

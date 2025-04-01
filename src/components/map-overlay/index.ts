@@ -483,7 +483,7 @@ class DateFilter {
         return value.toLocaleDateString(undefined, {
           day: "2-digit",
           month: "2-digit",
-          year: isYear ? "numeric" : undefined,
+          year: isYear ? "2-digit" : undefined,
         });
       };
 
@@ -727,7 +727,7 @@ class TimelineSlider extends DOMComponent {
     return value.toLocaleDateString(undefined, {
       day: "2-digit",
       month: "2-digit",
-      year: isYear ? "numeric" : undefined,
+      year: isYear ? "2-digit" : undefined,
     });
   }
 }
