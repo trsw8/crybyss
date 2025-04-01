@@ -408,8 +408,8 @@ body .rs-tooltip {
 
 .map-overlay--time {
   position: absolute;
-  top: 25px;
-  right: calc(var(--height) * 2 + 50px);
+  top: 20px;
+  right: calc(var(--height) * 2 + 30px);
 }
 
 @media (max-width: 800px) {
@@ -429,8 +429,8 @@ body .rs-tooltip {
 
 .map-overlay--line {
   position: absolute;
-  top: 25px;
-  right: calc(var(--height) + 35px);
+  top: 20px;
+  right: calc(var(--height) + 25px);
 }
 
 
@@ -449,7 +449,7 @@ body .rs-tooltip {
 
 .map-overlay--copy {
   position: absolute;
-  top: 25px;
+  top: 20px;
   right: 20px;
 }
 

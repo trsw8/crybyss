@@ -36,15 +36,17 @@
 
 .filter-box {
   position: absolute;
-  top: 200px;
-  right: 200px;
+  top: 185px;
+  right: 146px;
   width: 320px;
+  padding: 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
   flex-wrap: nowrap;
   gap: 20px;
   background-color: #fff;
+  border-radius: 10px;
   z-index: 1000;
 }
 
@@ -53,6 +55,7 @@
   flex-direction: column;
   gap: 7px;
   font-weight: 600;
+  width: 100%;
 
   @media (max-width: 800px) {
     width: calc(100% - 40px);
@@ -90,7 +93,7 @@
   align-items: center;
   padding: 0 20px 0 0;
   border-radius: 10px;
-  border: 1px solid #00000075;
+  border: 1px solid #EEEEEE;
   overflow: hidden;
 }
 
@@ -100,6 +103,10 @@
   border: none;
   font-size: 16px;
   cursor: pointer;
+}
+
+.datepicker-label svg {
+  fill: var(--main);
 }
 
 #datepicker-calendar {
@@ -201,7 +208,7 @@
   justify-content: center;
   text-align: center;
   position: relative;
-  border: 1px solid #00000075;
+  border: 1px solid #EEEEEE;
   border-radius: 10px;
   padding: 10px;
   gap: 10px;
@@ -287,7 +294,7 @@
   align-items: center;
   /* width: 200px; */
   height: 58px;
-  border: 1px solid #00000075;
+  border: 1px solid #EEEEEE;
   border-radius: 10px;
   background-color: #fff;
   font-size: 18px;
@@ -346,4 +353,14 @@
     width: 100%;
     height: 54px;
   }
+}
+
+._label .time-picker-label {
+  display: block;
+  text-align: center;
+}
+
+#timeDisplay {
+  color: black;
+  opacity: 0.5;
 }
