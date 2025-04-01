@@ -1,12 +1,14 @@
 .filter-overlay {
+  position: relative;
   width: 100%;
   display: flex;
   flex-direction: column;
   gap: 32px;
-  padding: 5% 0% 2%;
   overflow-y: auto;
+  padding-top: 97px;
 
   >h2 {
+    display: none;
     font-weight: 600;
     font-size: 30px;
     padding: 0 11%;
@@ -33,24 +35,17 @@
 }
 
 .filter-box {
+  position: absolute;
+  top: 200px;
+  right: 200px;
+  width: 320px;
   display: flex;
+  flex-direction: column;
   align-items: center;
   flex-wrap: nowrap;
-  padding: 0 11%;
   gap: 20px;
-
-  @media (max-width: 1919px) {
-    padding: 0 12.6%;
-  }
-
-  @media (max-width: 1599px) {
-    flex-wrap: wrap;
-    padding: 0 20px;
-  }
-
-  @media (max-width: 800px) {
-    padding: 0;
-  }
+  background-color: #fff;
+  z-index: 1000;
 }
 
 ._label {
@@ -80,54 +75,6 @@
     line-height: 120%;
     letter-spacing: -0.3px;
     text-align: left;
-  }
-}
-
-._label:nth-child(1) {
-  flex: 1 1 487px;
-
-  @media (max-width: 1599px) {
-    flex: 0 0 448px;
-  }
-
-  @media (max-width: 800px) {
-    flex: auto;
-  }
-}
-
-._label:nth-child(2) {
-  flex: 1 1 740px;
-
-  @media (max-width: 1599px) {
-    flex: 0 0 448px;
-  }
-
-  @media (max-width: 800px) {
-    flex: auto;
-  }
-}
-
-._label:nth-child(3) {
-  flex: 1 1 233px;
-
-  @media (max-width: 1599px) {
-    flex: 0 0 136px;
-  }
-
-  @media (max-width: 800px) {
-    flex: auto;
-  }
-
-
-  p {
-    text-align: center;
-    margin-left: -10px;
-    margin-right: -10px;
-
-    @media (max-width: 800px) {
-      text-align: left;
-      margin: 0;
-    }
   }
 }
 

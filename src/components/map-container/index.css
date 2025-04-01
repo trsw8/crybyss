@@ -19,8 +19,12 @@
 
 .map-container__map {
   position: relative;
-  height: calc(100vh - 280px);
+  height: calc(100vh - 97px);
   min-height: 600px;
+}
+
+.map-container__map map {
+  height: 100%;
 }
 
 .map-container__overlay {
