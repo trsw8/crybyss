@@ -71,7 +71,8 @@ body .rs-container .rs-pointer {
   box-shadow: none;
   box-sizing: border-box;
   border: 3.23px solid rgb(50, 115, 157);
-  box-shadow: 0 0 0 5px rgba(50, 115, 157, 0.4);;
+  box-shadow: 0 0 0 5px rgba(50, 115, 157, 0.4);
+  ;
 }
 
 body .rs-container .rs-pointer::after,
@@ -581,6 +582,15 @@ body .map-overlay--range-dates .rs-tooltip {
   top: -28px;
   font-size: 13px;
   background: #fff;
+  color: rgb(50, 115, 157);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 120%;
+  text-align: center;
+  text-transform: uppercase;
+  height: 18px;
+  width: 60px;
+  border-radius: 3px;
 }
 
 body .map-overlay--range-dates .rs-container:after {
