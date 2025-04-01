@@ -360,6 +360,7 @@ body .rs-tooltip {
 }
 
 .map-overlay--menu {
+  display: none;
   left: calc(480px + 3 * (var(--height) + 15px));
 }
 
@@ -689,25 +690,25 @@ body .map-overlay--range-dates .rs-container .rs-pointer {
   }
 }
 
-.map-overlay--btn-primary-fill.active svg {
+.map-overlay--btn-primary-fill.active svg path {
   fill: #ffffff;
   stroke: var(--main);
 }
 
 @media (min-width: 801px) {
-  .map-overlay--btn-primary-fill:hover svg {
+  .map-overlay--btn-primary-fill:hover svg path {
     fill: #ffffff;
     stroke: var(--main);
   }
 }
 
-.map-overlay--btn-primary-fill svg {
+.map-overlay--btn-primary-fill svg path {
   fill: var(--main);
   stroke: #ffffff;
 }
 
 @media (min-width: 801px) {
-  .map-overlay--btn-primary-fill.active:hover svg {
+  .map-overlay--btn-primary-fill.active:hover svg path {
     fill: var(--main);
     stroke: #ffffff;
   }
