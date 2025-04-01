@@ -288,15 +288,23 @@ body .rs-tooltip {
   transform: rotate(180deg);
 }
 
-.map-overlay--btn {
+.map-overlay--buttons-wrapper {
+  display: flex;
+  gap: 10px;
   position: absolute;
-  top: 20px;
+  top: 25px;
+  left: 317px;
+}
+
+.map-overlay--btn {
+  /* position: absolute; */
+  /* top: 20px; */
   border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: var(--height);
-  height: var(--height);
+  width: calc(var(--height) - 10px);
+  height: calc(var(--height) - 10px);
   cursor: pointer;
   transition: 0.4s;
 }
@@ -331,15 +339,15 @@ body .rs-tooltip {
 }
 
 .map-overlay--ship {
-  left: 480px;
+  /* left: 480px; */
 }
 
 .map-overlay--anchor {
-  left: calc(480px + var(--height) + 15px);
+  /* left: calc(480px + var(--height) + 15px); */
 }
 
 .map-overlay--place {
-  left: calc(480px + 2 * (var(--height) + 15px));
+  /* left: calc(480px + 2 * (var(--height) + 15px)); */
 }
 
 @media (max-width: 950px) {
@@ -387,6 +395,8 @@ body .rs-tooltip {
 }
 
 .map-overlay--time {
+  position: absolute;
+  top: 25px;
   right: calc(var(--height) * 2 + 50px);
 }
 
@@ -406,6 +416,8 @@ body .rs-tooltip {
 }
 
 .map-overlay--line {
+  position: absolute;
+  top: 25px;
   right: calc(var(--height) + 35px);
 }
 
@@ -424,6 +436,8 @@ body .rs-tooltip {
 }
 
 .map-overlay--copy {
+  position: absolute;
+  top: 25px;
   right: 20px;
 }
 
@@ -649,8 +663,8 @@ body .map-overlay--range-dates .rs-container .rs-pointer {
 }
 
 .map-overlay--btn svg {
-  width: 34px;
-  height: 34px;
+  width: 28px;
+  height: 28px;
   transition-duration: 0.4s;
   transition-property: fill stroke;
 }
@@ -677,21 +691,25 @@ body .map-overlay--range-dates .rs-container .rs-pointer {
 
 .map-overlay--btn-primary-fill.active svg {
   fill: #ffffff;
+  stroke: var(--main);
 }
 
 @media (min-width: 801px) {
   .map-overlay--btn-primary-fill:hover svg {
     fill: #ffffff;
+    stroke: var(--main);
   }
 }
 
-.map-overlay--btn-primary-fill svgg {
+.map-overlay--btn-primary-fill svg {
   fill: var(--main);
+  stroke: #ffffff;
 }
 
 @media (min-width: 801px) {
   .map-overlay--btn-primary-fill.active:hover svg {
     fill: var(--main);
+    stroke: #ffffff;
   }
 }
 
