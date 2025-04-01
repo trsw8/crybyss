@@ -2720,7 +2720,7 @@ body .leaflet-popup-tip {
     max-width: 150px;
   }
   :root {
-    --height: 50px;
+    --height: 58px;
     --gap-l: 50px;
   }
   .top--menu a span {
@@ -2913,11 +2913,16 @@ body .leaflet-popup-tip {
     padding-bottom: 7px;
   }
 }
+@media (max-width: 900px) {
+  :root {
+    --height: 50px;
+  }
+}
 
 @media all and (max-width: 500px) {
-  :root {
+  /* :root {
     --height: 40px;
-  }
+  } */
   .top--menu {
     width: 100%;
   }

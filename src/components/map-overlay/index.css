@@ -133,9 +133,7 @@ body .rs-tooltip {
 
 @media (max-width: 800px) {
   .map-overlay--search-box {
-    left: unset;
-    right: 20px;
-    width: calc(100% - 40px);
+    width: 296px;
   }
 }
 
@@ -153,7 +151,8 @@ body .rs-tooltip {
 
 @media (max-width: 800px) {
   .map-overlay--search-box [type="text"] {
-    border: 1px solid #eee;
+    width: 296px;
+    height: calc(var(--height) - 10px);
   }
 }
 
@@ -180,24 +179,11 @@ body .rs-tooltip {
   max-height: calc(100vh - 400px);
 }
 
-/* @media (max-width: 800px) {
+@media (max-width: 800px) {
   .map-overlay--search-results {
-    top: calc(var(--height) + 35px);
+    display: none;
   }
 }
-
-@media (max-width: 700px) {
-  .map-overlay--search-results {
-    top: calc(var(--height) * 2 + 50px);
-  }
-}
-
-@media (max-width: 550px) {
-  .map-overlay--search-results {
-    width: calc(100% - var(--height) - 55px);
-  }
-} */
-
 
 .map-overlay--search-overflow {
   overflow-y: auto;
@@ -297,9 +283,31 @@ body .rs-tooltip {
   height: calc(var(--height) - 10px);
 }
 
+@media (max-width: 900px) {
+  .map-overlay--buttons-wrapper {
+    display: block;
+    height: auto;
+    left: auto;
+    top: 74px;
+    right: 167px;
+    background: #fff;
+    padding: 7px;
+    border-radius: 7px;
+  }
+}
+
+
 .map-overlay--buttons-content {
   display: none;
   gap: 10px;
+}
+
+@media (max-width: 900px) {
+  .map-overlay--buttons-content {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
 }
 
 .map-overlay--buttons-content.active {
@@ -307,8 +315,6 @@ body .rs-tooltip {
 }
 
 .map-overlay--btn {
-  /* position: absolute; */
-  /* top: 20px; */
   border-radius: 10px;
   display: flex;
   align-items: center;
@@ -319,9 +325,38 @@ body .rs-tooltip {
   transition: 0.4s;
 }
 
-@media (max-width: 800px) {
+.map-overlay--button-text {
+  display: none;
+  color: var(--main);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 120%;
+  text-transform: uppercase;
+}
+.map-overlay--btn.active .map-overlay--button-text {
+  color: #fff;
+}
+
+@media (max-width: 900px) {
   .map-overlay--btn {
     border-radius: 6px;
+    width: calc(var(--height) - 11px);
+    height: calc(var(--height) - 11px);
+  }
+
+  .map-overlay--button-text {
+    display: block;
+  }
+
+  .map-overlay--buttons-content .map-overlay--btn {
+    width: 92px;
+    height: 27px;
+  }
+
+  .map-overlay--buttons-content .map-overlay--btn svg {
+    width: 12px;
+    height: 12px;
+    margin-right: 5px;
   }
 }
 
@@ -348,49 +383,19 @@ body .rs-tooltip {
   }
 }
 
-.map-overlay--ship {
-  /* left: 480px; */
-}
-
-.map-overlay--anchor {
-  /* left: calc(480px + var(--height) + 15px); */
-}
-
-.map-overlay--place {
-  /* left: calc(480px + 2 * (var(--height) + 15px)); */
-}
-
-@media (max-width: 950px) {
-
-  .map-overlay--ship,
-  .map-overlay--anchor,
-  .map-overlay--place {
-    display: none;
-  }
-}
-
 .map-overlay--menu {
   display: none;
-  left: calc(480px + 3 * (var(--height) + 15px));
 }
 
-@media (max-width: 950px) {
+@media (max-width: 900px) {
   .map-overlay--menu {
-    left: unset;
-    right: calc(var(--height) * 3 + 65px);
-  }
-}
-
-@media (max-width: 800px) {
-  .map-overlay--menu {
-    right: 20px;
-    top: calc(var(--height) + 35px);
-  }
-}
-
-@media (max-width: 700px) {
-  .map-overlay--menu {
-    top: calc(var(--height) * 3 + 65px);
+    position: absolute;
+    display: block;
+    top: 20px;
+    right: 167px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 }
 
@@ -411,18 +416,9 @@ body .rs-tooltip {
   right: calc(var(--height) * 2 + 30px);
 }
 
-@media (max-width: 800px) {
+@media (max-width: 900px) {
   .map-overlay--time {
-    right: 20px;
-    top: calc(var(--height) * 2 + 50px);
-  }
-}
-
-@media (max-width: 700px) {
-  .map-overlay--time {
-    right: unset;
-    left: 20px;
-    top: calc(var(--height) + 35px);
+    right: 118px;
   }
 }
 
@@ -432,17 +428,16 @@ body .rs-tooltip {
   right: calc(var(--height) + 25px);
 }
 
-
-@media (max-width: 800px) {
+@media (max-width: 900px) {
   .map-overlay--line {
-    top: calc(var(--height) * 3 + 65px);
-    right: 20px;
+    right: 69px;
   }
 }
 
-@media (max-width: 700px) {
+
+@media (max-width: 639px) {
   .map-overlay--line {
-    top: calc(var(--height) + 35px);
+    right: 20px;
   }
 }
 
@@ -452,17 +447,10 @@ body .rs-tooltip {
   right: 20px;
 }
 
-@media (max-width: 800px) {
+@media (max-width: 639px) {
   .map-overlay--copy {
     right: 20px;
     top: calc(var(--height) * 4 + 80px);
-  }
-}
-
-@media (max-width: 700px) {
-  .map-overlay--copy {
-    right: 20px;
-    top: calc(var(--height) * 2 + 50px);
   }
 }
 
@@ -476,13 +464,7 @@ body .rs-tooltip {
   background-color: #fff;
 }
 
-@media (max-width: 950px) {
-  .map-overlay--layers {
-    left: calc(100% - var(--height) * 4 - 70px);
-  }
-}
-
-@media (max-width: 800px) {
+@media (max-width: 900px) {
   .map-overlay--layers {
     left: unset;
     right: calc(var(--height) + 30px);
@@ -702,6 +684,14 @@ body .map-overlay--range-dates .rs-container .rs-pointer {
   height: 24px;
 }
 
+@media (max-width: 800px) {
+  .map-overlay--search-box svg {
+    width: 18px;
+    height: 18px;
+    opacity: 0.5;
+  }
+}
+
 .map-overlay--search-title svg {
   width: 16px;
   height: 8px;
@@ -712,6 +702,13 @@ body .map-overlay--range-dates .rs-container .rs-pointer {
   height: 28px;
   transition-duration: 0.4s;
   transition-property: fill stroke;
+}
+
+@media (max-width: 900px) {
+  .map-overlay--btn svg {
+    width: 20px;
+    height: 20px;
+  }
 }
 
 .map-overlay--btn-primary-stroke.active svg path {
@@ -866,4 +863,16 @@ body .map-overlay--range-dates .rs-container .rs-pointer {
   font-size: 16px;
   line-height: 120%;
   letter-spacing: -0.2px;
+}
+
+@media (max-width: 1199px) {
+  .map-overlay--ships-wrapper {
+    display: none;
+  }
+}
+
+@media (max-width: 900px) {
+  .map-overlay--buttons-selector.map-overlay--btn {
+    display: none;
+  }
 }

@@ -332,7 +332,7 @@
 
 @media (max-width: 800px) {
   .filter-overlay {
-    padding: 10% 0;
+    /* padding: 10% 0; */
 
     >h2 {
       /* font-size: 20px; */
