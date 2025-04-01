@@ -592,7 +592,7 @@ body .map-overlay--range-dates .rs-tooltip {
   top: -28px;
   font-size: 13px;
   background: #fff;
-  color: rgb(50, 115, 157);
+  color: var(--main);
   font-size: 14px;
   font-weight: 700;
   line-height: 120%;
@@ -677,6 +677,18 @@ body .map-overlay--range-dates .rs-container .rs-pointer {
 
 .map-overlay--range-dates .rs-container .rs-pointer {
   left: calc(var(--map-overlay--range-dates_point, 0) * 100% - 12px);
+}
+
+.rs-left-bg {
+  position: absolute;
+  left: -7px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: calc(var(--map-overlay--range-dates_point, 0) * 100% + 15px);
+  height: 20px;
+  background: var(--main);
+  border-radius: 10px;
+
 }
 
 /* svg */
