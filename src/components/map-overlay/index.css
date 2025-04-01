@@ -290,10 +290,21 @@ body .rs-tooltip {
 
 .map-overlay--buttons-wrapper {
   display: flex;
+  align-items: center;
   gap: 10px;
   position: absolute;
   top: 25px;
   left: 317px;
+  height: calc(var(--height) - 10px);
+}
+
+.map-overlay--buttons-content {
+  display: none;
+  gap: 10px;
+}
+
+.map-overlay--buttons-content.active {
+  display: flex;
 }
 
 .map-overlay--btn {
@@ -796,3 +807,17 @@ body .map-overlay--range-dates .rs-container .rs-pointer {
     height: 16px;
   }
 }
+
+.map-overlay--buttons-selector.map-overlay--btn {
+  width: 24px;
+  height: 38px;
+}
+
+.map-overlay--buttons-selector.map-overlay--btn svg {
+  width: 9px;
+}
+
+.map-overlay--buttons-selector.map-overlay--btn.active svg {
+  transform: rotate(180deg);
+}
+

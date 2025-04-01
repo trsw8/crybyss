@@ -42,6 +42,15 @@ export default class MapOverlay extends DOMComponent {
 			new ToggleButton( button );
 		}
 
+		const buttonSelector = domNode.getElementsByClassName( 'map-overlay--buttons-selector' )[0] as HTMLElement;
+		const buttonSelectorContent = domNode.getElementsByClassName( 'map-overlay--buttons-content' )[0] as HTMLElement;
+		if (buttonSelector) {
+			buttonSelector.addEventListener( 'click', () => {
+				buttonSelector.classList.toggle( 'active' );
+				buttonSelectorContent.classList.toggle( 'active' );
+			} );
+		}
+
 		const shipSlider = new TimelineSlider(
 			domNode.getElementsByClassName(
 				'map-overlay--range-dates'
