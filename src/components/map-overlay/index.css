@@ -146,11 +146,10 @@ body .rs-tooltip {
   background: #fff;
   height: var(--height);
   line-height: var(--height);
+  width: 283px;
   font-size: 18px;
   letter-spacing: -0.5px;
   padding: 0 50px 0 20px;
-  width: 100%;
-  min-width: 440px;
 }
 
 @media (max-width: 800px) {
@@ -169,16 +168,20 @@ body .rs-tooltip {
 
 .map-overlay--search-results {
   width: 100%;
-  max-width: 440px;
+  display: flex;
+  flex-direction: column;
+  max-width: 283px;
   position: absolute;
   top: 95px;
   left: 20px;
   background-color: #fff;
   border-radius: 10px;
   padding: 20px;
+  padding-right: 10px;
+  max-height: calc(100vh - 400px);
 }
 
-@media (max-width: 800px) {
+/* @media (max-width: 800px) {
   .map-overlay--search-results {
     top: calc(var(--height) + 35px);
   }
@@ -194,16 +197,21 @@ body .rs-tooltip {
   .map-overlay--search-results {
     width: calc(100% - var(--height) - 55px);
   }
-}
+} */
 
 
 .map-overlay--search-overflow {
-  max-height: 256px;
   overflow-y: auto;
+  padding: 2px 0;
+  padding-right: 10px;
 }
 
 .map-overlay--search-block {
   margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  flex: auto;
+  max-height: calc((100vh - 400px - 80px) / 2);
 }
 
 .map-overlay--search-block:last-child {
@@ -331,10 +339,11 @@ body .rs-tooltip {
 }
 
 .map-overlay--place {
-  left: calc(480px + 2 * ( var(--height) + 15px ));
+  left: calc(480px + 2 * (var(--height) + 15px));
 }
 
 @media (max-width: 950px) {
+
   .map-overlay--ship,
   .map-overlay--anchor,
   .map-overlay--place {
@@ -343,34 +352,37 @@ body .rs-tooltip {
 }
 
 .map-overlay--menu {
-  left: calc(480px + 3 * ( var(--height) + 15px ));
+  left: calc(480px + 3 * (var(--height) + 15px));
 }
 
 @media (max-width: 950px) {
   .map-overlay--menu {
     left: unset;
-    right: calc( var(--height) * 3 + 65px );
+    right: calc(var(--height) * 3 + 65px);
   }
 }
 
 @media (max-width: 800px) {
   .map-overlay--menu {
     right: 20px;
-    top: calc( var(--height) + 35px );
+    top: calc(var(--height) + 35px);
   }
 }
 
 @media (max-width: 700px) {
   .map-overlay--menu {
-    top: calc( var(--height) * 3 + 65px );
+    top: calc(var(--height) * 3 + 65px);
   }
 }
 
-.map-overlay--menu .open, .map-overlay--menu .close {
+.map-overlay--menu .open,
+.map-overlay--menu .close {
   line-height: 0;
 }
 
-.map-overlay--menu:not(.active) .close, .map-overlay--menu.active .open, .map-overlay--toggle-btn:not(.active) + div {
+.map-overlay--menu:not(.active) .close,
+.map-overlay--menu.active .open,
+.map-overlay--toggle-btn:not(.active)+div {
   display: none;
 }
 
@@ -381,7 +393,7 @@ body .rs-tooltip {
 @media (max-width: 800px) {
   .map-overlay--time {
     right: 20px;
-    top: calc( var(--height) * 2 + 50px );
+    top: calc(var(--height) * 2 + 50px);
   }
 }
 
@@ -389,7 +401,7 @@ body .rs-tooltip {
   .map-overlay--time {
     right: unset;
     left: 20px;
-    top: calc( var(--height) + 35px );
+    top: calc(var(--height) + 35px);
   }
 }
 
@@ -400,14 +412,14 @@ body .rs-tooltip {
 
 @media (max-width: 800px) {
   .map-overlay--line {
-    top: calc( var(--height) * 3 + 65px );
+    top: calc(var(--height) * 3 + 65px);
     right: 20px;
   }
 }
 
 @media (max-width: 700px) {
   .map-overlay--line {
-    top: calc( var(--height) + 35px );
+    top: calc(var(--height) + 35px);
   }
 }
 
@@ -418,20 +430,20 @@ body .rs-tooltip {
 @media (max-width: 800px) {
   .map-overlay--copy {
     right: 20px;
-    top: calc( var(--height) * 4 + 80px );
+    top: calc(var(--height) * 4 + 80px);
   }
 }
 
 @media (max-width: 700px) {
   .map-overlay--copy {
     right: 20px;
-    top: calc( var(--height) * 2 + 50px );
+    top: calc(var(--height) * 2 + 50px);
   }
 }
 
 .map-overlay--layers {
   position: absolute;
-  left: calc(480px + 3 * ( var(--height) + 15px ));
+  left: calc(480px + 3 * (var(--height) + 15px));
   top: calc(20px + var(--height) + 15px);
   padding: 20px;
   border-radius: 10px;
@@ -440,22 +452,22 @@ body .rs-tooltip {
 
 @media (max-width: 950px) {
   .map-overlay--layers {
-    left: calc( 100% - var(--height) * 4 - 70px );
+    left: calc(100% - var(--height) * 4 - 70px);
   }
 }
 
 @media (max-width: 800px) {
   .map-overlay--layers {
     left: unset;
-    right: calc( var(--height) + 30px );
-    top: calc( var(--height) + 35px );
+    right: calc(var(--height) + 30px);
+    top: calc(var(--height) + 35px);
   }
 }
 
 @media (max-width: 700px) {
   .map-overlay--layers {
     right: 20px;
-    top: calc( var(--height) * 4 + 80px );
+    top: calc(var(--height) * 4 + 80px);
   }
 }
 
