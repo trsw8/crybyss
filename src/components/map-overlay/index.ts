@@ -236,6 +236,12 @@ class SearchBox extends DOMComponent {
         dayButton.classList.toggle('active');
         const dayContainer = document.querySelector('.mobile-options-container-day') as HTMLElement;
         if (dayContainer) dayContainer.classList.toggle('active');
+        const monthButton = document.querySelector('.mobile-input-button-month') as HTMLElement;
+        if (monthButton) monthButton.classList.remove('active');
+        const monthContainer = document.querySelector('.mobile-options-container-month') as HTMLElement;
+        if (monthContainer) monthContainer.classList.remove('active');
+        const monthInputElement = document.querySelector('#mobile-month-input') as HTMLInputElement;
+        if (monthInputElement) creatDaysLi(+monthInputElement.value);
       });
 
       const monthButton = document.querySelector('.mobile-input-button-month') as HTMLElement;
@@ -243,11 +249,18 @@ class SearchBox extends DOMComponent {
         monthButton.classList.toggle('active');
         const monthContainer = document.querySelector('.mobile-options-container-month') as HTMLElement;
         if (monthContainer) monthContainer.classList.toggle('active');
+        const dayButton = document.querySelector('.mobile-input-button-day') as HTMLElement;
+        if (dayButton) dayButton.classList.remove('active');
+        const dayContainer = document.querySelector('.mobile-options-container-day') as HTMLElement;
+        if (dayContainer) dayContainer.classList.remove('active');
       });
 
       // Отслеживание скролла для .mobile-options-container-month
-      const checkScroll = (container: HTMLElement) => {
+      const checkScroll = (container: HTMLElement, param: string) => {
         container.addEventListener('scroll', function() {
+          const monthInput = document.querySelector('#mobile-month-input') as HTMLInputElement;
+          const dayInput = document.querySelector('#mobile-day-input') as HTMLInputElement;
+
           const items = this.querySelectorAll('li');
           const containerHeight = this.clientHeight;
           const scrollTop = this.scrollTop;
@@ -265,23 +278,30 @@ class SearchBox extends DOMComponent {
               }
           });
 
-          if (container === monthContainer) {
-            const monthInput = document.querySelector('#mobile-month-input') as HTMLInputElement;
+
+          if (param === 'month') {
             if (monthInput) monthInput.value = container.querySelector('li.active')?.textContent as string;
-            creatDaysLi(+monthInput.value);
+            // creatDaysLi(+monthInput.value);
           }
 
-          if (container === dayContainer) {
-            const dayInput = document.querySelector('#mobile-day-input') as HTMLInputElement;
+          if (param === 'day') {
             if (dayInput) dayInput.value = container.querySelector('li.active')?.textContent as string;
+
           }
+
+          const formattedDate = `${dayInput.value}/${monthInput.value}/${currentYear}`;
+          window.dispatchEvent(new CustomEvent('datepicker-change', {
+              detail: {
+                  date: formattedDate
+              }
+          }));
         });
       };
 
       const monthContainer = document.querySelector('.mobile-options-container-month') as HTMLElement;
-      if (monthContainer) checkScroll(monthContainer);
+      if (monthContainer) checkScroll(monthContainer, 'month');
       const dayContainer = document.querySelector('.mobile-options-container-day') as HTMLElement;
-      if (dayContainer) checkScroll(dayContainer);
+      if (dayContainer) checkScroll(dayContainer, 'day');
 
       window.addEventListener('timeline-change', function (event: CustomEvent) {
         const date = event.detail.date;
@@ -291,8 +311,6 @@ class SearchBox extends DOMComponent {
         if (mobileDayInput) mobileDayInput.value = day.toString();
         const mobileMonthInput = document.querySelector('#mobile-month-input') as HTMLInputElement;
         if (mobileMonthInput) mobileMonthInput.value = month.toString();
-  
-        creatDaysLi(month);
       });
     });
 
@@ -673,7 +691,6 @@ class DateFilter {
         ) as HTMLElement;
         if (layersBtn) {
           layersBtn.addEventListener("click", () => {
-            console.log("layersBtn", layersBtn);
             setTimeout(() => {
               if (layersBtn.classList.contains("active")) {
                 const clockBtn = document.querySelector(".map-overlay--time:not(.active)") as HTMLElement;
