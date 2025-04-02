@@ -543,13 +543,17 @@ body .rs-tooltip {
   transform: translateX(-50%);
   max-width: 1052px;
   min-height: var(--height);
+}
 
-  @media (max-width: 1919px) {
-    width: calc(100% - 25%);
+@media (max-width: 1250px) {
+  .map-overlay--range-dates {
+    width: calc(100vw - 200px);
   }
+}
 
-  @media (max-width: 1599px) {
-    width: calc(100% - 20px);
+@media (max-width: 800px) {
+  .map-overlay--range-dates {
+    width: calc(100vw - 40px);
   }
 }
 
@@ -807,19 +811,6 @@ body .map-overlay--range-dates .rs-container .rs-pointer {
   height: 20px;
   fill: #ffffff;
   stroke: var(--main);
-}
-
-@media (max-width: 800px) {
-  .map-overlay {
-    /* height: calc(50dvh + 130px); */
-    /* height: 1000px; */
-    height: 69vh;
-    height: 69dvh;
-  }
-
-  .map-overlay--overlays {
-    /* display: none; */
-  }
 }
 
 @media (max-width: 639px) {
