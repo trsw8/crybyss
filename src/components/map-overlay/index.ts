@@ -565,21 +565,46 @@ class DateFilter {
         const cardsBtn = document.querySelector(".map-overlay--menu");
         if (cardsBtn) {
           cardsBtn.addEventListener("click", () => {
-            console.log("cardsBtn", cardsBtn);
-            const content = document.querySelector(".map-overlay--buttons-content");
+            const content = document.querySelector(
+              ".map-overlay--buttons-content"
+            );
             if (content) {
               setTimeout(() => {
                 if (cardsBtn.classList.contains("active")) {
                   content.classList.add("active");
-                  const layersBtn = document.querySelector(".map-overlay--copy.active") as HTMLElement;
+                  const layersBtn = document.querySelector(
+                    ".map-overlay--copy.active"
+                  ) as HTMLElement;
                   if (layersBtn) layersBtn.click();
-                  const clockBtn = document.querySelector(".map-overlay--time:not(.active)") as HTMLElement;
+                  const clockBtn = document.querySelector(
+                    ".map-overlay--time:not(.active)"
+                  ) as HTMLElement;
                   if (clockBtn) clockBtn.click();
-              } else {
+                } else {
                   content.classList.remove("active");
                 }
               }, 100);
             }
+          });
+        }
+
+        const layersBtn = document.querySelector(
+          ".map-overlay--copy.active"
+        ) as HTMLElement;
+        if (layersBtn) {
+          layersBtn.addEventListener("click", () => {
+            console.log("layersBtn", layersBtn);
+            setTimeout(() => {
+              if (layersBtn.classList.contains("active")) {
+                const clockBtn = document.querySelector(
+                  ".map-overlay--time:not(.active)"
+                ) as HTMLElement;
+                if (clockBtn) clockBtn.click();
+                const cardsBtn = document.querySelector(".map-overlay--menu.active") as HTMLElement;
+                console.log("cardsBtn", window.innerWidth);
+                if (cardsBtn && window.innerWidth < 901) cardsBtn.click();
+              }
+            }, 100);
           });
         }
       }
