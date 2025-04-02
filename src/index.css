@@ -82,6 +82,27 @@
   }
 }
 
+@media (max-width: 639px) {
+  ._label:nth-child(2) {
+    display: none;
+  }
+
+  ._label:nth-child(3) {
+    gap: 2px;
+  }
+
+  ._label p {
+    font-size: 12px;
+  }
+  ._label .symbol {
+    width: 11px;
+    height: 11px;
+    font-size: 9px;
+    line-height: 9px;
+    padding: 0px 2px;
+  }
+}
+
 .datepicker-container {
   position: relative;
   /* width: 400px; */
