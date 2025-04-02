@@ -320,36 +320,19 @@
   z-index: -1;
 }
 
-@media (max-width: 1200px) {
-  ._label:nth-child(2) {
-    order: 3;
-  }
-
-  .range-container {
-    width: calc(100vw - 20vw);
+@media (max-width: 900px) {
+  .filter-box {
+    top: 171px;
+    right: 118px;
   }
 }
 
+
 @media (max-width: 800px) {
   .filter-overlay {
-    /* padding: 10% 0; */
-
     >h2 {
-      /* font-size: 20px; */
       padding: 0 20px 200px;
-      /* text-align: center; */
     }
-  }
-
-  .filter-box {
-    order: 3;
-    flex-direction: column;
-    gap: 20px;
-    padding: 0;
-  }
-
-  ._label:nth-child(2) {
-    order: unset;
   }
 
   .datepicker-container,
@@ -360,6 +343,18 @@
     height: 54px;
   }
 }
+
+@media (max-width: 639px) {
+  .filter-overlay {
+    padding-top: 62px;
+  }
+
+  .filter-box {
+    top: 180px;
+    right: 69px;
+  }
+}
+
 
 ._label .time-picker-label {
   display: block;
