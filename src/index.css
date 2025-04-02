@@ -62,10 +62,6 @@
   font-weight: 600;
   width: 100%;
 
-  @media (max-width: 800px) {
-    width: calc(100% - 40px);
-  }
-
   .symbol {
     display: inline-block;
     border: 1px solid #32739d;

@@ -158,6 +158,7 @@ body .rs-tooltip {
 @media (max-width: 800px) {
   .map-overlay--search-box [type="text"] {
     width: 296px;
+    font-size: 12px;
     height: calc(var(--height) - 10px);
   }
 }
@@ -724,6 +725,8 @@ body .map-overlay--range-dates .rs-container .rs-pointer {
   }
 }
 
+
+
 .map-overlay--search-title svg {
   width: 16px;
   height: 8px;
@@ -920,5 +923,13 @@ body .map-overlay--range-dates .rs-container .rs-pointer {
 @media (max-width: 900px) {
   .map-overlay--buttons-selector.map-overlay--btn {
     display: none;
+  }
+}
+
+@media (max-width: 639px) {
+  .map-overlay--search-box svg {
+    width: 15px;
+    height: 15px;
+    opacity: 0.5;
   }
 }
