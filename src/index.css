@@ -452,6 +452,11 @@
   cursor: pointer;
 }
 
+.mobile-input-button-day.active,
+.mobile-input-button-month.active {
+  transform: translateY(-50%) rotate(180deg);
+}
+
 .moblie-input-wrapper {
   position: relative;
   height: 28px;
@@ -459,6 +464,7 @@
 
 .mobile-options-container-day,
 .mobile-options-container-month {
+  display: none;
   position: absolute;
   top: 38px;
   left: 0;
@@ -472,6 +478,11 @@
   z-index: 999;
   scrollbar-width: none;
   -ms-overflow-style: none;
+}
+
+.mobile-options-container-day.active,
+.mobile-options-container-month.active {
+  display: block;
 }
 
 .mobile-options-container-day::-webkit-scrollbar,

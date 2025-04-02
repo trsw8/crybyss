@@ -218,17 +218,12 @@ class SearchBox extends DOMComponent {
     // мобильный датапикер начало
     document.addEventListener("DOMContentLoaded", function () {
       const currentYear = new Date().getFullYear();
-      console.log('currentYear', currentYear)
 
       const creatDaysLi = (month: number) => {
         document.querySelectorAll('.mobile-options-container-day li').forEach((item) => {
           item.remove();
         });
-
-        console.log('month', month)
         const lastDate = new Date(currentYear, month, 0).getDate();
-        console.log('lastDate', lastDate)
-
         for (let i = 1; i <= lastDate; i++) {
           const li = document.createElement('li');
           li.textContent = i.toString();
@@ -236,9 +231,23 @@ class SearchBox extends DOMComponent {
         }
       };
 
+      const dayButton = document.querySelector('.mobile-input-button-day') as HTMLElement;
+      if (dayButton) dayButton.addEventListener('click', () => {
+        dayButton.classList.toggle('active');
+        const dayContainer = document.querySelector('.mobile-options-container-day') as HTMLElement;
+        if (dayContainer) dayContainer.classList.toggle('active');
+      });
+
+      const monthButton = document.querySelector('.mobile-input-button-month') as HTMLElement;
+      if (monthButton) monthButton.addEventListener('click', () => {
+        monthButton.classList.toggle('active');
+        const monthContainer = document.querySelector('.mobile-options-container-month') as HTMLElement;
+        if (monthContainer) monthContainer.classList.toggle('active');
+      });
+
       // Отслеживание скролла для .mobile-options-container-month
       const checkScroll = (container: HTMLElement) => {
-        monthContainer.addEventListener('scroll', function() {
+        container.addEventListener('scroll', function() {
           const items = this.querySelectorAll('li');
           const containerHeight = this.clientHeight;
           const scrollTop = this.scrollTop;
@@ -255,13 +264,24 @@ class SearchBox extends DOMComponent {
                   item.classList.add('active');
               }
           });
+
+          if (container === monthContainer) {
+            const monthInput = document.querySelector('#mobile-month-input') as HTMLInputElement;
+            if (monthInput) monthInput.value = container.querySelector('li.active')?.textContent as string;
+            creatDaysLi(+monthInput.value);
+          }
+
+          if (container === dayContainer) {
+            const dayInput = document.querySelector('#mobile-day-input') as HTMLInputElement;
+            if (dayInput) dayInput.value = container.querySelector('li.active')?.textContent as string;
+          }
         });
       };
 
       const monthContainer = document.querySelector('.mobile-options-container-month') as HTMLElement;
-      if (monthContainer) {
-          checkScroll(monthContainer);
-      }
+      if (monthContainer) checkScroll(monthContainer);
+      const dayContainer = document.querySelector('.mobile-options-container-day') as HTMLElement;
+      if (dayContainer) checkScroll(dayContainer);
 
       window.addEventListener('timeline-change', function (event: CustomEvent) {
         const date = event.detail.date;
