@@ -565,7 +565,21 @@ class DateFilter {
         const cardsBtn = document.querySelector(".map-overlay--menu");
         if (cardsBtn) {
           cardsBtn.addEventListener("click", () => {
-            console.log("cardsBtn");
+            console.log("cardsBtn", cardsBtn);
+            const content = document.querySelector(".map-overlay--buttons-content");
+            if (content) {
+              setTimeout(() => {
+                if (cardsBtn.classList.contains("active")) {
+                  content.classList.add("active");
+                  const layersBtn = document.querySelector(".map-overlay--copy.active") as HTMLElement;
+                  if (layersBtn) layersBtn.click();
+                  const clockBtn = document.querySelector(".map-overlay--time:not(.active)") as HTMLElement;
+                  if (clockBtn) clockBtn.click();
+              } else {
+                  content.classList.remove("active");
+                }
+              }, 100);
+            }
           });
         }
       }
