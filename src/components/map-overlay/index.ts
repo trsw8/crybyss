@@ -217,8 +217,26 @@ class SearchBox extends DOMComponent {
 
     // мобильный датапикер начало
     document.addEventListener("DOMContentLoaded", function () {
-      // Отслеживание скролла для .mobile-options-container-month
+      const currentYear = new Date().getFullYear();
+      console.log('currentYear', currentYear)
 
+      const creatDaysLi = (month: number) => {
+        document.querySelectorAll('.mobile-options-container-day li').forEach((item) => {
+          item.remove();
+        });
+
+        console.log('month', month)
+        const lastDate = new Date(currentYear, month, 0).getDate();
+        console.log('lastDate', lastDate)
+
+        for (let i = 1; i <= lastDate; i++) {
+          const li = document.createElement('li');
+          li.textContent = i.toString();
+          document.querySelector('.mobile-options-container-day')?.appendChild(li);
+        }
+      };
+
+      // Отслеживание скролла для .mobile-options-container-month
       const checkScroll = (container: HTMLElement) => {
         monthContainer.addEventListener('scroll', function() {
           const items = this.querySelectorAll('li');
@@ -244,7 +262,20 @@ class SearchBox extends DOMComponent {
       if (monthContainer) {
           checkScroll(monthContainer);
       }
+
+      window.addEventListener('timeline-change', function (event: CustomEvent) {
+        const date = event.detail.date;
+        const day = date.getDate();
+        const month = date.getMonth() + 1;
+        const mobileDayInput = document.querySelector('#mobile-day-input') as HTMLInputElement;
+        if (mobileDayInput) mobileDayInput.value = day.toString();
+        const mobileMonthInput = document.querySelector('#mobile-month-input') as HTMLInputElement;
+        if (mobileMonthInput) mobileMonthInput.value = month.toString();
+  
+        creatDaysLi(month);
+      });
     });
+
     // мобильный датапикер конец
   }
 

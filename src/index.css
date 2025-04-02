@@ -94,6 +94,7 @@
   ._label p {
     font-size: 12px;
   }
+
   ._label .symbol {
     width: 11px;
     height: 11px;
@@ -495,9 +496,15 @@
   color: #000;
 }
 
+.mobile-options-container-day li:first-child,
+.mobile-options-container-month li:first-child {
+  margin-top: 20px;
+}
+
 .mobile-options-container-day li:last-child,
 .mobile-options-container-month li:last-child {
   border-bottom: none;
+  margin-bottom: 20px;
 }
 
 @media (max-width: 639px) {
