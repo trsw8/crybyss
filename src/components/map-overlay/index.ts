@@ -214,6 +214,38 @@ class SearchBox extends DOMComponent {
 
     window.addEventListener("cruisesDataLoaded", onInput);
     input.addEventListener("input", onInput);
+
+    // мобильный датапикер начало
+    document.addEventListener("DOMContentLoaded", function () {
+      // Отслеживание скролла для .mobile-options-container-month
+
+      const checkScroll = (container: HTMLElement) => {
+        monthContainer.addEventListener('scroll', function() {
+          const items = this.querySelectorAll('li');
+          const containerHeight = this.clientHeight;
+          const scrollTop = this.scrollTop;
+          const itemHeight = containerHeight / 3; // Высота одного элемента (всего 3 видимых)
+
+          items.forEach((item: HTMLElement, index: number) => {
+              const itemTop = item.offsetTop;
+              const itemBottom = itemTop + item.offsetHeight;
+              const isInView = itemTop <= scrollTop + 10 + itemHeight && itemBottom >= scrollTop + 10;
+              if (isInView) {
+                  // Удаляем класс active у всех элементов
+                  items.forEach((el: HTMLElement) => el.classList.remove('active'));
+                  // Добавляем класс active текущему элементу
+                  item.classList.add('active');
+              }
+          });
+        });
+      };
+
+      const monthContainer = document.querySelector('.mobile-options-container-month') as HTMLElement;
+      if (monthContainer) {
+          checkScroll(monthContainer);
+      }
+    });
+    // мобильный датапикер конец
   }
 
   private createCompanyElements(company: Company): Element[] {

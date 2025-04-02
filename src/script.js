@@ -6,6 +6,30 @@ document.addEventListener("DOMContentLoaded", function () {
     const calendarTitle = document.getElementById("calendar-title");
     const confirm = document.getElementById("confirm");
 
+    // Отслеживание скролла для .mobile-options-container-month
+    const monthContainer = document.querySelector('.mobile-options-container-month');
+    if (monthContainer) {
+        monthContainer.addEventListener('scroll', function() {
+            const items = this.querySelectorAll('li');
+            const containerHeight = this.clientHeight;
+            const scrollTop = this.scrollTop;
+            const itemHeight = containerHeight / 3; // Высота одного элемента (всего 3 видимых)
+
+            items.forEach((item, index) => {
+                const itemTop = item.offsetTop;
+                const itemBottom = itemTop + item.offsetHeight;
+                const isInView = itemTop <= scrollTop + itemHeight && itemBottom >= scrollTop;
+
+                if (isInView) {
+                    // Удаляем класс active у всех элементов
+                    items.forEach(el => el.classList.remove('active'));
+                    // Добавляем класс active текущему элементу
+                    item.classList.add('active');
+                }
+            });
+        });
+    }
+
     const prevMonthBtn = document.getElementById("prev-month");
     const nextMonthBtn = document.getElementById("next-month");
 
