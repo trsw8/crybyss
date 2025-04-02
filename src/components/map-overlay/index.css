@@ -304,7 +304,6 @@ body .rs-tooltip {
 
 @media (max-width: 900px) {
   .map-overlay--buttons-content {
-    display: flex;
     flex-direction: column;
     gap: 7px;
   }
@@ -366,7 +365,7 @@ body .rs-tooltip {
   background-color: var(--main);
 }
 
-@media (min-width: 801px) {
+@media (min-width: 901px) {
   .map-overlay--btn:hover {
     background-color: var(--main);
   }
@@ -377,7 +376,7 @@ body .rs-tooltip {
   background-color: #fff;
 }
 
-@media (min-width: 801px) {
+@media (min-width: 901px) {
   .map-overlay--btn.active:hover {
     background-color: #fff;
   }
@@ -715,7 +714,7 @@ body .map-overlay--range-dates .rs-container .rs-pointer {
   stroke: #ffffff;
 }
 
-@media (min-width: 801px) {
+@media (min-width: 901px) {
   .map-overlay--btn-primary-stroke:hover svg path {
     stroke: #ffffff;
   }
@@ -725,7 +724,7 @@ body .map-overlay--range-dates .rs-container .rs-pointer {
   stroke: var(--main);
 }
 
-@media (min-width: 801px) {
+@media (min-width: 901px) {
   .map-overlay--btn-primary-stroke.active:hover svg path {
     stroke: var(--main);
   }
@@ -736,7 +735,7 @@ body .map-overlay--range-dates .rs-container .rs-pointer {
   stroke: var(--main);
 }
 
-@media (min-width: 801px) {
+@media (min-width: 901px) {
   .map-overlay--btn-primary-fill:hover svg path {
     fill: #ffffff;
     stroke: var(--main);
@@ -748,7 +747,7 @@ body .map-overlay--range-dates .rs-container .rs-pointer {
   stroke: #ffffff;
 }
 
-@media (min-width: 801px) {
+@media (min-width: 901px) {
   .map-overlay--btn-primary-fill.active:hover svg path {
     fill: var(--main);
     stroke: #ffffff;
@@ -783,7 +782,7 @@ body .map-overlay--range-dates .rs-container .rs-pointer {
   }
 
   .map-overlay--overlays {
-    display: none;
+    /* display: none; */
   }
 }
 

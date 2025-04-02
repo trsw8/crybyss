@@ -561,6 +561,13 @@ class DateFilter {
         filterBtn.addEventListener("click", () => {
           resetTime();
         });
+
+        const cardsBtn = document.querySelector(".map-overlay--menu");
+        if (cardsBtn) {
+          cardsBtn.addEventListener("click", () => {
+            console.log("cardsBtn");
+          });
+        }
       }
     });
 
