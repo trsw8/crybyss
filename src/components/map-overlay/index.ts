@@ -516,9 +516,7 @@ class DateFilter {
         }
       }, 1000);
 
-      const clockBtn = document.querySelector(
-        ".map-overlay--time"
-      ) as HTMLElement;
+      const clockBtn = document.querySelector(".map-overlay--time") as HTMLElement;
 
       const pointer = document.querySelector(".rs-pointer") as HTMLElement;
       const onPointerDown = () => {
@@ -540,6 +538,11 @@ class DateFilter {
 
             const filterBox = document.querySelector(".filter-box");
             if (filterBox) filterBox.classList.add("active");
+            
+            const layersBtn = document.querySelector(".map-overlay--copy.active") as HTMLElement;
+            if (layersBtn) layersBtn.click();
+            const cardsBtn = document.querySelector(".map-overlay--menu.active") as HTMLElement;
+            if (cardsBtn && window.innerWidth < 901) cardsBtn.click();
           } else {
             window.dispatchEvent(new Event("filterchange"));
             updateFilter();
@@ -565,20 +568,14 @@ class DateFilter {
         const cardsBtn = document.querySelector(".map-overlay--menu");
         if (cardsBtn) {
           cardsBtn.addEventListener("click", () => {
-            const content = document.querySelector(
-              ".map-overlay--buttons-content"
-            );
+            const content = document.querySelector(".map-overlay--buttons-content");
             if (content) {
               setTimeout(() => {
                 if (cardsBtn.classList.contains("active")) {
                   content.classList.add("active");
-                  const layersBtn = document.querySelector(
-                    ".map-overlay--copy.active"
-                  ) as HTMLElement;
+                  const layersBtn = document.querySelector(".map-overlay--copy.active") as HTMLElement;
                   if (layersBtn) layersBtn.click();
-                  const clockBtn = document.querySelector(
-                    ".map-overlay--time:not(.active)"
-                  ) as HTMLElement;
+                  const clockBtn = document.querySelector(".map-overlay--time:not(.active)") as HTMLElement;
                   if (clockBtn) clockBtn.click();
                 } else {
                   content.classList.remove("active");
@@ -596,12 +593,9 @@ class DateFilter {
             console.log("layersBtn", layersBtn);
             setTimeout(() => {
               if (layersBtn.classList.contains("active")) {
-                const clockBtn = document.querySelector(
-                  ".map-overlay--time:not(.active)"
-                ) as HTMLElement;
+                const clockBtn = document.querySelector(".map-overlay--time:not(.active)") as HTMLElement;
                 if (clockBtn) clockBtn.click();
                 const cardsBtn = document.querySelector(".map-overlay--menu.active") as HTMLElement;
-                console.log("cardsBtn", window.innerWidth);
                 if (cardsBtn && window.innerWidth < 901) cardsBtn.click();
               }
             }, 100);
