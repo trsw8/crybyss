@@ -311,10 +311,6 @@ class SearchBox extends DOMComponent {
         if (mobileDayInput) mobileDayInput.value = day.toString();
         const mobileMonthInput = document.querySelector('#mobile-month-input') as HTMLInputElement;
         if (mobileMonthInput) mobileMonthInput.value = month.toString();
-
-        document.querySelectorAll(`.mobile-input-button-day, .mobile-input-button-month, .mobile-options-container-day, .mobile-options-container-month`).forEach((el) => {
-          el.classList.remove('active');
-        });
       });
     });
 
