@@ -670,16 +670,20 @@ class DateFilter {
         if (cardsBtn) {
           cardsBtn.addEventListener("click", () => {
             const content = document.querySelector(".map-overlay--buttons-content");
-            if (content) {
+            const wrapper = document.querySelector(".map-overlay--buttons-wrapper");
+
+            if (content && wrapper) {
               setTimeout(() => {
                 if (cardsBtn.classList.contains("active")) {
                   content.classList.add("active");
+                  wrapper.classList.add("active");
                   const layersBtn = document.querySelector(".map-overlay--copy.active") as HTMLElement;
                   if (layersBtn) layersBtn.click();
                   const clockBtn = document.querySelector(".map-overlay--time:not(.active)") as HTMLElement;
                   if (clockBtn) clockBtn.click();
                 } else {
                   content.classList.remove("active");
+                  wrapper.classList.remove("active");
                 }
               }, 100);
             }
@@ -718,6 +722,15 @@ class DateFilter {
         "/" +
         event.detail.date.getFullYear().toString();
       dateValue = currentDate;
+    });
+
+    window.addEventListener("DOMContentLoaded", () => {
+      if (window.innerWidth < 901) {
+        const copyBtn = document.querySelector(".map-overlay--copy") as HTMLElement;
+        if (copyBtn) copyBtn.click();
+        const menuBtn = document.querySelector(".map-overlay--menu") as HTMLElement;
+        if (menuBtn) menuBtn.classList.add("active");
+      }
     });
   }
 }
