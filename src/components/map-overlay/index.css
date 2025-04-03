@@ -287,7 +287,7 @@ body .rs-tooltip {
 }
 
 .map-overlay--buttons-wrapper {
-  display: flex;
+  display: none;
   align-items: center;
   gap: 10px;
   position: absolute;
@@ -296,9 +296,13 @@ body .rs-tooltip {
   height: calc(var(--height) - 10px);
 }
 
+.map-overlay--buttons-wrapper.active {
+  display: flex;
+}
+
 @media (max-width: 900px) {
   .map-overlay--buttons-wrapper {
-    display: block;
+    display: none;
     height: auto;
     left: auto;
     top: 74px;
@@ -306,6 +310,9 @@ body .rs-tooltip {
     background: #fff;
     padding: 7px;
     border-radius: 7px;
+  }
+  .map-overlay--buttons-wrapper.active {
+    display: block;
   }
 }
 
