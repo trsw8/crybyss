@@ -215,10 +215,8 @@ export default class CruiseMap {
 
 			const activeShipIds = activeCruises.map(cruise => cruise.cruise.shipId);
 			const shipsNotInCruise = shipIds.filter(id => !activeShipIds.includes(id));
-			console.log('shipsNotInCruise', shipsNotInCruise)
 
 			const countElement = document.querySelector('.map-overlay--ships-count') as HTMLElement;
-			console.log('countElement', countElement)
 			if (countElement) {
 				countElement.innerText = shipsNotInCruise.length.toString().padStart(3, '0');
 			}
