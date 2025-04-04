@@ -75,6 +75,7 @@ export default class CruiseMap {
 		return this._ships.get( id );
 	}
 	get ships(): Ship[] { return [ ...this._ships.values() ].map( item => item.ship ); }
+
 	declare selectedShip: ShipMarker | undefined;
 
 	declare private _text: Text;
@@ -199,6 +200,26 @@ export default class CruiseMap {
 				});
 				if (index <= 1)
 					value.unsetIntersectionIndex();
+			}
+		});
+
+		// Получить список кораблей, не находящихся в круизе в указанное время
+		window.addEventListener('timeline-change', (event: CustomEvent) => {
+			const date = event.detail.date;
+			const shipIds = this.ships.map(ship => ship.id);
+			// Получить список активных круизов на указанную дату
+			const activeCruises = Array.from(this._cruises.values()).filter(cruise => {
+				const cruiseStart = cruise.cruise.departure;
+				const cruiseEnd = cruise.cruise.arrival;
+				return cruiseStart <= date && cruiseEnd >= date;
+			});
+
+			const activeShipIds = activeCruises.map(cruise => cruise.cruise.ship.id);
+			const shipsNotInCruise = shipIds.filter(id => !activeShipIds.includes(id));
+
+			const countElement = document.querySelector('.map-overlay--ships-count') as HTMLElement;
+			if (countElement) {
+				countElement.innerText = shipsNotInCruise.length.toString().padStart(3, '0');
 			}
 		});
 	}

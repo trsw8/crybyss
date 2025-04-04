@@ -42,9 +42,38 @@
 							<button id="confirm">сбросить</button>
 						</div>
 					</div>
+					<div class="mobile-datepicker-container">
+						<div class="moblie-input-wrapper">
+							<input id="mobile-day-input" placeholder="дд" readonly>
+							<div class="mobile-input-button-day"></div>
+							<ul class="mobile-options-container-day">
+								<li>1</li>
+								<li>2</li>
+								<li>3</li>
+							</ul>
+						</div>
+						<div class="moblie-input-wrapper">
+							<input id="mobile-month-input" placeholder="мм" readonly>
+							<div class="mobile-input-button-month"></div>
+							<ul class="mobile-options-container-month">
+								<li>1</li>
+								<li>2</li>
+								<li>3</li>
+								<li>4</li>
+								<li>5</li>
+								<li>6</li>
+								<li>7</li>
+								<li>8</li>
+								<li>9</li>
+								<li>10</li>
+								<li>11</li>
+								<li>12</li>
+							</ul>
+						</div>
+					</div>
 				</div>
 				<div class="_label">
-					<p>Выберите время <span class="symbol"> ?</span></p>
+					<p>Шкала времени <span class="symbol"> ?</span></p>
 					<div class="range-container">
 						<div class="slider-container">
 							<input type="range" id="time-slider" min="0" max="1439" value="720">
@@ -59,12 +88,13 @@
 					</div>
 				</div>
 				<div class="_label">
-					<p>Выберите время <span class="symbol"> ?</span></p>
+					<p class="time-picker-label">Текущее время <span class="symbol"> ?</span></p>
 					<label for="timeInput" class="time-picker-container">
 						<input type="time" id="timeInput" step="1">
 						<span id="timeDisplay">00:00:00</span>
 					</label>
 				</div>
+				<div class="timepicker-hide-button">режим онлайн</div>
 			</div>
 			<%- include('./components/map-container/index') %>
 		</div>
