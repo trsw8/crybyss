@@ -613,21 +613,31 @@ class DateFilter {
 
 			const pointer = document.querySelector(".rs-pointer") as HTMLElement;
 			const onPointerDown = () => {
-				clockBtn.classList.remove("active");
 				isclockActive = false;
 				window.dispatchEvent(new Event("filterchange"));
 			};
 			pointer.addEventListener("mousedown", onPointerDown);
-			pointer.addEventListener("touchstart", onPointerDown);
+			pointer.addEventListener("touchstart", onPointerDown, { passive: true });
 
 			if (clockBtn) {
-				const resetTime = () => {
+				const resetTime = (synchronize = false) => {
 					const now = createMoscowDate();
 
+					if (synchronize) {
+						updateFilter();
+						isclockActive = true;
+						cruiseMap.timelinePoint = now;
+						shipSlider.setSlider(now, cruiseMap);
+					}
+					
 					if (clockBtn.classList.contains("active")) {
 						clockBtn.classList.remove("active");
+
+						const filterBox = document.querySelector(".filter-box");
+						if (filterBox) filterBox.classList.remove("active");
+					} else {
+						clockBtn.classList.add("active");
 						isclockActive = false;
-						window.dispatchEvent(new Event("filterchange"));
 
 						const filterBox = document.querySelector(".filter-box");
 						if (filterBox) filterBox.classList.add("active");
@@ -636,17 +646,9 @@ class DateFilter {
 						if (layersBtn) layersBtn.click();
 						const cardsBtn = document.querySelector(".map-overlay--menu.active") as HTMLElement;
 						if (cardsBtn && window.innerWidth < 901) cardsBtn.click();
-					} else {
-						window.dispatchEvent(new Event("filterchange"));
-						updateFilter();
-						clockBtn.classList.add("active");
-						isclockActive = true;
-						cruiseMap.timelinePoint = now;
-						shipSlider.setSlider(now, cruiseMap);
-
-						const filterBox = document.querySelector(".filter-box");
-						if (filterBox) filterBox.classList.remove("active");
 					}
+
+					window.dispatchEvent(new Event("filterchange"));
 				};
 
 				clockBtn.addEventListener("click", () => {
@@ -655,7 +657,7 @@ class DateFilter {
 
 				const filterBtn = document.querySelector(".timepicker-hide-button");
 				filterBtn.addEventListener("click", () => {
-					resetTime();
+					resetTime(true);
 				});
 
 				const cardsBtn = document.querySelector(".map-overlay--menu");
@@ -671,7 +673,7 @@ class DateFilter {
 									wrapper.classList.add("active");
 									const layersBtn = document.querySelector(".map-overlay--copy.active") as HTMLElement;
 									if (layersBtn) layersBtn.click();
-									const clockBtn = document.querySelector(".map-overlay--time:not(.active)") as HTMLElement;
+									const clockBtn = document.querySelector(".map-overlay--time.active") as HTMLElement;
 									if (clockBtn) clockBtn.click();
 								} else {
 									content.classList.remove("active");
@@ -689,7 +691,7 @@ class DateFilter {
 					layersBtn.addEventListener("click", () => {
 						setTimeout(() => {
 							if (layersBtn.classList.contains("active")) {
-								const clockBtn = document.querySelector(".map-overlay--time:not(.active)") as HTMLElement;
+								const clockBtn = document.querySelector(".map-overlay--time.active") as HTMLElement;
 								if (clockBtn) clockBtn.click();
 								const cardsBtn = document.querySelector(".map-overlay--menu.active") as HTMLElement;
 								if (cardsBtn && window.innerWidth < 901) cardsBtn.click();
