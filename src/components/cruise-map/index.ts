@@ -12,7 +12,7 @@ import sunsetIcon from '../../icons/sunset.svg';
 import linerMarkerIcon from '../../icons/liner-marker.svg';
 import {svgAsset} from '../../util';
 import Text from '../../state/text';
-import {Cruise, Company, Ship, Location, TrackPoint, TrackLocation, LocationType} from '../../state/cruise';
+import {Cruise, Company, Ship, Location, TrackPoint, TrackLocation, LocationType, defaultCompanyColor} from '../../state/cruise';
 import WorldMap, {
 	VisibilityControl, Layer,
 	MapMarker, InteractiveMapMarker, MapPolyline, InteractiveMapPolyline
@@ -184,6 +184,14 @@ export default class CruiseMap {
 				}
 			} );
 		}
+		
+		this._shipLayer.events.addEventListener( 'visibilitychange', () => {
+			if (!this._shipLayer.visible && !!this.selectedShip) {
+				const cruise = this._cruises.get( this.selectedShip.cruiseId );
+				cruise?.hideTrack();
+				this.selectedShip = undefined;
+			}
+		} );
 		
 		// Пока n-ному маркеру из сегмента пересечений добавляется кратное n значение сдвига.
 		// Не самое красивое решение...
@@ -642,10 +650,12 @@ class CruiseAssets {
 		this.hideSunsets();
 	}
 	
-	private async locationPopup( stop: Location ): Promise<Element> {
+	private static async locationPopup( stop: Location, map: CruiseMap ): Promise<Element> {
 		const {lat, lng, type, name, category, description, image, link } = stop;
 		//~ const arrival;
-		const company = this.cruise.company;
+		const cruise = map.cruiseAsset( map.selectedShip?.cruiseId );
+		const company = cruise?.cruise.company;
+		const color = company?.color ?? defaultCompanyColor;
 		const imageElements = image ? [
 			LocatedItemDescriptionImage.create(image),
 		] : [];
@@ -666,11 +676,12 @@ class CruiseAssets {
 					)),
 					...categoryNameElements,
 				], LocatedItemDescriptionGap.MEDIUM),
+				LocatedItemDescriptionLocation.create(lat, lng),
 				descriptionElement,
 			] : [
 				...imageElements,
 				LocatedItemDescriptionButton.create(
-					this.map.text.GO_TO_TRACKSTOP,
+					map.text.GO_TO_TRACKSTOP,
 					() => {
 						location.assign( link );
 					},
@@ -689,7 +700,7 @@ class CruiseAssets {
 			],
 			['cruise-map__popup'],
 			{
-				'--cruise-map__popup_company-color': `#${company.color.toString(16)}`
+				'--cruise-map__popup_company-color': `#${color.toString(16)}`
 			}
 		);
 		//~ if (imageElements?.length) {
@@ -774,7 +785,7 @@ class CruiseAssets {
 					if (!this.stops[ id ]) {
 						this.stops[ id ] = this.map.attachLocationMarker(
 							id, LocationType.REGULAR, lat, lng,
-							() => this.locationPopup( stop.location ),
+							() => CruiseAssets.locationPopup( stop.location, this.map ),
 						);
 					}
 				}
@@ -799,7 +810,7 @@ class CruiseAssets {
 					if (!this.sights[ id ]) {
 						this.sights[ id ] = this.map.attachLocationMarker(
 							id, LocationType.SHOWPLACE, lat, lng,
-							() => this.locationPopup( sight.location ),
+							() => CruiseAssets.locationPopup( sight.location, this.map ),
 						);
 					}
 				}

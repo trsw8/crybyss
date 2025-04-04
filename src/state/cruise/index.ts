@@ -31,6 +31,8 @@ export interface Cruise {
 	route: Promise<CruiseRoute>;
 }
 
+export const defaultCompanyColor = 0xD9D9D9;
+
 export interface Company {
 	id: string;
 	name: string;

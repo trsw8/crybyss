@@ -1,7 +1,7 @@
 import {
 	CruiseAPI,
 	Cruise, Company, Ship, Location, TrackLocation, LocationType,
-	CruiseRoute, TrackPoint
+	CruiseRoute, TrackPoint, defaultCompanyColor
 } from '.';
 
 /// @todo: Конфиг вынести в отдельный файл
@@ -17,7 +17,6 @@ const apiEntries = {
 	points : '?service=map&method=points'
 };
 
-const defaultCompanyColor = 0xD9D9D9;
 const brandColors: Record<string, number> = {
 	'ООО "Туроператор Азурит"': 0x31739D
 };
