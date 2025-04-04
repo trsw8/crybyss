@@ -164,11 +164,11 @@ export default class CruiseMap {
 	constructor(map: WorldMap, text: Text) {
 		this.map = map;
 		this._trackLayer = map.addLayer();
-		this._sunsetsLayer = map.addLayer();
-		this._sunrisesLayer = map.addLayer();
+		this._sightsLayer = map.addLayer();
 		this._gatewaysLayer = map.addLayer();
 		this._stopsLayer = map.addLayer();
-		this._sightsLayer = map.addLayer();
+		this._sunsetsLayer = map.addLayer();
+		this._sunrisesLayer = map.addLayer();
 		this._shipLayer = map.addLayer();
 
 		this._text = text;
@@ -651,7 +651,8 @@ class CruiseAssets {
 	}
 	
 	private static async locationPopup( stop: Location, map: CruiseMap ): Promise<Element> {
-		const {lat, lng, type, name, category, description, image, link } = stop;
+		//~ const {lat, lng, type, name, category, description, image, link } = stop;
+		const {lat, lng, type, name, category, image, link } = stop;
 		//~ const arrival;
 		const cruise = map.cruiseAsset( map.selectedShip?.cruiseId );
 		const company = cruise?.cruise.company;
@@ -662,7 +663,7 @@ class CruiseAssets {
 		const categoryNameElements = category ? [
 			LocatedItemDescriptionText.create(category),
 		] : [];
-		const descriptionElement = LocatedItemDescriptionText.create(description);
+		//~ const descriptionElement = LocatedItemDescriptionText.create(description);
 		const itemDescription = LocatedItemDescription.create(
 			type === LocationType.SHOWPLACE ? [
 				...imageElements,
@@ -677,7 +678,7 @@ class CruiseAssets {
 					...categoryNameElements,
 				], LocatedItemDescriptionGap.MEDIUM),
 				LocatedItemDescriptionLocation.create(lat, lng),
-				descriptionElement,
+				//~ descriptionElement,
 			] : [
 				...imageElements,
 				LocatedItemDescriptionButton.create(
@@ -695,7 +696,7 @@ class CruiseAssets {
 						LocatedItemDescriptionText.create(name),
 					], LocatedItemDescriptionGap.SMALL),
 					LocatedItemDescriptionLocation.create(lat, lng),
-					descriptionElement,
+					//~ descriptionElement,
 				], LocatedItemDescriptionGap.LARGE),
 			],
 			['cruise-map__popup'],

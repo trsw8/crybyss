@@ -500,7 +500,7 @@ async function fetchSights( ids: string[] ): Promise<void> {
 			lng: item.lng,
 			name: item.name,
 			category: item.category,
-			description: item.description,
+			//~ description: item.description,
 			//~ image: item.image,
 			// Это для тестирования. После переноса приложения на основной сайт проверку url можно будет убрать
 			image: item.image ? ( /^https?:\/\//.test( item.image ) ? '' : siteURL ) + item.image : ''
@@ -518,9 +518,13 @@ async function fetchStops(): Promise<void> {
 				lat: item.lat,
 				lng: item.lng,
 				name: item.name,
-				description: item.description,
-				image: item.image,
-				link: item.url
+				//~ description: item.description,
+				//~ image: item.image,
+				// Это для тестирования. После переноса приложения на основной сайт проверку url можно будет убрать
+				image: item.image ? ( /^https?:\/\//.test( item.image ) ? '' : siteURL ) + item.image : '',
+				//~ link: item.url,
+				// Это для тестирования. После переноса приложения на основной сайт проверку url можно будет убрать
+				link: item.url ? ( /^https?:\/\//.test( item.url ) ? '' : siteURL ) + item.url : ''
 			};
 			return ret;
 		}, {}
