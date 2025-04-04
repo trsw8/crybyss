@@ -50,6 +50,7 @@ export interface Ship {
 	company: Company;
 	cruises: () => Iterable<Cruise>;
 	cruisesOn: ( datetime: Date ) => Cruise[];
+	cruiseOn: ( datetime: Date ) => Cruise | undefined;
 	positionAt: ( datetime: Date ) => Promise<TrackPoint>;
 }
 

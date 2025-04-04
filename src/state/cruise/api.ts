@@ -427,19 +427,18 @@ class ShipData implements Ship {
 		}
 		return found;
 	}
+	
+	cruiseOn( datetime: Date ): Cruise | undefined {
+		const cruises = this.cruisesOn( datetime );
+		let i = 0;
+		while (i < cruises.length - 1 && +cruises[ i + 1 ].departure === +cruises[0].departure) i++;
+		return cruises[ i ];
+	}
 
 	async positionAt( datetime: Date ): Promise<TrackPoint> {
-		const moment = +datetime;
-		let found: Cruise;
-		for (const index of cache.activeCruises) {
-			const cruise = cache.cruises.at( index );
-			if (cruise.ship === this) {
-				found = cruise;
-				if (+( cruise.arrival ?? 0 ) >= moment) break;
-			}
-		}
-		if (found) {
-			return ( await found.route ).positionAt( datetime );
+		const cruise = this.cruiseOn( datetime );
+		if (cruise) {
+			return ( await cruise.route ).positionAt( datetime );
 		}
 		else {
 			return { lat: 0, lng: 0, arrival: datetime, isStop: false };
