@@ -292,7 +292,8 @@ class CruiseData implements Cruise {
 	
 	get sights() {
 		if (!this._sights) this._sights = new Promise( async resolve => {
-			const data = await connector.send( apiEntries.cruiseSights, { id: this.id } );
+			//~ const data = await connector.send( apiEntries.cruiseSights, { id: this.id } );
+			const data = await fetchCruiseSights( this.id );
 			const ids = data.reduce( ( ret: Record<string, true>, item: any ) => {
 				if (!cache.sights[ item.id ] || cache.sights[ item.id ] instanceof Promise) ret[ item.id ] = true;
 				return ret;
@@ -300,12 +301,12 @@ class CruiseData implements Cruise {
 			if (Object.keys( ids ).length > 0) {
 				await fetchSights( Object.keys( ids ) );
 			}
-			this._sights = data.map( ( item: any ) => ({
+			const sights = data.map( ( item: any ) => ({
 				arrival: parseDate( item.arrival ),
 				side: item.side.toLowerCase(),
-				location: cache.sights[ item.id ]
+				location: cache.sights[ item.id ] as Location
 			}) );
-			resolve( this._sights );
+			resolve( sights );
 		} );
 		return this._sights;
 	}
@@ -327,7 +328,7 @@ class CruiseData implements Cruise {
 	
 	get route() {
 		if (!this._route) this._route = new Promise( async resolve => {
-			const data = await connector.send( apiEntries.points, { id: this.id } );
+			const data = await fetchCruiseTracks( this.id );
 			this._sunrises = [];
 			this._sunsets = [];
 			const gateways: any[] = [];
@@ -488,8 +489,52 @@ async function fetchCruise( id: string ) : Promise<Cruise> {
 }
 */
 
-async function fetchSights( ids: string[] ): Promise<void> {
-	const newIds = ids.filter( id => !cache.sights[ id ] );
+let cruiseTracksToFetch: Record<string, ( data: any ) => void> = {};
+function fetchCruiseTracks( id: string ) {
+	const ret: Promise<any[]> = new Promise( resolve => {
+		cruiseTracksToFetch[ id ] = resolve;
+	} );
+	setTimeout( async () => {
+		const ids = Object.keys( cruiseTracksToFetch );
+		if (ids.length) {
+			const resolvers = cruiseTracksToFetch;
+			cruiseTracksToFetch = {};
+			const data = await connector.send( apiEntries.points, { id: ids } );
+			for (const id of Object.keys( data )) {
+				resolvers[ id ]( data[ id ] );
+			}
+		}
+	}, 10 );
+	
+	return ret;
+}
+
+let cruiseSightsToFetch: Record<string, ( data: any ) => void> = {};
+function fetchCruiseSights( id: string ) {
+	const ret: Promise<any[]> = new Promise( resolve => {
+		cruiseSightsToFetch[ id ] = resolve;
+	} );
+	setTimeout( async () => {
+		const ids = Object.keys( cruiseSightsToFetch );
+		if (ids.length) {
+			const resolvers = cruiseSightsToFetch;
+			cruiseSightsToFetch = {};
+			const data = await connector.send( apiEntries.cruiseSights, { id: ids } );
+			for (const id of Object.keys( data )) {
+				resolvers[ id ]( data[ id ] );
+			}
+		}
+	}, 10 );
+	
+	return ret;
+}
+
+let sightsToFetch: Record<string, true> = {};
+async function fetchSights( ids: string[] ) {
+	ids.forEach( id => sightsToFetch[ id ] = true );
+	await new Promise( resolve => { setTimeout( resolve, 10 ); } );
+	const newIds = Object.keys( sightsToFetch ).filter( id => !cache.sights[ id ] );
+	sightsToFetch = {};
 	if (newIds.length) {
 		const dataPromise = connector.send( apiEntries.sightsByIds, { id: newIds } );
 		newIds.forEach( id => { ( cache.sights[ id ] as any ) = dataPromise; } );
@@ -518,7 +563,7 @@ async function fetchSights( ids: string[] ): Promise<void> {
 	if (promises.length) await Promise.all( promises );
 }
 
-async function fetchStops(): Promise<void> {
+async function fetchStops() {
 	const data = await connector.send( apiEntries.stops );
 	cache.stops = ( data || [] ).reduce(
 		( ret: Record<string, Location>, item: any ) => {
@@ -542,7 +587,7 @@ async function fetchStops(): Promise<void> {
 	window.dispatchEvent( new Event( 'trackstops-loaded' ) )
 }
 
-async function fetchGateways(): Promise<void> {
+async function fetchGateways() {
 	const data = await connector.send( apiEntries.gateways );
 	cache.gateways = ( data || [] ).reduce(
 		( ret: Record<string, Location>, item: any ) => {
@@ -559,7 +604,7 @@ async function fetchGateways(): Promise<void> {
 	window.dispatchEvent( new Event( 'gateways-loaded' ) )
 }
 
-async function fetchStartCruises() : Promise<void> {
+async function fetchStartCruises() {
 	const { cruises, ships, companies } = await connector.send( apiEntries.start );
 	for (const company of Object.values( companies ?? {} ) as any) {
 		if (dataIsSane( 'company', company )) {
