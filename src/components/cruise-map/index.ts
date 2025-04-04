@@ -19,6 +19,7 @@ import WorldMap, {
 } from '../map';
 import LocatedItemDescription, {
 	LocatedItemDescriptionGroup,
+	LocatedItemDescriptionRow,
 	LocatedItemDescriptionText,
 	LocatedItemDescriptionRange,
 	LocatedItemDescriptionButton,
@@ -274,7 +275,6 @@ export default class CruiseMap {
 		const shipMarker = new ShipMarker(
 			this, ship, ship.company,
 			this.timelinePoint,
-			async () => this.shipPopup(ship),
 			cruise?.id
 		);
 		
@@ -294,55 +294,6 @@ export default class CruiseMap {
 		this._shipLayer.removeMarker(shipMarker);
 		
 		this.events.dispatchEvent(new Event('timerangechanged'));
-	}
-
-	private shipPopup(ship: Ship) {
-		const cruises = ship.cruisesOn( this.timelinePoint );
-		const cruise = cruises[0];
-		const {
-			departure = null,
-			arrival = null,
-			departureLocationName = '',
-			arrivalLocationName = '',
-		} = cruise ?? {};
-		const {name} = ship;
-		const {name: companyName, color} = ship.company;
-		const itemDescription = LocatedItemDescription.create([
-			LocatedItemDescriptionGroup.create([
-				LocatedItemDescriptionGroup.create([
-					LocatedItemDescriptionIcon.create(svgAsset(
-						linerIcon,
-						'cruise-map__icon', 'cruise-map__icon_type_ship',
-					)),
-					LocatedItemDescriptionText.create(name, [
-						'cruise-map__ship-name'
-					]),
-				], LocatedItemDescriptionGap.SMALL),
-				LocatedItemDescriptionText.create(companyName),
-				LocatedItemDescriptionGroup.create([
-					LocatedItemDescriptionIcon.create(svgAsset(
-						linersIcon,
-						'cruise-map__icon', 'cruise-map__icon_type_ship',
-					)),
-					LocatedItemDescriptionRange.create(...([
-						departure, arrival
-					]).map(value =>
-						value?.toLocaleDateString(undefined, {
-							day: '2-digit',
-							month: '2-digit',
-						}) ?? ''
-					) as [string, string]),
-					...(departureLocationName && arrivalLocationName ? [
-						LocatedItemDescriptionRange.create(
-							departureLocationName, arrivalLocationName
-						)
-					] : [])
-				], LocatedItemDescriptionGap.SMALL),
-			], LocatedItemDescriptionGap.LARGE),
-		], ['cruise-map__popup'], {
-			'--cruise-map__popup_company-color': `#${color.toString(16)}`
-		});
-		return itemDescription.domNode;
 	}
 
 	/**
@@ -429,7 +380,6 @@ class ShipMarker implements InteractiveMapMarker {
 		ship: Ship,
 		company: Company,
 		datetime: Date,
-		popupContent: InteractiveMapMarker['popupContent'],
 		cruiseId: string | undefined
 	) {
 		this.icon.style.setProperty(
@@ -438,9 +388,63 @@ class ShipMarker implements InteractiveMapMarker {
 		);
 		this.map = map;
 		this.ship = ship;
-		this.popupContent = popupContent;
+		this.popupContent = () => this.shipPopup();
 		this.cruiseId = cruiseId;
 		this.move( datetime );
+	}
+
+	private async shipPopup() {
+		const cruises = this.ship.cruisesOn( this.datetime );
+		const cruise = cruises[0];
+		const descriptionElements = cruises.map( cruise => {
+			const {
+				departure = null,
+				arrival = null,
+				departureLocationName = '',
+				arrivalLocationName = '',
+			} = cruise;
+			
+			return LocatedItemDescriptionRow.create([
+				LocatedItemDescriptionRange.create(...([
+					departure, arrival
+				]).map(value =>
+					value?.toLocaleDateString(undefined, {
+						day: '2-digit',
+						month: '2-digit',
+					}) ?? ''
+				) as [string, string]),
+				...(departureLocationName && arrivalLocationName ? [
+					LocatedItemDescriptionRange.create(
+						departureLocationName, arrivalLocationName,
+						'located-item-description__route'
+					)
+				] : [])
+			], LocatedItemDescriptionGap.MEDIUM, 'top')
+		} );
+		const {name} = this.ship;
+		const {name: companyName, color} = this.ship.company;
+		const itemDescription = LocatedItemDescription.create([
+			LocatedItemDescriptionGroup.create([
+				LocatedItemDescriptionRow.create([
+					LocatedItemDescriptionIcon.create(svgAsset(
+						linerIcon,
+						'cruise-map__icon', 'cruise-map__icon_type_ship',
+					)),
+					LocatedItemDescriptionText.create(name, [ 'cruise-map__ship-name' ], { title: true } ),
+				], LocatedItemDescriptionGap.SMALL),
+				LocatedItemDescriptionText.create(companyName),
+				LocatedItemDescriptionGroup.create([
+					LocatedItemDescriptionIcon.create(svgAsset(
+						linersIcon,
+						'cruise-map__icon', 'cruise-map__icon_type_ship',
+					)),
+					...descriptionElements
+				], LocatedItemDescriptionGap.SMALL)
+			], LocatedItemDescriptionGap.LARGE),
+		], ['cruise-map__popup'], {
+			'--cruise-map__popup_company-color': `#${color.toString(16)}`
+		});
+		return itemDescription.domNode;
 	}
 
 	/** Изменить координаты и угол поворота на точку в пути в указанное время */
@@ -668,33 +672,33 @@ class CruiseAssets {
 			type === LocationType.SHOWPLACE ? [
 				...imageElements,
 				LocatedItemDescriptionGroup.create([
-					LocatedItemDescriptionText.create(name, undefined, {
-						title: true
-					}),
-					LocatedItemDescriptionIcon.create(svgAsset(
-						showplaceIcon,
-						'cruise-map__icon', 'cruise-map__icon_type_showplace',
-					)),
+					LocatedItemDescriptionRow.create([
+						LocatedItemDescriptionIcon.create(svgAsset(
+							showplaceIcon,
+							'cruise-map__icon', 'cruise-map__icon_type_showplace',
+						)),
+						LocatedItemDescriptionText.create(name, undefined, { title: true }),
+					], LocatedItemDescriptionGap.SMALL),
 					...categoryNameElements,
+					LocatedItemDescriptionLocation.create(lat, lng),
+					//~ descriptionElement,
 				], LocatedItemDescriptionGap.MEDIUM),
-				LocatedItemDescriptionLocation.create(lat, lng),
-				//~ descriptionElement,
 			] : [
 				...imageElements,
-				LocatedItemDescriptionButton.create(
-					map.text.GO_TO_TRACKSTOP,
-					() => {
-						location.assign( link );
-					},
-				),
 				LocatedItemDescriptionGroup.create([
-					LocatedItemDescriptionGroup.create([
+					LocatedItemDescriptionRow.create([
 						LocatedItemDescriptionIcon.create(svgAsset(
 							stopIcon,
 							'cruise-map__icon', 'cruise-map__icon_type_stop',
 						)),
-						LocatedItemDescriptionText.create(name),
+						LocatedItemDescriptionText.create(name, undefined, { title: true }),
 					], LocatedItemDescriptionGap.SMALL),
+					LocatedItemDescriptionButton.create(
+						map.text.GO_TO_TRACKSTOP,
+						() => {
+							location.assign( link );
+						},
+					),
 					LocatedItemDescriptionLocation.create(lat, lng),
 					//~ descriptionElement,
 				], LocatedItemDescriptionGap.LARGE),
@@ -713,11 +717,11 @@ class CruiseAssets {
 		return itemDescription.domNode;
 	}
 
-	private async sunriseSunsetPopup( point: TrackPoint ): Promise<Element> {
-		const {lat, lng, arrival, sunset} = point;
+	private static async sunriseSunsetPopup( type: 'sunrise' | 'sunset', point: TrackPoint, map: CruiseMap ): Promise<Element> {
+		const {lat, lng, arrival} = point;
 		const side = '';
-		const title = sunset ? 'Закат' : 'Восход';
-		const icon = sunset ? sunsetIcon : sunriseIcon;
+		const title = type === 'sunset' ? 'Закат' : 'Восход';
+		const icon = type === 'sunset' ? sunsetIcon : sunriseIcon;
 		const itemDescription = LocatedItemDescription.create(
 			[
 				LocatedItemDescriptionText.create(title, undefined, { title: true }),
@@ -742,9 +746,9 @@ class CruiseAssets {
 		return itemDescription.domNode;
 	}
 
-	private async gatewayPopup( gateway: Location ): Promise<Element> {
+	private static async gatewayPopup( gateway: Location, map: CruiseMap ): Promise<Element> {
 		const {lat, lng, name} = gateway;
-		const activeCruise = this.map.cruiseAsset( this.map.selectedShip?.cruiseId );
+		const activeCruise = map.cruiseAsset( map.selectedShip?.cruiseId );
 		const points = ( await activeCruise?.cruise.gateways )
 			?.filter( item => item.location === gateway );
 		const itemDescription = LocatedItemDescription.create(
@@ -838,7 +842,7 @@ class CruiseAssets {
 						icon: svgAsset( sunsetIcon, 'cruise-map__icon' ),
 						iconSize: [ 24, 24 ],
 						events: new TypedEventTarget(),
-						popupContent: () => this.sunriseSunsetPopup( point )
+						popupContent: () => CruiseAssets.sunriseSunsetPopup( 'sunset', point, this.map )
 					}
 					this.map.addInteractiveMarker( 'sunsets', sunset );
 					this.sunsets.push( sunset );
@@ -865,7 +869,7 @@ class CruiseAssets {
 						icon: svgAsset( sunriseIcon, 'cruise-map__icon' ),
 						iconSize: [ 24, 24 ],
 						events: new TypedEventTarget(),
-						popupContent: () => this.sunriseSunsetPopup( point )
+						popupContent: () => CruiseAssets.sunriseSunsetPopup( 'sunrise', point, this.map )
 					}
 					this.map.addInteractiveMarker( 'sunrises', sunrise );
 					this.sunrises.push( sunrise );
@@ -889,7 +893,7 @@ class CruiseAssets {
 					if (!this.gateways[ id ]) {
 						this.gateways[ id ] = this.map.attachLocationMarker(
 							id, LocationType.GATEWAY, lat, lng,
-							() => this.gatewayPopup( gateway.location ),
+							() => CruiseAssets.gatewayPopup( gateway.location, this.map ),
 						);
 					}
 				}

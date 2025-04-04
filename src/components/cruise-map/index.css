@@ -5,6 +5,11 @@
 		rotate(var(--cruise-map__marker_angle, 0deg));
 }
 
+.cruise-map__icon {
+	width: 24px;
+	height: 24px;
+}
+
 .cruise-map__icon_type_stop {
 	fill: var(--cruise-map__popup_company-color);
 }

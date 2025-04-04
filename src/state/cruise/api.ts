@@ -294,7 +294,7 @@ class CruiseData implements Cruise {
 		if (!this._sights) this._sights = new Promise( async resolve => {
 			const data = await connector.send( apiEntries.cruiseSights, { id: this.id } );
 			const ids = data.reduce( ( ret: Record<string, true>, item: any ) => {
-				if (!cache.sights[ item.id ]) ret[ item.id ] = true;
+				if (!cache.sights[ item.id ] || cache.sights[ item.id ] instanceof Promise) ret[ item.id ] = true;
 				return ret;
 			}, {} );
 			if (Object.keys( ids ).length > 0) {
@@ -489,23 +489,33 @@ async function fetchCruise( id: string ) : Promise<Cruise> {
 */
 
 async function fetchSights( ids: string[] ): Promise<void> {
-	ids = ids.filter( id => !cache.sights[ id ] );
-	ids.forEach( id => { ( cache.sights[ id ] as any ) = {}; } );
-	const data = await connector.send( apiEntries.sightsByIds, { id: ids } );
-	( data || [] ).forEach( ( item: any ) => {
-		cache.sights[ item.id ] = {
-			id: item.id,
-			type: LocationType.SHOWPLACE,
-			lat: item.lat,
-			lng: item.lng,
-			name: item.name,
-			category: item.category,
-			//~ description: item.description,
-			//~ image: item.image,
-			// Это для тестирования. После переноса приложения на основной сайт проверку url можно будет убрать
-			image: item.image ? ( /^https?:\/\//.test( item.image ) ? '' : siteURL ) + item.image : ''
-		};
+	const newIds = ids.filter( id => !cache.sights[ id ] );
+	if (newIds.length) {
+		const dataPromise = connector.send( apiEntries.sightsByIds, { id: newIds } );
+		newIds.forEach( id => { ( cache.sights[ id ] as any ) = dataPromise; } );
+		const data = await dataPromise;
+		( data || [] ).forEach( ( item: any ) => {
+			cache.sights[ item.id ] = {
+				id: item.id,
+				type: LocationType.SHOWPLACE,
+				lat: item.lat,
+				lng: item.lng,
+				name: item.name,
+				category: item.category,
+				//~ description: item.description,
+				//~ image: item.image,
+				// Это для тестирования. После переноса приложения на основной сайт проверку url можно будет убрать
+				image: item.image ? ( /^https?:\/\//.test( item.image ) ? '' : siteURL ) + item.image : ''
+			};
+		} );
+	}
+	
+	const promisesSet = new Set;
+	ids.forEach( id => {
+		if (cache.sights[ id ] instanceof Promise) promisesSet.add( cache.sights[ id ] );
 	} );
+	const promises = [ ...promisesSet.values() ];
+	if (promises.length) await Promise.all( promises );
 }
 
 async function fetchStops(): Promise<void> {
@@ -583,7 +593,7 @@ class Cache {
 		a.name.localeCompare( b.name, 'ru', { ignorePunctuation: true } )
 	);
 	stops: Record<string, Location> = null;
-	sights: Record<string, Location> = {};
+	sights: Record<string, Location | Promise<any>> = {};
 	gateways: Record<string, Location> = null;
 }
 

@@ -46,6 +46,30 @@ export class LocatedItemDescriptionGroup extends LocatedItemDescriptionChild {
 
 }
 
+export class LocatedItemDescriptionRow extends LocatedItemDescriptionChild {
+
+	static create(
+		content: LocatedItemDescriptionChild[],
+		gap: LocatedItemDescriptionGap = LocatedItemDescriptionGap.SMALL,
+		alignment: string = 'center'
+	): LocatedItemDescriptionGroup {
+		const section = document.createElement('section');
+		section.classList.add(
+			'located-item-description__row',
+			'located-item-description__row_gap_' + {
+				[LocatedItemDescriptionGap.SMALL]: 'small',
+				[LocatedItemDescriptionGap.MEDIUM]: 'medium',
+				[LocatedItemDescriptionGap.LARGE]: 'large',
+			}[gap],
+			`located-item-description__row_align_${alignment}`
+		);
+		for (const child of content)
+			section.appendChild(child.domNode);
+		return new LocatedItemDescriptionRow(section);
+	}
+
+}
+
 export class LocatedItemDescriptionText extends LocatedItemDescriptionChild {
 
 	static create(text: string, classNames: string[] = [], {
@@ -67,9 +91,9 @@ export class LocatedItemDescriptionText extends LocatedItemDescriptionChild {
 
 export class LocatedItemDescriptionRange extends LocatedItemDescriptionChild {
 
-	static create(from: string, to: string): LocatedItemDescriptionRange {
+	static create(from: string, to: string, className: string = 'located-item-description__range'): LocatedItemDescriptionRange {
 		const p = document.createElement('p');
-		p.classList.add('located-item-description__range');
+		p.classList.add(className);
 		for (const value of [from, to]) {
 			const span = document.createElement('span');
 			span.classList.add('located-item-description__range-value');

@@ -28,5 +28,3 @@ const overlay = new MapOverlay(
 );
 
 new MapContainer(mapContainerElement, map, overlay);
-
-

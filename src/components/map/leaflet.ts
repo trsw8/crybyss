@@ -610,11 +610,13 @@ class LeafletPane<
   }
 
   removeMarker(marker: TMarker) {
-    this.checkSiblingsIntersections(marker);
-    this.removePath(marker);
-    this.intersections.remove(this.intersectionMarkers.get(marker));
-    this.intersectionMarkers.delete(marker);
-    marker.marker = undefined;
+    if (marker.marker) {
+      this.checkSiblingsIntersections(marker);
+      this.removePath(marker);
+      this.intersections.remove(this.intersectionMarkers.get(marker));
+      this.intersectionMarkers.delete(marker);
+      marker.marker = undefined;
+    }
   }
 
   /** Связать маркер приложения и маркер leaflet */
