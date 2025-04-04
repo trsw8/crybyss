@@ -22,6 +22,7 @@ export interface Cruise {
 	url: string;
 	ship: Ship;
 	company: Company;
+	routeReady: boolean;
 	stops: Promise<TrackLocation[]>;
 	sights: Promise<TrackLocation[]>;
 	gateways: Promise<TrackLocation[]>;

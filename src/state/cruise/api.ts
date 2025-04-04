@@ -167,6 +167,7 @@ class CruiseData implements Cruise {
 	declare url: string;
 	declare ship: Ship;
 	declare company: Company;
+	declare routeReady: boolean;
 	declare stops: Promise<TrackLocation[]>;
 	declare _sights: Promise<TrackLocation[]>;
 	declare _gateways: Promise<TrackLocation[]>;
@@ -264,6 +265,7 @@ class CruiseData implements Cruise {
 			url: data.url,
 			ship: cache.ship( data.shipId ),
 			company: cache.ship( data.shipId )?.company,
+			routeReady: false
 		} );
 		
 		if (!!cache.stops) {
@@ -370,6 +372,7 @@ class CruiseData implements Cruise {
 				} );
 			}
 			resolve( new CruiseRoute( points ) );
+			this.routeReady = true;
 		} );
 		return this._route;
 	}

@@ -397,6 +397,7 @@ class ShipMarker implements InteractiveMapMarker {
 
 	declare private map: CruiseMap;
 
+	declare datetime: Date;
 	declare lat: number;
 	declare lng: number;
 	declare popupContent: InteractiveMapMarker['popupContent'];
@@ -431,26 +432,36 @@ class ShipMarker implements InteractiveMapMarker {
 		this.ship = ship;
 		this.popupContent = popupContent;
 		this.cruiseId = cruiseId;
-		this.move(datetime)
-		.then( () => this._createMarker() );
+		this.move( datetime );
 	}
 
 	/** Изменить координаты и угол поворота на точку в пути в указанное время */
 	async move(datetime: Date): Promise<void> {
-		const {lat, lng, angle} = await this.ship.positionAt( datetime );
-		if (lat === this.lat && lng === this.lng)
-			return;
-		this.lat = lat;
-		this.lng = lng;
-		//~ const nextPoint = points[
-			//~ points.length > pointIndex + 1 ? pointIndex + 1 : pointIndex
-		//~ ];
-		//~ const [x1, y1] = this.map.coordsToPoint(lat, lng);
-		//~ const [x2, y2] = this.map.coordsToPoint(nextPoint.lat, nextPoint.lng);
-		//~ this.rotateAngle = Math.atan2((y2 - y1), (x2 - x1)) / Math.PI / 2;
-		this.rotateAngle = ( ( angle ?? 90 ) - 90 ) / 360;
-		this.rotate();
-		this.events.dispatchEvent(new Event('locationchange'));
+		this.datetime = datetime;
+		const cruises = this.ship.cruisesOn( datetime );
+		const cruise = cruises[0];
+		if (!cruise?.routeReady) this._removeMarker();
+		if (cruise) {
+			const {lat, lng, angle} = await this.ship.positionAt( datetime );
+			if (datetime === this.datetime) {      // Выполняем только последнее запрошенное перемещение
+				if (lat === this.lat && lng === this.lng)
+					return;
+				this.lat = lat;
+				this.lng = lng;
+				//~ const nextPoint = points[
+					//~ points.length > pointIndex + 1 ? pointIndex + 1 : pointIndex
+				//~ ];
+				//~ const [x1, y1] = this.map.coordsToPoint(lat, lng);
+				//~ const [x2, y2] = this.map.coordsToPoint(nextPoint.lat, nextPoint.lng);
+				//~ this.rotateAngle = Math.atan2((y2 - y1), (x2 - x1)) / Math.PI / 2;
+				this.rotateAngle = ( ( angle ?? 90 ) - 90 ) / 360;
+				this.rotate();
+				
+				if (!this.marker) this._createMarker();
+				
+				this.events.dispatchEvent(new Event('locationchange'));
+			}
+		}
 	}
 
 	/** Установить сдвиг */
@@ -556,6 +567,12 @@ class ShipMarker implements InteractiveMapMarker {
 					cruise.hideSunsets();
 				}
 			} );
+		}
+	}
+	
+	_removeMarker() {
+		if (this.marker) {
+			this.map.removeMarker( 'ship', this );
 		}
 	}
 }
