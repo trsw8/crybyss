@@ -233,7 +233,7 @@ class SearchBox extends DOMComponent {
 
 	private createShipElements(ship: Ship): Element[] {
 		const {id, name} = ship;
-		const {color} = ship.company();
+		const {color} = ship.company;
 		const elementId = `map-overlay--search-ship_${id}`;
 
 		const [input, label] = this.createCheckboxElements(elementId);
