@@ -658,8 +658,9 @@ class CruiseAssets {
 		//~ const {lat, lng, type, name, category, description, image, link } = stop;
 		const {lat, lng, type, name, category, image, link } = stop;
 		//~ const arrival;
-		const cruise = map.cruiseAsset( map.selectedShip?.cruiseId );
-		const company = cruise?.cruise.company;
+		const cruise = map.cruiseAsset( map.selectedShip?.cruiseId )?.cruise;
+		const cruiseLocations = cruise ? await cruise[ type === LocationType.SHOWPLACE ? 'sights' : 'stops' ] : [];
+		const company = cruiseLocations.some( item => item.location === stop ) ? cruise.company : undefined;
 		const color = company?.color ?? defaultCompanyColor;
 		const imageElements = image ? [
 			LocatedItemDescriptionImage.create(image),
