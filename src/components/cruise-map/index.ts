@@ -196,26 +196,14 @@ export default class CruiseMap {
 					value.unsetIntersectionIndex();
 			}
 		});
-
-		// Получить список кораблей, не находящихся в круизе в указанное время
-		window.addEventListener('timeline-change', (event: CustomEvent) => {
-			const date = event.detail.date;
-			const shipIds = this.ships.map(ship => ship.id);
-			// Получить список активных круизов на указанную дату
-			const activeCruises = Array.from(this._cruises.values()).filter(cruise => {
-				const cruiseStart = cruise.cruise.departure;
-				const cruiseEnd = cruise.cruise.arrival;
-				return cruiseStart <= date && cruiseEnd >= date;
-			});
-
-			const activeShipIds = activeCruises.map(cruise => cruise.cruise.ship.id);
-			const shipsNotInCruise = shipIds.filter(id => !activeShipIds.includes(id));
-
-			const countElement = document.querySelector('.map-overlay--ships-count') as HTMLElement;
-			if (countElement) {
-				countElement.innerText = shipsNotInCruise.length.toString().padStart(3, '0');
-			}
-		});
+	}
+	
+	updateShipsCounter() {
+		const shipsNotInCruise = [ ...this._ships.values() ].filter( ship => !ship.activeCruise ).length;
+		const counterElement = document.querySelector('.map-overlay--ships-count') as HTMLElement;
+		if (counterElement) {
+			counterElement.innerText = shipsNotInCruise.toString().padStart(3, '0');
+		}
 	}
 
 	addCruise(cruise: Cruise) {
@@ -256,6 +244,7 @@ export default class CruiseMap {
 		);
 		
 		this._ships.set( ship.id, shipMarker );
+		this.updateShipsCounter();
 		
 		this.events.dispatchEvent(new Event('timerangechanged'));
 	}
@@ -264,6 +253,7 @@ export default class CruiseMap {
 		if (!this._ships.has( id )) return;
 		const shipMarker = this._ships.get( id );
 		this._ships.delete( id )
+		this.updateShipsCounter();
 
 		shipMarker.remove();
 		this.fitTimeline();
@@ -443,6 +433,7 @@ class ShipMarker implements InteractiveMapMarker {
 		if (cruise !== this.activeCruise) {
 			this.map.cruiseAsset( this.activeCruise?.id )?.hideTrack();
 			this.activeCruise = cruise;
+			this.map.updateShipsCounter();
 		}
 
 		if (cruise) {
