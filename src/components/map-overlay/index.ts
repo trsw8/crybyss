@@ -183,22 +183,24 @@ class SearchBox extends DOMComponent {
 				if (value !== input.value)
 					return;
 
-				for (const ship of this.cruiseMap.ships) {
-					this.cruiseMap.removeShip( ship );
-				}
 				companiesElement.textContent = '';
 				shipsElement.textContent = '';
 				const companiesCheckboxes = [];
 				const shipsCheckboxes = [];
 				if (value.length < 2) value = '';   // поиск от 2 букв
-				await api.setFilter({ companyName: value, shipName: value });
-				for await (const company of api.allCompanies()) {
+				api.setFilter({ companyName: value, shipName: value });
+				for (const company of api.allCompanies()) {
 					companiesCheckboxes.push(
 						...this.createCompanyElements(company),
 					);
 				}
-				for await (const ship of api.allShips()) {
-					shipsCheckboxes.push(...this.createShipElements(ship));
+				
+				const allShips = [ ...api.allShips() ];
+				for (const ship of this.cruiseMap.ships) {
+					if (!allShips.includes( ship )) this.cruiseMap.removeShip( ship );
+				}
+				for (const ship of allShips) {
+					shipsCheckboxes.push( ...this.createShipElements( ship ) );
 				}
 				companiesElement.prepend(...companiesCheckboxes);
 				shipsElement.prepend(...shipsCheckboxes);
@@ -332,7 +334,7 @@ class SearchBox extends DOMComponent {
 
 		input.addEventListener('change', async event => {
 			const checked = ( event.target as HTMLInputElement ).checked as boolean;
-			for await (const ship of company.ships()) {
+			for (const ship of company.ships()) {
 				const {id} = ship;
 				const input = document.getElementById( `map-overlay--search-ship_${id}` ) as HTMLInputElement;
 				if (input) {
