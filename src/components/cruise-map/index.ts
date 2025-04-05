@@ -477,12 +477,10 @@ class ShipMarker implements InteractiveMapMarker {
 	
 	remove() {
 		if (this.map.selectedShip === this) {
-			const cruise = this.map.cruiseAsset( this.activeCruise?.id );
-			cruise?.hideTrack();
-			for (const cruise of this.cruises) {
-				this.map.removeCruise( cruise.id );
-			}
 			this.map.selectedShip = undefined;
+		}
+		for (const cruise of this.cruises) {
+			this.map.removeCruise( cruise.id );
 		}
 		this._removeMarker();
 		this._isDeleted = true;
