@@ -16,7 +16,7 @@ const mapContainerElement = root.getElementsByClassName('map-container')[0];
 
 const map = new OSM(
 	MapContainer.findMapElement(mapContainerElement),
-	[59.90, 30.10], 10,
+	[58.1996, 68.2533], 5, 5
 );
 
 const cruiseMap = new CruiseMap(map, text);

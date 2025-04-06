@@ -53,11 +53,13 @@ export default abstract class LeafletMap extends Map {
 
   declare mainLayer: Layer;
 
-  constructor(node: HTMLElement, center: LatLngExpression, zoom: number) {
+  constructor(node: HTMLElement, center: LatLngExpression, zoom: number, minZoom?: number | null, maxZoom?: number) {
     super(node);
     this.map = map(node, {
       center,
       zoom,
+      minZoom,
+      maxZoom,
       attributionControl: false,
       zoomControl: false,
       renderer: canvas(),
