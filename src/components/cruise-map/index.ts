@@ -51,7 +51,7 @@ export default class CruiseMap {
 	get stopsLayer(): VisibilityControl {return this._stopsLayer;}
 	declare private _sightsLayer: Layer;
 	get sightsLayer(): VisibilityControl {return this._sightsLayer;}
-	
+
 	addInteractiveMarker(layer: 'track' | 'sunsets' | 'sunrises' | 'gateways' | 'ship' | 'stops' | 'sights', interactiveMarker: any) {
 		this[ `_${layer}Layer` ].addInteractiveMarker( interactiveMarker );
 	}
@@ -96,7 +96,7 @@ export default class CruiseMap {
 		marker: InteractiveMapMarker,
 		timesAttached: number,
 	}> = {};
-	
+
 	attachLocationMarker( id: string, type: LocationType, lat: number, lng: number, popup: InteractiveMapMarker['popupContent'] ): LocationMarker {
 		const counter = [ this._attachedStops, this._attachedSights, this._attachedGateways ][ type ];
 		const layer = [ this._stopsLayer, this._sightsLayer, this._gatewaysLayer ][ type ];
@@ -110,7 +110,7 @@ export default class CruiseMap {
 		}
 		return counter[ id ].marker;
 	}
-	
+
 	detachLocationMarker( id: string, type: LocationType ) {
 		const counter = [ this._attachedStops, this._attachedSights, this._attachedGateways ][ type ];
 		const layer = [ this._stopsLayer, this._sightsLayer, this._gatewaysLayer ][ type ];
@@ -164,15 +164,12 @@ export default class CruiseMap {
 				}
 			} );
 		}
-		
+
 		this._shipLayer.events.addEventListener( 'visibilitychange', () => {
-			if (!this._shipLayer.visible && !!this.selectedShip) {
-				const cruise = this._cruises.get( this.selectedShip.activeCruise.id );
-				cruise?.hideTrack();
-				this.selectedShip = undefined;
-			}
+			if (this._shipLayer.visible) this._trackLayer.show();
+			else this._trackLayer.hide();
 		} );
-		
+
 		// Пока n-ному маркеру из сегмента пересечений добавляется кратное n значение сдвига.
 		// Не самое красивое решение...
 		this._shipLayer.events.addEventListener('intersect', ({
@@ -191,7 +188,7 @@ export default class CruiseMap {
 			}
 		});
 	}
-	
+
 	updateShipsCounter() {
 		const shipsNotInCruise = [ ...this._ships.values() ].filter( ship => !ship.activeCruise ).length;
 		const counterElement = document.querySelector('.map-overlay--ships-count') as HTMLElement;
@@ -212,9 +209,9 @@ export default class CruiseMap {
 			return;
 		const cruise = this._cruises.get(id);
 		this._cruises.delete(id);
-		cruise.remove();
+		cruise.hideAll();
 	}
-	
+
 	addShip(ship: Ship) {
 		if (this._ships.has( ship.id )) return;
 
@@ -222,12 +219,12 @@ export default class CruiseMap {
 			this, ship, ship.company,
 			this.timelinePoint
 		);
-		
+
 		this._ships.set( ship.id, shipMarker );
 		this.updateShipsCounter();
 		this.events.dispatchEvent(new Event('timerangechanged'));
 	}
-	
+
 	removeShip({id}: {id: string}): void {
 		if (!this._ships.has( id )) return;
 		const shipMarker = this._ships.get( id );
@@ -321,7 +318,7 @@ class ShipMarker implements InteractiveMapMarker {
 				departureLocationName = '',
 				arrivalLocationName = '',
 			} = cruise;
-			
+
 			return LocatedItemDescriptionRow.create([
 				LocatedItemDescriptionRange.create(...([
 					departure, arrival
@@ -390,6 +387,12 @@ class ShipMarker implements InteractiveMapMarker {
 			this.map.updateShipsCounter();
 		}
 
+		if (this === this.map.selectedShip) {
+			for (const cruise of cruises) {
+				this.map.cruiseAsset( cruise.id )?.showAll();
+			}
+		}
+
 		if (cruise) {
 			const {lat, lng, angle} = await this.ship.positionAt( datetime );
 			if (!this._isDeleted && datetime === this.datetime) {      // Выполняем только последнее запрошенное перемещение
@@ -405,7 +408,7 @@ class ShipMarker implements InteractiveMapMarker {
 				//~ this.rotateAngle = Math.atan2((y2 - y1), (x2 - x1)) / Math.PI / 2;
 				this.rotateAngle = ( ( angle ?? 90 ) - 90 ) / 360;
 				this.rotate();
-				
+
 				if (!this.marker) {
 					this._createMarker();
 				}
@@ -414,19 +417,37 @@ class ShipMarker implements InteractiveMapMarker {
 						this.map.cruiseAsset( this.activeCruise?.id )?.showTrack( this.marker );
 					}
 				}
-				
+
 				this.events.dispatchEvent(new Event('locationchange'));
 			}
 		}
 	}
-	
-	remove() {
+
+	activate() {
+		if (this.map.selectedShip !== this) {
+			if (!!this.map.selectedShip) this.map.selectedShip.deactivate();
+			this.map.selectedShip = this;
+			for (const cruise of this.cruises) {
+				this.map.cruiseAsset( cruise.id ).showAll();
+			}
+			this.map.cruiseAsset( this.activeCruise?.id )?.showTrack( this.marker );
+		}
+	}
+
+	deactivate() {
 		if (this.map.selectedShip === this) {
 			this.map.selectedShip = undefined;
+			for (const cruise of this.cruises) {
+				this.map.cruiseAsset( cruise.id ).hideAll();
+			}
 		}
-		for (const cruise of this.cruises) {
-			this.map.removeCruise( cruise.id );
-		}
+	}
+
+	remove() {
+		this.deactivate();
+        for (const cruise of this.cruises) {
+            this.map.removeCruise( cruise.id );
+        }
 		this._removeMarker();
 		this._isDeleted = true;
 	}
@@ -514,37 +535,12 @@ class ShipMarker implements InteractiveMapMarker {
 				onMouseOut();
 			} );
 			this.marker.on( 'click', () => {
-				if (this.map.selectedShip !== this) {
-					if (this.map.selectedShip) {
-						const selectedShip = this.map.selectedShip;
-						const cruise = this.map.cruiseAsset( selectedShip.activeCruise?.id );
-						cruise?.hideTrack();
-					}
-					this.map.selectedShip = this;
-					onMouseOver();
-					const cruise = this.map.cruiseAsset( this.activeCruise?.id );
-					if (cruise) {
-						if (this.map.sunrisesLayer.visible) {
-							cruise.showSunrises();
-						}
-						if (this.map.sunsetsLayer.visible) {
-							cruise.showSunsets();
-						}
-					}
-				}
-				else {
-					this.map.selectedShip = undefined;
-					onMouseOut();
-					const cruise = this.map.cruiseAsset( this.activeCruise?.id );
-					if (cruise) {
-						cruise.hideSunrises();
-						cruise.hideSunsets();
-					}
-				}
+				if (this.map.selectedShip !== this) this.activate();
+				else this.deactivate();
 			} );
 		}
 	}
-	
+
 	_removeMarker() {
 		if (this.marker) {
 			if (this.activeCruise) {
@@ -570,12 +566,13 @@ class CruiseAssets {
 	_sunrisesVisible: boolean = false;
 	gateways: Record<string, InteractiveMapMarker> = {};
 	_gatewaysVisible: boolean = false;
-	
+
 	constructor( map: CruiseMap, cruise: Cruise ) {
 		this.map = map;
 		this.cruise = cruise;
-		
-		if (map.stopsLayer.visible) this.showStops();
+	}
+
+	showAll() {
 		for (const layer of [ 'sunsets', 'sunrises', 'gateways', 'stops', 'sights' ]) {
 			const ucLayer = layer[0].toUpperCase() + layer.slice(1);
 			const mapLayer: VisibilityControl = ( this.map as any )[ `${layer}Layer` ];
@@ -584,13 +581,13 @@ class CruiseAssets {
 			}
 		}
 	}
-	
-	remove() {
+
+	hideAll() {
 		for (const layer of [ 'Track', 'Sunsets', 'Sunrises', 'Gateways', 'Stops', 'Sights' ]) {
 			( this as any )[ `hide${layer}` ]();
 		}
 	}
-	
+
 	async showTrack( marker: Marker ) {
 		if (!this.polyline) {
 			const company = this.cruise.company;
@@ -608,7 +605,7 @@ class CruiseAssets {
 			}
 		}
 		this.map.drawPolyline( 'track', this.polyline );
-		
+
 		if (this.cruise === this.map.selectedShip?.activeCruise) {
 			if (this.map.sunrisesLayer.visible) {
 				this.showSunrises();
@@ -618,7 +615,7 @@ class CruiseAssets {
 			}
 		}
 	}
-	
+
 	hideTrack() {
 		if (this.polyline) {
 			this.map.clearPolyline( 'track', this.polyline );
@@ -626,7 +623,7 @@ class CruiseAssets {
 		this.hideSunrises();
 		this.hideSunsets();
 	}
-	
+
 	private static async locationPopup( stop: Location, map: CruiseMap ): Promise<Element> {
 		//~ const {lat, lng, type, name, category, description, image, link } = stop;
 		const {lat, lng, type, name, category, image, link } = stop;
@@ -733,8 +730,8 @@ class CruiseAssets {
 					'cruise-map__icon'
 				)),
 				...(
-					points?.length > 0 ? 
-						points.map( point => 
+					points?.length > 0 ?
+						points.map( point =>
 							LocatedItemDescriptionText.create( point.arrival.toLocaleString( undefined, {
 									day: '2-digit',
 									month: '2-digit',
@@ -755,7 +752,7 @@ class CruiseAssets {
 	}
 
 	async showStops() {
-		if (!this._stopsVisible) {
+		if (!this._stopsVisible && this.map.selectedShip?.cruises.includes( this.cruise )) {
 			this._stopsVisible = true;
 			const stops = await this.cruise.stops;
 			if (this._stopsVisible) {
@@ -778,9 +775,9 @@ class CruiseAssets {
 			delete this.stops[ id ];
 		}
 	}
-	
+
 	async showSights() {
-		if (!this._sightsVisible) {
+		if (!this._sightsVisible && this.map.selectedShip?.cruises.includes( this.cruise )) {
 			this._sightsVisible = true;
 			const sights = await this.cruise.sights;
 			if (this._sightsVisible) {
@@ -824,7 +821,7 @@ class CruiseAssets {
 			}
 		}
 	}
-	
+
 	hideSunsets() {
 		this._sunsetsVisible = false;
 		this.sunsets.forEach( marker => this.map.removeMarker( 'sunsets', marker ) );
@@ -858,7 +855,7 @@ class CruiseAssets {
 	}
 
 	async showGateways() {
-		if (!this._gatewaysVisible) {
+		if (!this._gatewaysVisible && this.map.selectedShip?.cruises.includes( this.cruise )) {
 			this._gatewaysVisible = true;
 			const gateways = await this.cruise.gateways;
 			if (this._gatewaysVisible) {
