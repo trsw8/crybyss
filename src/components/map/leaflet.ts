@@ -46,8 +46,8 @@ export default abstract class LeafletMap extends Map {
     return new TileLayer(LeafletMap.TILE_LAYER_URL);
   }
 
-  private declare map: LMap;
-  private declare renderer: Renderer;
+  declare private map: LMap;
+  declare private renderer: Renderer;
   private layersCount = 0;
   private autoPan: [Point, Point] = [point(0, 0), point(0, 0)];
 

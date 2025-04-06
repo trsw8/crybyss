@@ -1,4 +1,3 @@
-//~ import CruiseAPIEntry from './state/cruise/api';
 import cruiseAPI from './state/cruise/api';
 import OSM from './components/map/osm';
 import CruiseMap from './components/cruise-map';
@@ -24,7 +23,7 @@ const cruiseMap = new CruiseMap(map, text);
 
 const overlay = new MapOverlay(
 	MapContainer.findOverlayElement(mapContainerElement),
-	cruiseMap, cruiseAPI, //cruiseEntry,
+	cruiseMap, cruiseAPI
 );
 
 new MapContainer(mapContainerElement, map, overlay);

@@ -1,3 +1,5 @@
+/// @todo: Убрать проверку пересечений и сделать расстановку кораблей на стоянке
+
 import {Marker} from 'leaflet';
 import {TypedEventTarget} from 'typescript-event-target';
 import showplaceMarkerIcon from '../../icons/showplace-marker.png';
@@ -121,12 +123,6 @@ export default class CruiseMap {
 		}
 	}
 
-	private _timelineRange: [Date, Date] = [new Date(0), new Date(0)];
-	/** Начальная дата первого и конечная дата второго круиза */
-	get timelineRange(): readonly [Date, Date] {
-		return this._timelineRange;
-	}
-
 	private _timelinePoint: Date = new Date(0);
 	/** Текущий выбранный момент времени */
 	get timelinePoint(): Date {
@@ -139,12 +135,10 @@ export default class CruiseMap {
 		for (const shipMarker of this._ships.values()) {
 			shipMarker.move(value);
 		}
-		this.events.dispatchEvent(new Event('timelinemove'));
 	}
 
 	events: TypedEventTarget<{
 		timerangechanged: Event,
-		timelinemove: Event,
 	}> = new TypedEventTarget();
 
 	constructor(map: WorldMap, text: Text) {
@@ -223,20 +217,6 @@ export default class CruiseMap {
 	
 	addShip(ship: Ship) {
 		if (this._ships.has( ship.id )) return;
-		const navigationStartDate = ship.navigationStartDate;
-		const navigationEndDate = ship.navigationEndDate;
-		if (navigationStartDate && navigationEndDate) {
-			let [start, end] = this._timelineRange;
-			if (+start === 0) start = navigationStartDate;
-			if (+end === 0) end = navigationEndDate;
-			this._timelineRange = [
-				new Date(Math.min(+start, +navigationStartDate)),
-				new Date(Math.max(+end, +navigationEndDate))
-			];
-			this.timelinePoint = new Date(
-				Math.min(Math.max(+this.timelinePoint, +this._timelineRange[0]), +this._timelineRange[1])
-			);
-		}
 
 		const shipMarker = new ShipMarker(
 			this, ship, ship.company,
@@ -245,7 +225,6 @@ export default class CruiseMap {
 		
 		this._ships.set( ship.id, shipMarker );
 		this.updateShipsCounter();
-		
 		this.events.dispatchEvent(new Event('timerangechanged'));
 	}
 	
@@ -256,32 +235,7 @@ export default class CruiseMap {
 		this.updateShipsCounter();
 
 		shipMarker.remove();
-		this.fitTimeline();
-
 		this.events.dispatchEvent(new Event('timerangechanged'));
-	}
-
-	/**
-	 * Выставить начальную и конечную точки (и подогнать под них текущую)
-	 * в соостветствии с круизами
-	 */
-	private fitTimeline(): void {
-		const ships = [ ...this._ships.values() ];
-		if (ships.length === 0)
-			this._timelineRange = [new Date(0), new Date(0)];
-		else
-			this._timelineRange = [
-				new Date(Math.min(
-					...ships.map( ( {ship} ) => +ship.navigationStartDate ).filter( time => !!time ),
-				)),
-				new Date(Math.max(
-					...ships.map( ( {ship} ) => +ship.navigationEndDate ).filter( time => !!time ),
-				)),
-			];
-		const [start, end] = this._timelineRange;
-		this.timelinePoint = new Date(
-			Math.min(Math.max(+this.timelinePoint, +start), +end)
-		);
 	}
 }
 

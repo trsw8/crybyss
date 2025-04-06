@@ -175,90 +175,11 @@ class CruiseData implements Cruise {
 	declare _route: Promise<CruiseRoute>;
 
 	constructor( data: any ) {
-/*
-		const [ points, sunrises, sunsets, gateways ] = data.POINTS
-			.filter(Boolean)
-			.map(({
-				isTrackStop,
-				pointArrivalDate,
-				Sunrise,
-				Sunset,
-				coordinates: {latitude: lat, longitude: lng},
-				angle
-			}: any) => ({
-				lat,
-				lng,
-				arrival: parseDate(pointArrivalDate),
-				isStop: !!isTrackStop,
-				sunrise: !!Sunrise,
-				sunset: !!Sunset,
-				angle: !isTrackStop && isFinite( angle ) ? Number( angle ) : undefined
-			}))
-			.sort( ( a: TrackPoint, b: TrackPoint ) => +a.arrival - +b.arrival )
-			.reduce( (
-				[ points, sunrises, sunsets, gateways ]: [ TrackPoint[], TrackPoint[], TrackPoint[], Record<string, { gateway: TrackLocation, trackpoint: TrackPoint }> ],
-				point: TrackPoint,
-				index: number,
-				allPoints: TrackPoint[]
-			) => {
-				if (point.sunrise) sunrises.push( point );
-				if (point.sunset) sunsets.push( point );
-				const lastPoint = points.length ? points[ points.length - 1 ] : undefined;
-				if (!lastPoint ||
-					+point.arrival - +lastPoint.arrival >= 90000 ||
-					lastPoint.isStop !== point.isStop
-				) {
-					points.push( point );
-				}
-
-				return [ points, sunrises, sunsets, gateways ];
-			}, [ [], [], [], {} ] );
-
-		const route = new CruiseRoute( points );
-
-		const stops = ( data.PROPERTY_TRACKSTOPS_VALUE || [] ).map(
-			(data: any): TrackStop => {
-				if (cache.stops[ data.CR_ID ]) {
-					return cache.stops[ data.CR_ID ];
-				}
-				else {
-					return {
-						id: data.CR_ID,
-						type: LocationType.REGULAR,
-						lat: data.DETAIL.coordinates.latitude,
-						lng: data.DETAIL.coordinates.longitude,
-						name: data.DETAIL.NAME,
-						arrival: parseDate( data.CR_ARRIVAL ),
-						departure: parseDate( data.CR_DEPARTURE ),
-						details: {
-							description: data.DETAIL.DETAIL_TEXT,
-							//~ image: data.DETAIL.DETAIL_PICTURE
-							// Это для тестирования. После переноса приложения на основной сайт проверку url можно будет убрать
-							image: ( /^https?:\/\//.test( data.DETAIL.DETAIL_PICTURE ) ? '' : siteURL ) + data.DETAIL.DETAIL_PICTURE,
-							//~ link: data.DETAIL.URL
-							// Это для тестирования. После переноса приложения на основной сайт проверку url можно будет убрать
-							link: ( /^https?:\/\//.test( data.DETAIL.URL ) ? '' : siteURL ) + data.DETAIL.URL,
-						}
-					};
-				}
-			}
-		);
-		
-		const sights = Object.values(
-			data.POIS.reduce( ( ret: Record<string, TrackStop>, item: any ) => {
-				if (!ret[ item.poiId ]) {
-					const sight = cache.sights[ item.poiId ];
-					if (sight) ret[ item.poiId ] = sight;
-				}
-				return ret;
-			}, {} )
-		);
-*/
 		Object.assign( this, {
 			id: data.id,
 			name: data.name,
-			departure: parseDate( data.departure ),
-			arrival: parseDate( data.arrival ),
+			departure: parseDepartureDate( data.departure ),
+			arrival: parseArrivalDate( data.arrival ),
 			departureLocationName: data.departureLocationName,
 			arrivalLocationName: data.arrivalLocationName,
 			url: data.url,
@@ -292,7 +213,6 @@ class CruiseData implements Cruise {
 	
 	get sights() {
 		if (!this._sights) this._sights = new Promise( async resolve => {
-			//~ const data = await connector.send( apiEntries.cruiseSights, { id: this.id } );
 			const data = await fetchCruiseSights( this.id );
 			const ids = data.reduce( ( ret: Record<string, true>, item: any ) => {
 				if (!cache.sights[ item.id ] || cache.sights[ item.id ] instanceof Promise) ret[ item.id ] = true;
@@ -393,18 +313,18 @@ class ShipData implements Ship {
 
 	get navigationStartDate(): Date | undefined {
 		const cruise = this.cruises()[Symbol.iterator]().next().value;
-		if (!cruise) return;
-		else return cruise.departure;
+		if (!cruise?.departure) return;
+		else return new Date( +cruise.departure );
 	}
 
 	get navigationEndDate(): Date | undefined {
 		const cruises = [ ...this.cruises() ];
 		if (!cruises.length) return;
-		else return cruises.reduce( ( ret: Date | undefined, cruise: Cruise ): Date | undefined => {
-			const date = cruise.arrival;
-			if (date && date > ( ret ?? 0 )) ret = date;
-			return ret;
-		}, undefined );
+		else {
+			const navigationEndDate = Math.max( ...cruises.map( cruise => +( cruise.arrival ?? -Infinity ) ) );
+			if (Number.isFinite( navigationEndDate )) return new Date( navigationEndDate );
+			else return;
+		}
 	}
 
 	*cruises(): Iterable<Cruise> {
@@ -656,16 +576,20 @@ class CruiseAPICache extends Cache implements CruiseAPI {
 
 	get navigationStartDate(): Date | undefined {
 		if (!this.activeCruises.length) return;
-		else return this.cruises.at( this.activeCruises[0] ).departure;
+		else {
+			const navigationStartDate = this.cruises.at( this.activeCruises[0] ).departure;
+			if (navigationStartDate) return new Date( +navigationStartDate );
+			else return;
+		}
 	}
 
 	get navigationEndDate(): Date | undefined {
 		if (!this.activeCruises.length) return;
-		else return this.activeCruises.reduce( ( ret: Date | undefined, index: number ): Date | undefined => {
-			const date = this.cruises.at( index ).arrival;
-			if (date && date > ( ret ?? 0 )) ret = date;
-			return ret;
-		}, undefined );
+		else {
+			const navigationEndDate = Math.max( ...this.activeCruises.map( index => +( this.cruises.at( index ).arrival ?? -Infinity ) ) );
+			if (Number.isFinite( navigationEndDate )) return new Date( navigationEndDate );
+			else return;
+		}
 	}
 	
 	company( id : string ) : Company {
@@ -740,4 +664,26 @@ function parseDate(dateString: string): Date {
 	//~ const [, year, month, day, hour, minute, second = '00'] = match;
 	//~ return new Date(+year, +month - 1, +day, +hour, +minute, +second);
 	return new Date( dateString );
+}
+
+function parseDepartureDate( dateString: string ): Date {
+	const date = parseDate( dateString );
+	if (!date) return;
+	
+	date.setHours( 0 );
+	date.setMinutes( 0 );
+	date.setSeconds( 0 );
+	date.setMilliseconds( 0 );
+	return date;
+}
+
+function parseArrivalDate( dateString: string ): Date {
+	const date = parseDate( dateString );
+	if (!date) return;
+	
+	date.setHours( 23 );
+	date.setMinutes( 59 );
+	date.setSeconds( 59 );
+	date.setMilliseconds( 0 );
+	return date;
 }
