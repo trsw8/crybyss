@@ -15,6 +15,7 @@ import {
   Point,
   PointExpression,
   LatLngExpression,
+  LeafletMouseEvent
 } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import {AuditableEventTarget} from "../../util/events";
@@ -505,7 +506,7 @@ class LeafletPane<
     });
 
     // Создание и открытие одноразового маркера
-    const open = async () => {
+    const open = async ( event: LeafletMouseEvent ) => {
       if (!lMarker.isOpen) {
         lMarker.isOpen = true;
         const content = await interactiveMarker.popupContent();
@@ -526,7 +527,8 @@ class LeafletPane<
         const popupSize = point([ popupDiv.offsetWidth, popupDiv.offsetHeight ]);
         document.body.removeChild(popupDiv);
 
-        const coord = this.map.latLngToContainerPoint( lMarker.getLatLng() );
+        const markerCoord = this.map.latLngToContainerPoint( lMarker.getLatLng() );
+        const coord = event.sourceTarget === lMarker ? markerCoord : event.containerPoint;
         const size = this.map.getSize();
         const iconSize = point( lMarker.getIcon().options.iconSize );
         const left = coord.x - popupSize.x;
@@ -578,6 +580,11 @@ class LeafletPane<
           }
         }
         
+        if (coord !== markerCoord) {
+          offset[0] += coord.x - markerCoord.x;
+          offset[1] += coord.y - markerCoord.y;
+        }
+
         lMarker.bindPopup(popupDiv, {
           closeButton: false,
           closeOnClick: false,
@@ -588,8 +595,8 @@ class LeafletPane<
       }
     };
 
-    lMarker.on("mouseover click", () => {
-      if (!lMarker.isOpen) open();
+    lMarker.on("mouseover click", ( event: LeafletMouseEvent ) => {
+      if (!lMarker.isOpen) open( event );
     });
     // Закрытие попапа только при выходе мыши за его пределы либо пределы маркера
     lMarker.on("mouseout", event => {
