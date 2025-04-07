@@ -936,7 +936,7 @@ body .map-overlay--range-dates .rs-container .rs-pointer {
 
 .map-overlay--time-indicator {
   position: absolute;
-  display: flex;
+  display: none;
   align-items: baseline;
   gap: 20px;
   top: 14px;
@@ -950,6 +950,10 @@ body .map-overlay--range-dates .rs-container .rs-pointer {
   border-radius: 13px;
   backdrop-filter: blur(3px);
   background: rgba(255, 255, 255, 0.15);
+}
+
+.map-overlay--time-indicator.active {
+  display: flex;
 }
 
 .map-overlay--time-indicator-date {

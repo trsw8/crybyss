@@ -606,8 +606,16 @@ class DateFilter {
         valueElement.innerText = formatDate(now);
       }
 
-      console.log('now', now);
-      
+      const dateIndicatorValue =
+        (now.getMonth() + 1).toString().padStart(2, '0') +
+        "." +
+        now.getDate().toString().padStart(2, '0') +
+        "." +
+        now.getFullYear().toString();
+      const dateIndicator = document.querySelector(".map-overlay--time-indicator-date") as HTMLElement;
+      if (dateIndicator) dateIndicator.innerText = dateIndicatorValue;
+      const timeIndicator = document.querySelector(".map-overlay--time-indicator-time") as HTMLElement;
+      if (timeIndicator) timeIndicator.innerText = time;
     };
 
     let isclockActive = true;
@@ -627,6 +635,9 @@ class DateFilter {
         clockBtn.classList.remove("active");
         isclockActive = false;
         window.dispatchEvent(new Event("filterchange"));
+
+        const timeIndicator = document.querySelector(".map-overlay--time-indicator") as HTMLElement;
+        if (timeIndicator) timeIndicator.classList.remove("active");
       };
       pointer.addEventListener("mousedown", onPointerDown);
       pointer.addEventListener("touchstart", onPointerDown);
@@ -647,6 +658,9 @@ class DateFilter {
             if (layersBtn) layersBtn.click();
             const cardsBtn = document.querySelector(".map-overlay--menu.active") as HTMLElement;
             if (cardsBtn && window.innerWidth < 901) cardsBtn.click();
+
+            const timeIndicator = document.querySelector(".map-overlay--time-indicator") as HTMLElement;
+            if (timeIndicator) timeIndicator.classList.remove("active");
           } else {
             window.dispatchEvent(new Event("filterchange"));
             updateFilter();
@@ -657,6 +671,9 @@ class DateFilter {
 
             const filterBox = document.querySelector(".filter-box");
             if (filterBox) filterBox.classList.remove("active");
+
+            const timeIndicator = document.querySelector(".map-overlay--time-indicator") as HTMLElement;
+            if (timeIndicator) timeIndicator.classList.add("active");
           }
         };
 
