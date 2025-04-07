@@ -605,6 +605,9 @@ class DateFilter {
       } else if (now > cruiseMap.timelineRange[1]) {
         valueElement.innerText = formatDate(now);
       }
+
+      console.log('now', now);
+      
     };
 
     let isclockActive = true;

@@ -311,6 +311,7 @@ body .rs-tooltip {
     padding: 7px;
     border-radius: 7px;
   }
+
   .map-overlay--buttons-wrapper.active {
     display: block;
   }
@@ -358,6 +359,7 @@ body .rs-tooltip {
   line-height: 120%;
   text-transform: uppercase;
 }
+
 .map-overlay--btn.active .map-overlay--button-text {
   color: #fff;
 }
@@ -930,4 +932,36 @@ body .map-overlay--range-dates .rs-container .rs-pointer {
     height: 15px;
     opacity: 0.5;
   }
+}
+
+.map-overlay--time-indicator {
+  position: absolute;
+  display: flex;
+  align-items: baseline;
+  gap: 20px;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-40%);
+  padding: 20px;
+  padding-top: 16px;
+  padding-bottom: 15px;
+  box-sizing: border-box;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 13px;
+  backdrop-filter: blur(3px);
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.map-overlay--time-indicator-date {
+  color: var(--main);
+  font-size: 18px;
+  line-height: 120%;
+}
+
+.map-overlay--time-indicator-time {
+  color: var(--main);
+  font-size: 25px;
+  font-weight: 600;
+  line-height: 120%;
+  letter-spacing: -1.4px;
 }
