@@ -426,6 +426,7 @@ class ShipMarker implements InteractiveMapMarker {
 	activate() {
 		if (this.map.selectedShip !== this) {
 			this.icon.classList.add( 'active' );
+			this.marker?.setZIndexOffset( 10000 );
 			if (!!this.map.selectedShip) this.map.selectedShip.deactivate();
 			this.map.selectedShip = this;
 			for (const cruise of this.cruises) {
@@ -438,6 +439,7 @@ class ShipMarker implements InteractiveMapMarker {
 	deactivate() {
 		if (this.map.selectedShip === this) {
 			this.icon.classList.remove( 'active' );
+			this.marker?.setZIndexOffset( 0 );
 			this.map.selectedShip = undefined;
 			for (const cruise of this.cruises) {
 				this.map.cruiseAsset( cruise.id ).hideAll();
