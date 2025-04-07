@@ -607,9 +607,9 @@ class DateFilter {
       }
 
       const dateIndicatorValue =
-        (now.getMonth() + 1).toString().padStart(2, '0') +
-        "." +
         now.getDate().toString().padStart(2, '0') +
+        "." +
+        (now.getMonth() + 1).toString().padStart(2, '0') +
         "." +
         now.getFullYear().toString();
       const dateIndicator = document.querySelector(".map-overlay--time-indicator-date") as HTMLElement;
