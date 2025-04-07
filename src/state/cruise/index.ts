@@ -1,16 +1,15 @@
 /** Интерфейсы для получения данных о круизах по API */
 
 export interface CruiseAPI {
-	navigationStartDate?: Date;
-	navigationEndDate?: Date;
+	navigationStartDate: Date;
+	navigationEndDate: Date;
 	company: ( id : string ) => Company;
-	cruise: ( id : string ) => Promise<Cruise>;
-	ship: ( id : string ) => Promise<Ship>;
+	cruise: ( id : string ) => Cruise;
+	ship: ( id : string ) => Ship;
 	allCruises: () => Iterable<Cruise>;
-	allShips: () => AsyncIterable<Ship>;
-	allCompanies: () => AsyncIterable<Company>;
-	search: ( text: string ) => AsyncIterable<any>;
-	setFilter: ( options: { companyName?: string, shipName?: string, startDate?: Date | null, endDate?: Date | null } ) => Promise<void>;
+	allShips: () => Iterable<Ship>;
+	allCompanies: () => Iterable<Company>;
+	setFilter: ( options: { companyName?: string, shipName?: string, startDate?: Date | null, endDate?: Date | null } ) => void;
 }
 
 export interface Cruise {
@@ -18,60 +17,60 @@ export interface Cruise {
 	name: string;
 	departure: Date;
 	arrival: Date;
-	departureLocationName?: string;
-	arrivalLocationName?: string;
-	shipId: string;
-	alias: string;
+	departureLocationName: string;
+	arrivalLocationName: string;
 	url: string;
-	ship: () => Promise<Ship>;
-	company: () => Promise<Company>;
-	stops: TrackStop[];
-	sights: TrackStop[];
-	gateways: Record<string, { gateway: TrackLocation, trackpoint: TrackPoint }>;
-	sunrises: TrackPoint[];
-	sunsets: TrackPoint[];
-	route: CruiseRoute;
+	ship: Ship;
+	company: Company;
+	routeReady: boolean;
+	stops: Promise<TrackLocation[]>;
+	sights: Promise<TrackLocation[]>;
+	gateways: Promise<TrackLocation[]>;
+	sunrises: Promise<TrackPoint[]>;
+	sunsets: Promise<TrackPoint[]>;
+	route: Promise<CruiseRoute>;
 }
+
+//~ export const defaultCompanyColor = 0xD9D9D9;
+export const defaultCompanyColor = 0x888888;
 
 export interface Company {
 	id: string;
 	name: string;
 	color: number;
-	ships: () => AsyncIterable<Ship>;
-	cruises: () => AsyncIterable<Cruise>;
+	ships: () => Iterable<Ship>;
+	cruises: () => Iterable<Cruise>;
 }
 
 export interface Ship {
 	id: string;
 	name: string;
-	companyId: string;
 	navigationStartDate?: Date;
 	navigationEndDate?: Date;
-	company: () => Company;
+	company: Company;
 	cruises: () => Iterable<Cruise>;
+	cruisesOn: ( datetime: Date ) => Cruise[];
 	cruiseOn: ( datetime: Date ) => Cruise | undefined;
-	positionAt: ( datetime: Date ) => TrackPoint;
+	positionAt: ( datetime: Date ) => Promise<TrackPoint>;
 }
 
-export interface TrackLocation {
+export interface Location {
 	id: string;
 	type: LocationType;
 	lat: number;
 	lng: number;
 	name: string;
-}
-
-export interface TrackStop extends TrackLocation {
-	arrival?: Date;
-	departure?: Date;
-	details: TrackStopDetails;
-}
-
-export interface TrackStopDetails {
 	category?: string;
-	description: string;
+	//~ description?: string;
 	image?: string;
 	link?: string;
+}
+
+export interface TrackLocation {
+	arrival: Date;
+	departure?: Date;
+	side?: 'left' | 'right';
+	location: Location;
 }
 
 export interface TrackPoint {
@@ -79,8 +78,8 @@ export interface TrackPoint {
 	lng: number;
 	arrival: Date;
 	isStop: boolean;
-	sunrise: boolean;
-	sunset: boolean;
+	sunrise?: boolean;
+	sunset?: boolean;
 	angle?: number;
 }
 
@@ -99,6 +98,10 @@ export class CruiseRoute {
 	}
 
 	positionAt( datetime: Date ): TrackPoint {
+		if (!this.points.length) {
+			return { arrival: datetime, lat: 0, lng: 0, isStop: true };
+		}
+		
 		const needle = +datetime;
 		let sliceStart = 0;
 		let sliceEnd = this.points.length - 1;
@@ -147,9 +150,10 @@ export class CruiseRoute {
 		else if (!this.points[ previous ].isStop && !this.points[ previous + 1 ].isStop && this.points[ previous ].angle !== undefined) angle = this.points[ previous ].angle;
 		else if (!this.points[ previous ].isStop && !this.points[ previous + 1 ].isStop && this.points[ previous + 1 ].angle !== undefined) angle = this.points[ previous + 1 ].angle;
 
-        return { arrival: datetime, lat, lng, angle, isStop: false, sunrise: false, sunset: false };
+        return { arrival: datetime, lat, lng, angle, isStop: false };
 	}
 
+/*
 	pointIndexInMoment(moment: Date): number {
 		const needle = +moment;
 		let sliceStart = 0;
@@ -178,5 +182,5 @@ export class CruiseRoute {
 		}
 		return result;
 	}
-
+*/
 }

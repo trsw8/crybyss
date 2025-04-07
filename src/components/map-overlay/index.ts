@@ -1,91 +1,115 @@
-import {throttle, debounce} from 'throttle-debounce';
-import {TypedEventTarget} from 'typescript-event-target';
-import {CruiseAPI, Cruise, Ship, Company} from '../../state/cruise';
-import {DOMComponent} from '../dom';
-import {VisibilityControl} from '../map';
-import CruiseMap from '../cruise-map';
-import './index.css';
+import { throttle, debounce } from "throttle-debounce";
+import { TypedEventTarget } from "typescript-event-target";
+import { CruiseAPI, Cruise, Ship, Company } from "../../state/cruise";
+import { DOMComponent } from "../dom";
+import { VisibilityControl } from "../map";
+import CruiseMap from "../cruise-map";
+import "./index.css";
 
 export default class MapOverlay extends DOMComponent {
-
 	declare bounds: [number, number, number, number];
 
 	events: TypedEventTarget<{
-		resize: Event
+		resize: Event;
 	}> = new TypedEventTarget();
 
-	constructor(
-		domNode: Element,
-		cruiseMap: CruiseMap,
-		api: CruiseAPI,
-	) {
+	constructor(domNode: Element, cruiseMap: CruiseMap, api: CruiseAPI) {
 		super(domNode);
-		for (const [ className, id, layer ] of [
-			[ 'map-overlay--ship', 'ship-layer-checkbox', cruiseMap.shipLayer ],
-			[ 'map-overlay--anchor', 'stops-layer-checkbox', cruiseMap.stopsLayer ],
-			[ 'map-overlay--place', 'sights-layer-checkbox', cruiseMap.sightsLayer ],
-		] as [ string, string, VisibilityControl ][]) {
-			new LayerVisibilityButton( 
-				domNode.getElementsByClassName( className )[0],
-				document.getElementById( id ) as HTMLInputElement,
+		for (const [className, id, layer] of [
+			["map-overlay--ship", "ship-layer-checkbox", cruiseMap.shipLayer],
+			["map-overlay--anchor", "stops-layer-checkbox", cruiseMap.stopsLayer],
+			["map-overlay--place", "sights-layer-checkbox", cruiseMap.sightsLayer],
+			[
+				"map-overlay--gateways",
+				"gateways-layer-checkbox",
+				cruiseMap.gatewaysLayer,
+			],
+			[
+				"map-overlay--sunrise",
+				"sunrises-layer-checkbox",
+				cruiseMap.sunrisesLayer,
+			],
+			["map-overlay--sunset", "sunsets-layer-checkbox", cruiseMap.sunsetsLayer],
+		] as [string, string, VisibilityControl][]) {
+			new LayerVisibilityButton(
+				domNode.getElementsByClassName(className)[0],
+				document.getElementById(id) as HTMLInputElement,
 				layer
 			);
 		}
-		for (const checkbox of domNode.getElementsByClassName( 'map-overlay--layers-checkbox' ) as HTMLCollectionOf<HTMLInputElement>) {
-			const layer = checkbox.id.split( '-' )[0];
-			new LayerVisibilityCheckbox( checkbox, ( cruiseMap as any )[ `${layer}Layer` ] as VisibilityControl );
+		for (const checkbox of domNode.getElementsByClassName(
+			"map-overlay--layers-checkbox"
+		) as HTMLCollectionOf<HTMLInputElement>) {
+			const layer = checkbox.id.split("-")[0];
+			new LayerVisibilityCheckbox(
+				checkbox,
+				(cruiseMap as any)[`${layer}Layer`] as VisibilityControl
+			);
 		}
-		for (const button of domNode.getElementsByClassName( 'map-overlay--toggle-btn' )) {
-			new ToggleButton( button );
+		for (const button of domNode.getElementsByClassName(
+			"map-overlay--toggle-btn"
+		)) {
+			new ToggleButton(button);
+		}
+
+		const buttonSelector = domNode.getElementsByClassName(
+			"map-overlay--buttons-selector"
+		)[0] as HTMLElement;
+		const buttonSelectorContent = domNode.getElementsByClassName(
+			"map-overlay--buttons-content"
+		)[0] as HTMLElement;
+		if (buttonSelector) {
+			buttonSelector.addEventListener("click", () => {
+				buttonSelector.classList.toggle("active");
+				buttonSelectorContent.classList.toggle("active");
+			});
 		}
 
 		const shipSlider = new TimelineSlider(
 			domNode.getElementsByClassName(
-				'map-overlay--range-dates'
+				"map-overlay--range-dates"
 			)[0] as HTMLElement,
-			cruiseMap,
+			cruiseMap
 		);
 		new SearchBox(
-			domNode.getElementsByClassName('map-overlay--search')[0],
-			cruiseMap, api,
+			domNode.getElementsByClassName("map-overlay--search")[0],
+			cruiseMap,
+			api
 		);
 
 		new DateFilter(
-			document.getElementById('datepicker-input'),
-			document.getElementById('time-slider'),
-			document.getElementById('timeInput'),
+			document.getElementById("datepicker-input"),
+			document.getElementById("time-slider"),
+			document.getElementById("timeInput"),
 			shipSlider,
-			cruiseMap, api,
+			cruiseMap,
+			api
 		);
 
 		const overlayBoundsElements = [
-			'map-overlay--search-box',
-			'map-overlay--overlays',
-			'map-overlay--range-dates',
-			'map-overlay--search-results',
-		].map(className => domNode.getElementsByClassName(className)[0]);
+			"map-overlay--search-box",
+			"map-overlay--overlays",
+			"map-overlay--range-dates",
+			"map-overlay--search-results",
+		].map((className) => domNode.getElementsByClassName(className)[0]);
 		const setOverlayBounds = () => {
 			this.bounds = [
 				overlayBoundsElements[0].getBoundingClientRect().bottom,
-				window.innerWidth - overlayBoundsElements[1]
-					.getBoundingClientRect().left,
-				window.innerHeight - overlayBoundsElements[2]
-					.getBoundingClientRect().top,
+				window.innerWidth -
+					overlayBoundsElements[1].getBoundingClientRect().left,
+				window.innerHeight -
+					overlayBoundsElements[2].getBoundingClientRect().top,
 				overlayBoundsElements[3].getBoundingClientRect().right,
 			];
-			this.events.dispatchEvent(new Event('resize'));
+			this.events.dispatchEvent(new Event("resize"));
 		};
 		setOverlayBounds();
-		window.addEventListener('resize', setOverlayBounds);
+		window.addEventListener("resize", setOverlayBounds);
 	}
-
 }
 
-// Недоделано: отсутствует реакция на события CruiseMap, чекбоксы создаются костыльно,
-// нет синхронизации между чекбоксами компаний и чекбоксами кораблей,
-// не реализованы фолды и "выбрать все".
+// Недоделано: чекбоксы создаются костыльно (?)
 class SearchBox extends DOMComponent {
-
 	declare private cruiseMap: CruiseMap;
 
 	constructor(domNode: Element, cruiseMap: CruiseMap, api: CruiseAPI) {
@@ -157,22 +181,24 @@ class SearchBox extends DOMComponent {
 				if (value !== input.value)
 					return;
 
-				for (const ship of this.cruiseMap.ships) {
-					this.cruiseMap.removeShip( ship );
-				}
 				companiesElement.textContent = '';
 				shipsElement.textContent = '';
 				const companiesCheckboxes = [];
 				const shipsCheckboxes = [];
 				if (value.length < 2) value = '';   // поиск от 2 букв
-				await api.setFilter({ companyName: value, shipName: value });
-				for await (const company of api.allCompanies()) {
+				api.setFilter({ companyName: value, shipName: value });
+				for (const company of api.allCompanies()) {
 					companiesCheckboxes.push(
 						...this.createCompanyElements(company),
 					);
 				}
-				for await (const ship of api.allShips()) {
-					shipsCheckboxes.push(...this.createShipElements(ship));
+				
+				const allShips = [ ...api.allShips() ];
+				for (const ship of this.cruiseMap.ships) {
+					if (!allShips.includes( ship )) this.cruiseMap.removeShip( ship );
+				}
+				for (const ship of allShips) {
+					shipsCheckboxes.push( ...this.createShipElements( ship ) );
 				}
 				companiesElement.prepend(...companiesCheckboxes);
 				shipsElement.prepend(...shipsCheckboxes);
@@ -181,6 +207,107 @@ class SearchBox extends DOMComponent {
 
 		window.addEventListener('cruisesDataLoaded', onInput);
 		input.addEventListener('input', onInput);
+
+		// мобильный датапикер начало
+		document.addEventListener("DOMContentLoaded", function () {
+			const currentYear = new Date().getFullYear();
+
+			const creatDaysLi = (month: number) => {
+				document.querySelectorAll('.mobile-options-container-day li').forEach((item) => {
+					item.remove();
+				});
+				const lastDate = new Date(currentYear, month, 0).getDate();
+				for (let i = 1; i <= lastDate; i++) {
+					const li = document.createElement('li');
+					li.textContent = i.toString();
+					document.querySelector('.mobile-options-container-day')?.appendChild(li);
+				}
+			};
+
+			const dayButton = document.querySelector('.mobile-input-button-day') as HTMLElement;
+			if (dayButton) dayButton.addEventListener('click', () => {
+				dayButton.classList.toggle('active');
+				const dayContainer = document.querySelector('.mobile-options-container-day') as HTMLElement;
+				if (dayContainer) dayContainer.classList.toggle('active');
+				const monthButton = document.querySelector('.mobile-input-button-month') as HTMLElement;
+				if (monthButton) monthButton.classList.remove('active');
+				const monthContainer = document.querySelector('.mobile-options-container-month') as HTMLElement;
+				if (monthContainer) monthContainer.classList.remove('active');
+				const monthInputElement = document.querySelector('#mobile-month-input') as HTMLInputElement;
+				if (monthInputElement) creatDaysLi(+monthInputElement.value);
+			});
+
+			const monthButton = document.querySelector('.mobile-input-button-month') as HTMLElement;
+			if (monthButton) monthButton.addEventListener('click', () => {
+				monthButton.classList.toggle('active');
+				const monthContainer = document.querySelector('.mobile-options-container-month') as HTMLElement;
+				if (monthContainer) monthContainer.classList.toggle('active');
+				const dayButton = document.querySelector('.mobile-input-button-day') as HTMLElement;
+				if (dayButton) dayButton.classList.remove('active');
+				const dayContainer = document.querySelector('.mobile-options-container-day') as HTMLElement;
+				if (dayContainer) dayContainer.classList.remove('active');
+			});
+
+			// Отслеживание скролла для .mobile-options-container-month
+			const checkScroll = (container: HTMLElement, param: string) => {
+				container.addEventListener('scroll', function() {
+					const monthInput = document.querySelector('#mobile-month-input') as HTMLInputElement;
+					const dayInput = document.querySelector('#mobile-day-input') as HTMLInputElement;
+
+					const items = this.querySelectorAll('li');
+					const containerHeight = this.clientHeight;
+					const scrollTop = this.scrollTop;
+					const itemHeight = containerHeight / 3; // Высота одного элемента (всего 3 видимых)
+
+					items.forEach((item: HTMLElement, index: number) => {
+							const itemTop = item.offsetTop;
+							const itemBottom = itemTop + item.offsetHeight;
+							const isInView = itemTop <= scrollTop + 10 + itemHeight && itemBottom >= scrollTop + 10;
+							if (isInView) {
+									// Удаляем класс active у всех элементов
+									items.forEach((el: HTMLElement) => el.classList.remove('active'));
+									// Добавляем класс active текущему элементу
+									item.classList.add('active');
+							}
+					});
+
+
+					if (param === 'month') {
+						if (monthInput) monthInput.value = container.querySelector('li.active')?.textContent as string;
+						// creatDaysLi(+monthInput.value);
+					}
+
+					if (param === 'day') {
+						if (dayInput) dayInput.value = container.querySelector('li.active')?.textContent as string;
+
+					}
+
+					const formattedDate = `${dayInput.value}.${monthInput.value.padStart( 2, "0" )}.${currentYear}`;
+					window.dispatchEvent(new CustomEvent('datepicker-change', {
+							detail: {
+									date: formattedDate
+							}
+					}));
+				});
+			};
+
+			const monthContainer = document.querySelector('.mobile-options-container-month') as HTMLElement;
+			if (monthContainer) checkScroll(monthContainer, 'month');
+			const dayContainer = document.querySelector('.mobile-options-container-day') as HTMLElement;
+			if (dayContainer) checkScroll(dayContainer, 'day');
+
+			window.addEventListener('timeline-change', function (event: CustomEvent) {
+				const date = event.detail;
+				const day = date.getDate();
+				const month = date.getMonth() + 1;
+				const mobileDayInput = document.querySelector('#mobile-day-input') as HTMLInputElement;
+				if (mobileDayInput) mobileDayInput.value = day.toString();
+				const mobileMonthInput = document.querySelector('#mobile-month-input') as HTMLInputElement;
+				if (mobileMonthInput) mobileMonthInput.value = month.toString();
+			});
+		});
+
+		// мобильный датапикер конец
 	}
 
 	private createCompanyElements(company: Company): Element[] {
@@ -205,7 +332,7 @@ class SearchBox extends DOMComponent {
 
 		input.addEventListener('change', async event => {
 			const checked = ( event.target as HTMLInputElement ).checked as boolean;
-			for await (const ship of company.ships()) {
+			for (const ship of company.ships()) {
 				const {id} = ship;
 				const input = document.getElementById( `map-overlay--search-ship_${id}` ) as HTMLInputElement;
 				if (input) {
@@ -233,7 +360,7 @@ class SearchBox extends DOMComponent {
 
 	private createShipElements(ship: Ship): Element[] {
 		const {id, name} = ship;
-		const {color} = ship.company();
+		const {color} = ship.company;
 		const elementId = `map-overlay--search-ship_${id}`;
 
 		const [input, label] = this.createCheckboxElements(elementId);
@@ -282,97 +409,109 @@ class SearchBox extends DOMComponent {
 			this.cruiseMap.removeShip(ship);
 		}
 	}
-
 }
 
 class ToggleButton extends DOMComponent {
 	constructor(domNode: Element) {
 		super(domNode);
-		domNode.addEventListener( 'click', () => { domNode.classList.toggle( 'active' ) } );
+		domNode.addEventListener("click", () => {
+			domNode.classList.toggle("active");
+		});
 	}
 }
 
 class DateFilter {
-	declare private cruiseMap: CruiseMap;
-
-	constructor(dateInput: Element, timeSlider: Element, timeInput: Element, shipSlider: TimelineSlider, cruiseMap: CruiseMap,  api: CruiseAPI) {
-		this.cruiseMap = cruiseMap;
-
+	constructor(
+		dateInput: Element,
+		timeSlider: Element,
+		timeInput: Element,
+		shipSlider: TimelineSlider,
+		cruiseMap: CruiseMap,
+		api: CruiseAPI
+	) {
 		const date = dateInput as HTMLInputElement;
 		const slider = timeSlider as HTMLInputElement;
 		const time = timeInput as HTMLInputElement;
 
-		let dateValue = '';
-		let timeValue = '';
+		let dateValue = "";
+		let timeValue = "";
 
 		const createDate = () => {
 			if (!dateValue) return;
 			let finalDate;
-			
+
 			if (timeValue) {
-				const [month, day, year] = dateValue.split('/');
-				const [hours, minutes] = timeValue.split(':');
-				
-				finalDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day), parseInt(hours), parseInt(minutes));
+				const [day, month, year] = dateValue.split(".");
+				const [hours, minutes, seconds] = timeValue.split(":");
+
+				finalDate = new Date(
+					parseInt(year),
+					parseInt(month) - 1,
+					parseInt(day),
+					parseInt(hours),
+					parseInt(minutes),
+					parseInt(seconds)
+				);
 			} else {
-				const [month, day, year] = dateValue.split('/');
-				finalDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+				const [day, month, year] = dateValue.split(".");
+				finalDate = new Date(
+					parseInt(year),
+					parseInt(month) - 1,
+					parseInt(day)
+				);
 			}
-			
-			cruiseMap.timelinePoint = finalDate;
-			shipSlider.setSlider(finalDate, cruiseMap);
-			window.dispatchEvent(new CustomEvent('timeline-change', {detail: {date: cruiseMap.timelinePoint}}));
+
+			setDateTime( finalDate );
 		};
 
 		const handleDateChange = (event: Event) => {
 			const { date } = (event as CustomEvent).detail;
-			const [day, month, year] = date.split('/');
-			dateValue = `${month}/${day}/${year}`;
+			const [day, month, year] = date.split(".");
+			dateValue = `${day}.${month}.${year}`;
 			createDate();
-			window.dispatchEvent(new Event('filterchange'));
+			window.dispatchEvent(new Event("filterchange"));
+		};
+		
+		const updateDateInput = () => {
+			date.value = dateValue;
 		};
 
 		const handleTimeSliderChange = () => {
-			const tooltip = document.getElementById('time-tooltip')
-			const tooltipTime = tooltip.innerText;
-			if (tooltipTime.match(/^\d{1,2}:\d{2}(:\d{2})?$/)) {
-				timeValue = tooltipTime.includes(':') ? 
-					(tooltipTime.split(':').length === 2 ? `${tooltipTime}:00` : tooltipTime) : 
-					`${tooltipTime}:00:00`;
-					time.value = timeValue;
-					document.getElementById('timeDisplay').innerText = timeValue;
-			}
+			timeValue =
+				String( Math.floor( Number( slider.value ) / 60 ) ).padStart( 2, "0" ) +
+				":" +
+				String( Number( slider.value ) % 60 ).padStart( 2, "0" ) + 
+				":00";
 			createDate();
-			window.dispatchEvent(new Event('filterchange'));
+			window.dispatchEvent(new Event("filterchange"));
 		};
 
 		const updateTimeSlider = (timeValue: string) => {
-			const [hours, minutes] = timeValue.split(':');
+			const [hours, minutes] = timeValue.split(":");
 			const totalMinutes = parseInt(hours) * 60 + parseInt(minutes);
 			const sliderValue = Math.round(totalMinutes);
 			slider.value = sliderValue.toString();
 
-			const timeSlider = document.getElementById("time-slider");
 			const timeTooltip = document.getElementById("time-tooltip");
-			let sliderRect = timeSlider.getBoundingClientRect();
-			let thumbWidth = 16; 
-			let percent = (sliderValue / 1439); 
+			const sliderRect = slider.getBoundingClientRect();
+			const thumbWidth = 16;
+			const percent = sliderValue / 1439;
 
-			let newPosition = percent * (sliderRect.width - thumbWidth) + thumbWidth / 2;
+			const newPosition =
+				percent * (sliderRect.width - thumbWidth) + thumbWidth / 2;
 			timeTooltip.style.left = `${newPosition}px`;
-			timeTooltip.textContent = timeValue;
+			timeTooltip.textContent = `${hours}:${minutes}`;
 		};
 
 		const handleTimeInputChange = () => {
-			timeValue = time.value.split(':').slice(0,2).join(':');
-			updateTimeSlider(timeValue);
+			timeValue = time.value;
 			createDate();
-			window.dispatchEvent(new Event('filterchange'));
+			window.dispatchEvent(new Event("filterchange"));
 		};
 
-		window.addEventListener('datepicker-change', handleDateChange);
-		slider.addEventListener('input', handleTimeSliderChange);
-		time.addEventListener('input', handleTimeInputChange);
+		window.addEventListener("datepicker-change", handleDateChange);
+		slider.addEventListener("input", handleTimeSliderChange);
+		time.addEventListener("input", handleTimeInputChange);
 
 		// Функция для получения текущего часового пояса в минутах
 		function getCurrentTimezoneOffset(): number {
@@ -385,7 +524,7 @@ class DateFilter {
 			const currentOffset = getCurrentTimezoneOffset();
 			const moscowOffset = -180; // UTC+3 в минутах
 			const offsetDiff = (currentOffset - moscowOffset) * 60 * 1000; // разница в миллисекундах
-			
+
 			return now + offsetDiff;
 		}
 
@@ -397,43 +536,40 @@ class DateFilter {
 
 		const updateFilter = () => {
 			const now = createMoscowDate();
-
-			window.dispatchEvent(new CustomEvent('timeline-change', {detail: {date: now}}));
-
-			const time = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0') + ':' + now.getSeconds().toString().padStart(2, '0');
-			document.getElementById('timeDisplay').innerText = time;
-			timeValue = time.split(':').slice(0,2).join(':');
-			updateTimeSlider(timeValue);
-
-			const currentDate = (now.getMonth() + 1).toString() +'/' + now.getDate().toString() + '/' + now.getFullYear().toString();
-			dateValue = currentDate;
-
-			const formatDate = (value: Date): string => {
-				return value.toLocaleDateString(undefined, {
-					day: '2-digit',
-					month: '2-digit',
-					year: 'numeric',
-				});
-			};
-
-			const slider = document.getElementsByClassName('rs-container')[0];
-			const valueElement = slider
-			.getElementsByClassName('rs-tooltip')[0] as HTMLElement;
-
-			cruiseMap.timelinePoint = now;
-			shipSlider.setSlider(now, cruiseMap);
-			if (now > cruiseMap.timelineRange[0] && now < cruiseMap.timelineRange[1]) {
-				// cruiseMap.timelinePoint = now;
-			} else if (now < cruiseMap.timelineRange[0]) {
-				valueElement.innerText = formatDate(now);
-			} else if (now > cruiseMap.timelineRange[1]) {
-				valueElement.innerText = formatDate(now);
-			}
+			setDateTime( now );
 		};
 
+		const setDateTime = ( datetime: Date ) => {
+			const dateString =
+				datetime.getDate().toString() +
+				"." +
+				(datetime.getMonth() + 1).toString().padStart( 2, "0" ) +
+				"." +
+				datetime.getFullYear().toString();
+			dateValue = dateString;
+			
+			updateDateInput();
+
+			timeValue =
+				datetime.getHours().toString().padStart(2, "0") +
+				":" +
+				datetime.getMinutes().toString().padStart(2, "0") +
+				":" +
+				datetime.getSeconds().toString().padStart(2, "0");
+			updateTimeSlider(timeValue);
+			
+			time.value = timeValue;
+			document.getElementById("timeDisplay").innerText = timeValue;
+
+			cruiseMap.timelinePoint = datetime;
+			shipSlider.setSlider( datetime );			
+			
+			window.dispatchEvent( new CustomEvent( 'timeline-change', { detail: datetime } ) );
+		};
+		
 		let isclockActive = true;
 
-		document.addEventListener('DOMContentLoaded', () => {
+		document.addEventListener("DOMContentLoaded", () => {
 			updateFilter();
 			const interval = setInterval(() => {
 				if (isclockActive) {
@@ -441,75 +577,145 @@ class DateFilter {
 				}
 			}, 1000);
 
-			const clockBtn = document.querySelector('.map-overlay--time') as HTMLElement;
+			const clockBtn = document.querySelector(".map-overlay--time") as HTMLElement;
 
-			const pointer = document.querySelector('.rs-pointer') as HTMLElement;
+			const pointer = document.querySelector(".rs-pointer") as HTMLElement;
 			const onPointerDown = () => {
-				clockBtn.classList.remove('active');
 				isclockActive = false;
-				window.dispatchEvent(new Event('filterchange'));
-			}
-			pointer.addEventListener('mousedown', onPointerDown);
-			pointer.addEventListener('touchstart', onPointerDown);
-
+				window.dispatchEvent(new Event("filterchange"));
+			};
+			pointer.addEventListener("mousedown", onPointerDown);
+			pointer.addEventListener("touchstart", onPointerDown, { passive: true });
 			
-
-			clockBtn.addEventListener('click', () => {
-				const now = createMoscowDate();
-
-				if (clockBtn.classList.contains('active')) {
-					clockBtn.classList.remove('active');
-					isclockActive = false;
-					window.dispatchEvent(new Event('filterchange'));
-				} else {
-					window.dispatchEvent(new Event('filterchange'));
-					updateFilter();
-					clockBtn.classList.add('active');
-					isclockActive = true;
-					cruiseMap.timelinePoint = now;
-					shipSlider.setSlider(now, cruiseMap);
+			window.addEventListener( "timelinemove", ( event: CustomEvent ) => {
+				if (!isclockActive) {
+					setDateTime( event.detail );
 				}
-			});
-			window.addEventListener('filterchange', () => {
-				if (clockBtn) clockBtn.classList.remove('active');
-				isclockActive = false;
-			});
+				else {
+					shipSlider.setSlider( cruiseMap.timelinePoint );
+				}
+			} );
+
+			if (clockBtn) {
+				const resetTime = (synchronize = false) => {
+					const now = createMoscowDate();
+
+					if (synchronize) {
+						updateFilter();
+						isclockActive = true;
+						cruiseMap.timelinePoint = now;
+						shipSlider.setSlider(now);
+					}
+					
+					if (clockBtn.classList.contains("active")) {
+						clockBtn.classList.remove("active");
+
+						const filterBox = document.querySelector(".filter-box");
+						if (filterBox) filterBox.classList.remove("active");
+					} else {
+						clockBtn.classList.add("active");
+						isclockActive = false;
+
+						const filterBox = document.querySelector(".filter-box");
+						if (filterBox) filterBox.classList.add("active");
+						
+						const layersBtn = document.querySelector(".map-overlay--copy.active") as HTMLElement;
+						if (layersBtn) layersBtn.click();
+						const cardsBtn = document.querySelector(".map-overlay--menu.active") as HTMLElement;
+						if (cardsBtn && window.innerWidth < 901) cardsBtn.click();
+					}
+
+					window.dispatchEvent(new Event("filterchange"));
+				};
+
+				clockBtn.addEventListener("click", () => {
+					resetTime();
+				});
+
+				const filterBtn = document.querySelector(".timepicker-hide-button");
+				filterBtn.addEventListener("click", () => {
+					resetTime(true);
+				});
+
+				const cardsBtn = document.querySelector(".map-overlay--menu");
+				if (cardsBtn) {
+					cardsBtn.addEventListener("click", () => {
+						const content = document.querySelector(".map-overlay--buttons-content");
+						const wrapper = document.querySelector(".map-overlay--buttons-wrapper");
+
+						if (content && wrapper) {
+							setTimeout(() => {
+								if (cardsBtn.classList.contains("active")) {
+									content.classList.add("active");
+									wrapper.classList.add("active");
+									const layersBtn = document.querySelector(".map-overlay--copy.active") as HTMLElement;
+									if (layersBtn) layersBtn.click();
+									const clockBtn = document.querySelector(".map-overlay--time.active") as HTMLElement;
+									if (clockBtn) clockBtn.click();
+								} else {
+									content.classList.remove("active");
+									wrapper.classList.remove("active");
+								}
+							}, 100);
+						}
+					});
+				}
+
+				const layersBtn = document.querySelector(
+					".map-overlay--copy.active"
+				) as HTMLElement;
+				if (layersBtn) {
+					layersBtn.addEventListener("click", () => {
+						setTimeout(() => {
+							if (layersBtn.classList.contains("active")) {
+								const clockBtn = document.querySelector(".map-overlay--time.active") as HTMLElement;
+								if (clockBtn) clockBtn.click();
+								const cardsBtn = document.querySelector(".map-overlay--menu.active") as HTMLElement;
+								if (cardsBtn && window.innerWidth < 901) cardsBtn.click();
+							}
+						}, 100);
+					});
+				}
+			}
 		});
 
-		window.addEventListener('cruisesDataLoaded', () => {
+		window.addEventListener("cruisesDataLoaded", () => {
 			setTimeout(() => {
 				updateFilter();
 			}, 200);
 		});
 
-		window.addEventListener('timeline-change', (event: CustomEvent) => {
-			const currentDate = (event.detail.date.getMonth() + 1).toString() +'/' + event.detail.date.getDate().toString() + '/' + event.detail.date.getFullYear().toString();
-			dateValue = currentDate;
+		window.addEventListener("DOMContentLoaded", () => {
+			if (window.innerWidth < 901) {
+				const copyBtn = document.querySelector(".map-overlay--copy") as HTMLElement;
+				if (copyBtn) copyBtn.click();
+				const menuBtn = document.querySelector(".map-overlay--menu") as HTMLElement;
+				if (menuBtn) menuBtn.classList.add("active");
+			}
 		});
 	}
 }
 
 class LayerVisibilityButton extends DOMComponent {
-
-	constructor(domNode: Element, checkbox: HTMLInputElement, layer: VisibilityControl) {
+	constructor(
+		domNode: Element,
+		checkbox: HTMLInputElement,
+		layer: VisibilityControl
+	) {
 		super(domNode);
 		const onVisibilityChange = () => {
-			if (layer.visible)
-				domNode.classList.add('active');
-			else
-				domNode.classList.remove('active');
+			if (layer.visible) domNode.classList.add("active");
+			else domNode.classList.remove("active");
 		};
 		onVisibilityChange();
-		layer.events.addEventListener('visibilitychange', onVisibilityChange);
-		domNode.addEventListener('click', () => {
+		layer.events.addEventListener("visibilitychange", onVisibilityChange);
+		domNode.addEventListener("click", () => {
 			checkbox.click();
 		});
 	}
-
 }
 
 class LayerVisibilityCheckbox extends DOMComponent {
-
 	constructor(domNode: HTMLInputElement, layer: VisibilityControl) {
 		super(domNode);
 		const onChange = () => {
@@ -517,86 +723,100 @@ class LayerVisibilityCheckbox extends DOMComponent {
 			else layer.hide();
 		};
 		onChange();
-		domNode.addEventListener( 'change', onChange );
+		domNode.addEventListener("change", onChange);
 	}
-
 }
 
 class TimelineSlider extends DOMComponent {
+	declare private cruiseMap: CruiseMap;
 
+	private _timelineRange: [Date, Date] = [new Date(0), new Date(0)];
+	/** Начальная дата первого и конечная дата последнего круиза */
+	get timelineRange(): readonly [Date, Date] {
+		return this._timelineRange;
+	}
+	
 	constructor(domNode: HTMLElement, cruiseMap: CruiseMap) {
 		super(domNode);
-		const slider = domNode.getElementsByClassName('rs-container')[0];
-		const fromElement = domNode
-			.getElementsByClassName('range--deco-left')[0] as HTMLElement;
-		const toElement = domNode
-			.getElementsByClassName('range--deco-right')[0] as HTMLElement;
-		const valueElement = slider
-			.getElementsByClassName('rs-tooltip')[0] as HTMLElement;
+		
+		this.cruiseMap = cruiseMap;
+		
+		const slider = domNode.getElementsByClassName("rs-container")[0];
+		const fromElement = domNode.getElementsByClassName(
+			"range--deco-left"
+		)[0] as HTMLElement;
+		const toElement = domNode.getElementsByClassName(
+			"range--deco-right"
+		)[0] as HTMLElement;
+		const valueElement = slider.getElementsByClassName(
+			"rs-tooltip"
+		)[0] as HTMLElement;
 
 		const onTimeRangeChanged = () => {
-			if (!!+cruiseMap.timelineRange[0] && !!+cruiseMap.timelineRange[1]) {
+			const ships = cruiseMap.ships;
+			const navigationStartDate = Math.min( ...ships.map( ship => +( ship.navigationStartDate ?? Infinity ) ) );
+			const navigationEndDate = Math.max( ...ships.map( ship => +( ship.navigationEndDate ?? -Infinity ) ) );
+			
+			if (Number.isFinite( navigationStartDate ) && Number.isFinite( navigationEndDate )) {
+				this._timelineRange = [ new Date( navigationStartDate ), new Date( navigationEndDate ) ];
+				window.dispatchEvent( new CustomEvent( 
+					'timelinemove',
+					{ detail: new Date( Math.min( Math.max( +cruiseMap.timelinePoint, navigationStartDate ), navigationEndDate ) ) }
+				) );
+
 				for (const [value, element] of [
-					[cruiseMap.timelineRange[0], fromElement],
-					[cruiseMap.timelineRange[1], toElement],
+					[this._timelineRange[0], fromElement],
+					[this._timelineRange[1], toElement],
 				] as [Date, HTMLElement][])
-					element.innerText = TimelineSlider.formatDate(value);
-				domNode.classList.remove('map-overlay--range-dates-hidden');
-			} else
-				domNode.classList.add('map-overlay--range-dates-hidden');
+					element.innerText = TimelineSlider.formatDate(value, true);
+				domNode.classList.remove("map-overlay--range-dates-hidden");
+			}
+			else {
+				this._timelineRange = [new Date(0), new Date(0)];
+				domNode.classList.add("map-overlay--range-dates-hidden");
+			}
 		};
 		onTimeRangeChanged();
-		cruiseMap.events.addEventListener('timerangechanged', onTimeRangeChanged);
-		const onTimelineMove = () => {
-			const [from, to] = cruiseMap.timelineRange;
-			if (+from !== 0 || +to !== 0)
-				domNode.style.setProperty(
-					'--map-overlay--range-dates_point',
-					`${(+cruiseMap.timelinePoint - +from) / (+to - +from)}`,
-				);
-			valueElement.innerText =
-				TimelineSlider.formatDate(cruiseMap.timelinePoint);
-			window.dispatchEvent(new CustomEvent('timeline-change', {detail: {date: cruiseMap.timelinePoint}}));
-		};
-		onTimelineMove();
-		cruiseMap.events.addEventListener('timelinemove', onTimelineMove);
+		cruiseMap.events.addEventListener("timerangechanged", onTimeRangeChanged);
 
 		let sliderPressed = false;
-		slider.addEventListener('pointerdown', () => {
+		slider.addEventListener("pointerdown", () => {
 			sliderPressed = true;
 		});
-		document.addEventListener('pointerup', () => {
+		document.addEventListener("pointerup", () => {
 			sliderPressed = false;
 		});
-		const moveTimeline = throttle(100, point => {
-			const [from, to] = cruiseMap.timelineRange;
-			cruiseMap.timelinePoint = new Date(+from + point * (+to - +from));
+		const moveTimeline = throttle(100, (point) => {
+			const [from, to] = this._timelineRange;
+			window.dispatchEvent( new CustomEvent( 'timelinemove', { detail: new Date( +from + point * ( +to - +from ) ) } ) );
 		});
 
-		document.addEventListener('pointermove', (event: PointerEvent) => window.requestAnimationFrame(() => {
-			const clientX = event.clientX;
-			const target = event.target as HTMLElement;
-			if (!target.closest('.rs-container')) return;
-			if (sliderPressed) {
-				const {x, width} = slider.getBoundingClientRect();
-				const point = Math.min(Math.max((clientX - x) / width, 0), 1);
-				domNode.style.setProperty(
-					'--map-overlay--range-dates_point',
-					`${point}`
-				);
-				moveTimeline(point);
-			}
-		}));
+		document.addEventListener("pointermove", (event: PointerEvent) =>
+			window.requestAnimationFrame(() => {
+				const clientX = event.clientX;
+				const target = event.target as HTMLElement;
+				if (!target.closest(".rs-container")) return;
+				if (sliderPressed) {
+					const { x, width } = slider.getBoundingClientRect();
+					const point = Math.min(Math.max((clientX - x) / width, 0), 1);
+					domNode.style.setProperty(
+						"--map-overlay--range-dates_point",
+						`${point}`
+					);
+					moveTimeline(point);
+				}
+			})
+		);
 
-		document.addEventListener('touchmove', (event: TouchEvent) => {
+		document.addEventListener("touchmove", (event: TouchEvent) => {
 			const target = event.target as HTMLElement;
-			if (!target.closest('.rs-container')) return;
+			if (!target.closest(".rs-container")) return;
 			const clientX = event.touches[0].clientX;
 			if (sliderPressed) {
-				const {x, width} = slider.getBoundingClientRect();
+				const { x, width } = slider.getBoundingClientRect();
 				const point = Math.min(Math.max((clientX - x) / width, 0), 1);
 				domNode.style.setProperty(
-					'--map-overlay--range-dates_point',
+					"--map-overlay--range-dates_point",
 					`${point}`
 				);
 				moveTimeline(point);
@@ -604,8 +824,8 @@ class TimelineSlider extends DOMComponent {
 		});
 	}
 
-	public setSlider(value: Date, cruiseMap: CruiseMap) {
-		const [from, to] = cruiseMap.timelineRange;
+	public setSlider(value: Date) {
+		const [from, to] = this._timelineRange;
 		const timeRange = +to - +from;
 		const timePoint = +value - +from;
 		let point = timePoint / timeRange;
@@ -615,23 +835,19 @@ class TimelineSlider extends DOMComponent {
 			point = 1;
 		}
 		const element = this.domNode as HTMLElement;
-		element.style.setProperty(
-			'--map-overlay--range-dates_point',
-			`${point}`
-		);
-		cruiseMap.timelinePoint = value;
-		const slider = element.getElementsByClassName('rs-container')[0];
-		const valueElement = slider
-			.getElementsByClassName('rs-tooltip')[0] as HTMLElement;
+		element.style.setProperty("--map-overlay--range-dates_point", `${point}`);
+		const slider = element.getElementsByClassName("rs-container")[0];
+		const valueElement = slider.getElementsByClassName(
+			"rs-tooltip"
+		)[0] as HTMLElement;
 		valueElement.innerText = TimelineSlider.formatDate(value);
 	}
 
-	private static formatDate(value: Date): string {
+	private static formatDate(value: Date, isYear: boolean = false): string {
 		return value.toLocaleDateString(undefined, {
-			day: '2-digit',
-			month: '2-digit',
-			year: 'numeric',
+			day: "2-digit",
+			month: "2-digit",
+			year: isYear ? "2-digit" : undefined,
 		});
 	}
-
 }

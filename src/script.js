@@ -11,6 +11,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     let selectedDate = new Date();
     function updateCalendar() {
+        const [ d, m, y ] = input.value.split( '.' ).map( Number );
+        if (d && m && y) selectedDate = new Date( y, m - 1, d );
         calendarBody.innerHTML = "";
         const year = selectedDate.getFullYear();
         const month = selectedDate.getMonth();
@@ -29,11 +31,12 @@ document.addEventListener("DOMContentLoaded", function () {
             const dayElement = document.createElement("div");
             dayElement.textContent = day;
             dayElement.classList.add("day");
+            if (day === d) dayElement.classList.add("selected");
 
             dayElement.addEventListener("click", function () {
                 selectedDate.setDate(day);
                 // seleced date value
-                input.value = `${day}/${month + 1}/${year}`;
+                input.value = `${day}.${String( month + 1 ).padStart( 2, '0' )}.${year}`;
                 window.dispatchEvent(new CustomEvent('datepicker-change', {
                     detail: {
                         date: input.value
@@ -90,22 +93,6 @@ document.addEventListener("DOMContentLoaded", function () {
         return `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
     }
 
-    function updateTooltip() {
-        // time value
-        let time = parseInt(timeSlider.value, 10);
-        timeTooltip.textContent = formatTime(time);
-
-        let sliderRect = timeSlider.getBoundingClientRect();
-        let thumbWidth = 16; 
-        let percent = (time / 1439); 
-
-        let newPosition = percent * (sliderRect.width - thumbWidth) + thumbWidth / 2;
-        timeTooltip.style.left = `${newPosition}px`;
-    }
-
-    timeSlider.addEventListener("input", updateTooltip);
-    updateTooltip();
-
     //hours
     const timeInput = document.getElementById("timeInput");
     const timeDisplay = document.getElementById("timeDisplay");
@@ -122,13 +109,12 @@ document.addEventListener("DOMContentLoaded", function () {
         timeInput.showPicker(); //
     });
 
-    window.addEventListener('timeline-change', function (event) {
-        const date = event.detail.date;
-        const day = date.getDate();
-        const month = date.getMonth() + 1;
-        const year = date.getFullYear();
-        const formattedDate = `${day}/${month}/${year}`;
-        input.value = formattedDate;
-    });
+    //~ window.addEventListener('timeline-change', function (event) {
+        //~ const date = event.detail;
+        //~ const day = date.getDate();
+        //~ const month = date.getMonth() + 1;
+        //~ const year = date.getFullYear();
+        //~ const formattedDate = `${day}/${month}/${year}`;
+        //~ input.value = formattedDate;
+    //~ });
 });
-

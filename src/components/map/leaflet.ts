@@ -15,6 +15,7 @@ import {
   Point,
   PointExpression,
   LatLngExpression,
+  LeafletMouseEvent
 } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import {AuditableEventTarget} from "../../util/events";
@@ -45,18 +46,20 @@ export default abstract class LeafletMap extends Map {
     return new TileLayer(LeafletMap.TILE_LAYER_URL);
   }
 
-  private declare map: LMap;
-  private declare renderer: Renderer;
+  declare private map: LMap;
+  declare private renderer: Renderer;
   private layersCount = 0;
   private autoPan: [Point, Point] = [point(0, 0), point(0, 0)];
 
   declare mainLayer: Layer;
 
-  constructor(node: HTMLElement, center: LatLngExpression, zoom: number) {
+  constructor(node: HTMLElement, center: LatLngExpression, zoom: number, minZoom?: number | null, maxZoom?: number) {
     super(node);
     this.map = map(node, {
       center,
       zoom,
+      minZoom,
+      maxZoom,
       attributionControl: false,
       zoomControl: false,
       renderer: canvas(),
@@ -505,7 +508,7 @@ class LeafletPane<
     });
 
     // Создание и открытие одноразового маркера
-    const open = async () => {
+    const open = async ( event: LeafletMouseEvent ) => {
       if (!lMarker.isOpen) {
         lMarker.isOpen = true;
         const content = await interactiveMarker.popupContent();
@@ -526,7 +529,8 @@ class LeafletPane<
         const popupSize = point([ popupDiv.offsetWidth, popupDiv.offsetHeight ]);
         document.body.removeChild(popupDiv);
 
-        const coord = this.map.latLngToContainerPoint( lMarker.getLatLng() );
+        const markerCoord = this.map.latLngToContainerPoint( lMarker.getLatLng() );
+        const coord = event.sourceTarget === lMarker ? markerCoord : event.containerPoint;
         const size = this.map.getSize();
         const iconSize = point( lMarker.getIcon().options.iconSize );
         const left = coord.x - popupSize.x;
@@ -578,6 +582,11 @@ class LeafletPane<
           }
         }
         
+        if (coord !== markerCoord) {
+          offset[0] += coord.x - markerCoord.x;
+          offset[1] += coord.y - markerCoord.y;
+        }
+
         lMarker.bindPopup(popupDiv, {
           closeButton: false,
           closeOnClick: false,
@@ -588,8 +597,8 @@ class LeafletPane<
       }
     };
 
-    lMarker.on("mouseover click", () => {
-      if (!lMarker.isOpen) open();
+    lMarker.on("mouseover click", ( event: LeafletMouseEvent ) => {
+      if (!lMarker.isOpen) open( event );
     });
     // Закрытие попапа только при выходе мыши за его пределы либо пределы маркера
     lMarker.on("mouseout", event => {
@@ -610,11 +619,13 @@ class LeafletPane<
   }
 
   removeMarker(marker: TMarker) {
-    this.checkSiblingsIntersections(marker);
-    this.removePath(marker);
-    this.intersections.remove(this.intersectionMarkers.get(marker));
-    this.intersectionMarkers.delete(marker);
-    marker.marker = undefined;
+    if (marker.marker) {
+      this.checkSiblingsIntersections(marker);
+      this.removePath(marker);
+      this.intersections.remove(this.intersectionMarkers.get(marker));
+      this.intersectionMarkers.delete(marker);
+      marker.marker = undefined;
+    }
   }
 
   /** Связать маркер приложения и маркер leaflet */

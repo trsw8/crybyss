@@ -2,64 +2,94 @@
 	<div class="map-overlay--search">
 		<div class="map-overlay--search-box">
 			<div class="map-overlay--search">
-				<input type="text" placeholder="Поиск теплоходов и круизных компаний">
+				<input type="text" placeholder="Начните поиск">
 				<%- include('../../icons/search.svg') %>
 			</div>
 		</div>
 
 		<div class="map-overlay--search-results">
-			<div class="map-overlay--search-overflow scroll-y">
-				<div class="map-overlay--search-block map-overlay--search-companies ">
-					<div class="map-overlay--search-title">
-						<span>Круизные компании</span>
-						<%- include('../../icons/expand.svg') %>
-					</div>
-					<div class="map-overlay--search-select" id="companyAllSelect">Выбрать всё</div>
+			<div class="map-overlay--search-block map-overlay--search-companies ">
+				<div class="map-overlay--search-title">
+					<span>Круизные компании</span>
+					<%- include('../../icons/expand.svg') %>
+				</div>
+				<div class="map-overlay--search-select" id="companyAllSelect">Выбрать всё</div>
+				<div class="map-overlay--search-overflow">
 					<div class="map-overlay--search-checks"></div>
 				</div>
-				<div class="map-overlay--search-block map-overlay--search-ships ">
-					<div class="map-overlay--search-title">
-						<span>Теплоходы</span>
-						<%- include('../../icons/expand.svg') %>
-					</div>
-					<div class="map-overlay--search-select" id="shipsAllSelect">Выбрать всё</div>
+			</div>
+			<div class="map-overlay--search-block map-overlay--search-ships ">
+				<div class="map-overlay--search-title">
+					<span>Теплоходы</span>
+					<%- include('../../icons/expand.svg') %>
+				</div>
+				<div class="map-overlay--search-select" id="shipsAllSelect">Выбрать всё</div>
+				<div class="map-overlay--search-overflow">
 					<div class="map-overlay--search-checks"></div>
 				</div>
 			</div>
 		</div>
 	</div>
 
-	<div class="map-overlay--ship map-overlay--btn map-overlay--btn-primary-stroke">
-		<%- include('../../icons/liner.svg') %>
+	<div class="map-overlay--buttons-wrapper active">
+		<div class="map-overlay--buttons-content active">
+			<div class="map-overlay--ship map-overlay--btn map-overlay--btn-primary-fill">
+				<%- include('../../icons/liner.svg') %>
+				<span class="map-overlay--button-text">теплоходы</span>
+			</div>
+			<div class="map-overlay--gateways map-overlay--btn map-overlay--btn-primary-fill">
+				<%- include('../../icons/gatewayBtn.svg') %>
+				<span class="map-overlay--button-text">шлюзы</span>
+			</div>
+			<div class="map-overlay--place map-overlay--btn map-overlay--btn-primary-stroke">
+				<%- include('../../icons/showplace.svg') %>
+				<span class="map-overlay--button-text">места</span>
+			</div>
+			<div class="map-overlay--anchor map-overlay--btn map-overlay--btn-primary-fill">
+				<%- include('../../icons/stop.svg') %>
+				<span class="map-overlay--button-text">стоянки</span>
+			</div>
+			<div class="map-overlay--sunrise map-overlay--btn map-overlay--btn-primary-stroke">
+				<%- include('../../icons/sunriseBtn.svg') %>
+				<span class="map-overlay--button-text">восходы</span>
+			</div>
+			<div class="map-overlay--sunset map-overlay--btn map-overlay--btn-primary-stroke">
+				<%- include('../../icons/sunsetBtn.svg') %>
+				<span class="map-overlay--button-text">закаты</span>
+			</div>
+		</div>
+		<div class="map-overlay--buttons-selector map-overlay--btn map-overlay--btn-primary-fill active">
+			<%- include('../../icons/arrow.svg') %>
+		</div>
 	</div>
-	<div class="map-overlay--anchor map-overlay--btn map-overlay--btn-primary-fill">
-		<%- include('../../icons/stop.svg') %>
-	</div>
-	<div class="map-overlay--place map-overlay--btn map-overlay--btn-primary-stroke">
-		<%- include('../../icons/showplace.svg') %>
-	</div>
-	<div class="map-overlay--menu map-overlay--btn map-overlay--toggle-btn map-overlay--btn-primary-stroke active">
+	<div class="map-overlay--menu map-overlay--btn map-overlay--toggle-btn map-overlay--btn-primary-stroke">
 		<div class="open"><%- include('../../icons/menu.svg') %></div>
 		<div class="close"><%- include('../../icons/close.svg') %></div>
 	</div>
 	<div class="map-overlay--layers">
 		<div class="map-overlay--overlays-box">
-			<input type="checkbox" name="over" id="ship-layer-checkbox" class="map-overlay--layers-hidden map-overlay--layers-checkbox custom-radio" checked>
+			<input type="checkbox" name="over" id="ship-layer-checkbox"
+				class="map-overlay--layers-hidden map-overlay--layers-checkbox custom-radio" checked>
 			<label for="ship-layer-checkbox" class="map-overlay--layers-hidden">Теплоходы</label>
-			<input type="checkbox" name="over" id="stops-layer-checkbox" class="map-overlay--layers-hidden map-overlay--layers-checkbox custom-radio" checked>
+			<input type="checkbox" name="over" id="stops-layer-checkbox"
+				class="map-overlay--layers-hidden map-overlay--layers-checkbox custom-radio" checked>
 			<label for="stops-layer-checkbox" class="map-overlay--layers-hidden">Стоянки</label>
-			<input type="checkbox" name="over" id="sights-layer-checkbox" class="map-overlay--layers-hidden map-overlay--layers-checkbox custom-radio" checked>
+			<input type="checkbox" name="over" id="sights-layer-checkbox"
+				class="map-overlay--layers-hidden map-overlay--layers-checkbox custom-radio" checked>
 			<label for="sights-layer-checkbox" class="map-overlay--layers-hidden">Места</label>
-			<input type="checkbox" name="over" id="sunrises-layer-checkbox" class="map-overlay--layers-checkbox custom-radio" checked>
+			<input type="checkbox" name="over" id="sunrises-layer-checkbox"
+				class="map-overlay--layers-checkbox custom-radio" checked>
 			<label for="sunrises-layer-checkbox">Восходы</label>
-			<input type="checkbox" name="over" id="sunsets-layer-checkbox" class="map-overlay--layers-checkbox custom-radio" checked>
+			<input type="checkbox" name="over" id="sunsets-layer-checkbox"
+				class="map-overlay--layers-checkbox custom-radio" checked>
 			<label for="sunsets-layer-checkbox">Закаты</label>
-			<input type="checkbox" name="over" id="gateways-layer-checkbox" class="map-overlay--layers-checkbox custom-radio" checked>
+			<input type="checkbox" name="over" id="gateways-layer-checkbox"
+				class="map-overlay--layers-checkbox custom-radio" checked>
 			<label for="gateways-layer-checkbox">Шлюзы</label>
 		</div>
 	</div>
 
-	<div class="map-overlay--time map-overlay--btn map-overlay--btn-primary-fill active">
+	<div class="map-overlay--time map-overlay--btn map-overlay--btn-primary-fill">
 		<%- include('../../icons/clock.svg') %>
 	</div>
 	<div class="map-overlay--line map-overlay--btn map-overlay--btn-primary-stroke">
@@ -78,6 +108,12 @@
 			<label for="over3">Яндекс. Спутник</label>
 		</div>
 	</div>
+	<div class="map-overlay--ships-wrapper">
+		<span class="map-overlay--ships-text">
+			Теплоходов не в круизе: 
+		</span>
+		<span class="map-overlay--ships-count">000</span>
+	</div>
 
 	<div class="map-overlay--range-dates">
 		<div class="range--deco range--deco-left">-<div class="asteriks"
@@ -94,6 +130,7 @@
 				<%- include('../../icons/liner.svg') %>
 					<div class="rs-tooltip">-</div>
 			</div>
+			<div class="rs-left-bg"></div>
 		</div>
 	</div>
 

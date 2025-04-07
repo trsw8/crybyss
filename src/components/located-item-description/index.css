@@ -19,8 +19,27 @@
 	gap: 15px;
 }
 
+.located-item-description__row {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+}
+
+.located-item-description__row_align_top {
+	align-items: start;
+}
+
+.located-item-description__row_gap_small {
+	gap: 5px;
+}
+.located-item-description__row_gap_medium {
+	gap: 10px;
+}
+.located-item-description__row_gap_large {
+	gap: 15px;
+}
+
 .located-item-description__text_title {
-	font-size: 18px;
 	font-weight: 700;
 }
 
@@ -33,6 +52,11 @@
 .located-item-description__range {
 	font-weight: 600;
 	text-decoration: underline;
+	white-space: nowrap;
+}
+
+.located-item-description__route {
+	font-weight: 600;
 }
 
 .located-item-description__range-value:last-child:before {
@@ -45,5 +69,4 @@
 }
 
 .located-item-description__icon {
-	width: 22px;
 }
