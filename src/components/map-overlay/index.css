@@ -965,3 +965,24 @@ body .map-overlay--range-dates .rs-container .rs-pointer {
   line-height: 120%;
   letter-spacing: -1.4px;
 }
+
+@media (max-width: 900px) {
+  .map-overlay--time-indicator {
+    padding: 14px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    gap: 13px;
+    border-radius: 8px;
+    top: 20px;
+    left: auto;
+    right: 22%;
+  }
+
+  .map-overlay--time-indicator-date {
+    font-size: 12px;
+  }
+
+  .map-overlay--time-indicator-time {
+    font-size: 16px;
+  }
+}
