@@ -537,6 +537,11 @@ class DateFilter {
 		const updateFilter = () => {
 			const now = createMoscowDate();
 			setDateTime( now );
+
+			const dateIndicator = document.querySelector(".map-overlay--time-indicator-date") as HTMLElement;
+			if (dateIndicator) dateIndicator.innerText = dateValue;
+			const timeIndicator = document.querySelector(".map-overlay--time-indicator-time") as HTMLElement;
+			if (timeIndicator) timeIndicator.innerText = timeValue;
 		};
 
 		const setDateTime = ( datetime: Date ) => {
@@ -582,6 +587,10 @@ class DateFilter {
 			const pointer = document.querySelector(".rs-pointer") as HTMLElement;
 			const onPointerDown = () => {
 				isclockActive = false;
+
+				const timeIndicator = document.querySelector(".map-overlay--time-indicator") as HTMLElement;
+				if (timeIndicator) timeIndicator.classList.remove("active");
+
 				window.dispatchEvent(new Event("filterchange"));
 			};
 			pointer.addEventListener("mousedown", onPointerDown);
@@ -605,6 +614,9 @@ class DateFilter {
 						isclockActive = true;
 						cruiseMap.timelinePoint = now;
 						shipSlider.setSlider(now);
+
+						const timeIndicator = document.querySelector(".map-overlay--time-indicator") as HTMLElement;
+						if (timeIndicator) timeIndicator.classList.add("active");
 					}
 					
 					if (clockBtn.classList.contains("active")) {
@@ -615,6 +627,9 @@ class DateFilter {
 					} else {
 						clockBtn.classList.add("active");
 						isclockActive = false;
+
+						const timeIndicator = document.querySelector(".map-overlay--time-indicator") as HTMLElement;
+						if (timeIndicator) timeIndicator.classList.remove("active");
 
 						const filterBox = document.querySelector(".filter-box");
 						if (filterBox) filterBox.classList.add("active");
