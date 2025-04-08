@@ -221,6 +221,50 @@ export default class CruiseMap {
 				countElement.innerText = shipsNotInCruise.length.toString().padStart(3, '0');
 			}
 		});
+
+		//видимость трека круиза по урлу начало
+		console.log('url', document.location.href)
+
+		window.addEventListener('cruisesDataLoaded', (event: Event) => {
+			console.log('cruisesDataLoaded', event);
+			console.log('this._cruises', this._cruises);
+		})
+		// window.addEventListener('cruisesDataLoadedInApi', (event: CustomEvent) => {
+		// 	console.log('cruisesDataLoadedInApi', event.detail);
+		// 	if (document.location.href.includes('cruise=')) {
+		// 		const cruiseId = Object.keys(event.detail).find((id) => document.location.href.includes(id.toString()));
+		// 		console.log('cruiseId', cruiseId);
+		// 		if (cruiseId) {
+		// 			setTimeout(() => {
+		// 				console.log('this._cruises', this)
+		// 				const cruise = this.cruiseAsset(cruiseId);
+		// 				console.log('cruise', cruise)
+		// 				if (cruise) {
+		// 					console.log('cruise', cruise)
+		// 					cruise.showTrack(null);
+
+		// 					// Найти крайние точки маршрута
+		// 					const points = cruise.cruise.route.points;
+		// 					console.log('points', points)
+		// 					const latitudes = points.map(p => p.lat);
+		// 					const longitudes = points.map(p => p.lng);
+							
+		// 					const northPoint = points.find(p => p.lat === Math.max(...latitudes));
+		// 					const southPoint = points.find(p => p.lat === Math.min(...latitudes));
+		// 					const westPoint = points.find(p => p.lng === Math.min(...longitudes));
+		// 					const eastPoint = points.find(p => p.lng === Math.max(...longitudes));
+
+		// 					console.log('Крайние точки маршрута:');
+		// 					console.log('Север:', northPoint);
+		// 					console.log('Юг:', southPoint); 
+		// 					console.log('Запад:', westPoint);
+		// 					console.log('Восток:', eastPoint);
+		// 				}
+		// 			}, 100);
+		// 		}
+		// 	}
+		// });
+		//видимость трека круиза по урлу конец
 	}
 
 	addCruise(cruise: Cruise): Promise<void> {
