@@ -1067,3 +1067,19 @@ body .map-overlay--range-dates .rs-container .rs-pointer {
     right: 20px;
   }
 }
+
+.rs-marker {
+  position: absolute;
+  display: block;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 6px;
+  height: 6px;
+  background: #fff;
+  border-radius: 50%;
+}
+
+.range--deco-point {
+  top: 48px;
+  transform: translateX(-50%);
+}

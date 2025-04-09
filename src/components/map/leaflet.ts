@@ -358,7 +358,6 @@ export default abstract class LeafletMap extends Map {
     if (document.location.href.includes('cruise=')) {
       window.addEventListener('cruisePointsCreated', (event: Event) => {
         const {cruise, points} = (event as CustomEvent).detail;
-        console.log('cruise', cruise)
         const {northPoint, southPoint, westPoint, eastPoint} = points;
         
         // Создаем границы для карты

@@ -242,6 +242,7 @@ export default class CruiseMap {
 				}
 			}, 1000);
 		})
+		//видимость трека круиза по урлу конец
 	}
 
 	addCruise(cruise: Cruise): Promise<void> {
