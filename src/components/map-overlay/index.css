@@ -1008,3 +1008,62 @@ body .map-overlay--range-dates .rs-container .rs-pointer {
     transform: translateX(50%);
   }
 }
+
+.cruise-page .map-overlay--search,
+.cruise-page .map-overlay--time-indicator,
+.cruise-page .map-overlay--ships-wrapper,
+.cruise-page .map-overlay--time,
+.cruise-page .map-overlay--ship,
+.cruise-page .map-overlay--buttons-selector,
+.cruise-page .map-overlay--menu {
+  display: none;
+}
+
+.cruise-page .map-overlay--buttons-wrapper {
+  top: 20px;
+  left: 20px;
+}
+
+@media (max-width: 900px) {
+  .cruise-page .map-overlay--buttons-wrapper.active {
+    display: flex;
+    background: transparent;
+    top: 20px;
+    left: 20px;
+    padding: 0;
+  }
+
+  .cruise-page .map-overlay--buttons-content {
+    flex-direction: row;
+    gap: 10px;
+  }
+
+  .cruise-page .map-overlay--buttons-content .map-overlay--btn {
+    border-radius: 6px;
+    width: calc(var(--height) - 11px);
+    height: calc(var(--height) - 11px);
+  }
+
+  .cruise-page .map-overlay--button-text {
+    display: none;
+  }
+
+  .cruise-page .map-overlay--buttons-content .map-overlay--btn svg {
+    width: 20px;
+    height: 20px;
+    margin-right: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .cruise-page .map-overlay--line {
+    display: none;
+  }
+}
+
+@media (max-width: 639px) {
+  .cruise-page .map-overlay--copy {
+    top: 20px;
+    right: 20px;
+  }
+}

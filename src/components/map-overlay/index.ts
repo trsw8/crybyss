@@ -105,6 +105,13 @@ export default class MapOverlay extends DOMComponent {
     };
     setOverlayBounds();
     window.addEventListener("resize", setOverlayBounds);
+
+    // страница круиза начало
+    if (document.location.href.includes('cruise=')) {
+      console.log('cruise', document.body)
+      document.body.classList.add('cruise-page');
+    }
+    // страница круиза конец
   }
 }
 
