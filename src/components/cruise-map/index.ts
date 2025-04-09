@@ -224,9 +224,21 @@ export default class CruiseMap {
 
 		//видимость трека круиза по урлу начало
 		window.addEventListener('cruisesDataLoaded', (event: Event) => {
-			console.log('cruisesDataLoaded', event);
+			// console.log('cruisesDataLoaded', event);
 			console.log('this._cruises', this._cruises);
-			console.log('url', document.location.href)
+			// console.log('url', document.location.href)
+			// if (document.location.href.includes('cruise=')) {
+			// 	setTimeout(() => {
+			// 		Array.from(this._cruises.values()).forEach(cruise => {
+			// 			console.log('cruise', cruise.cruise.id)
+			// 			if (!document.location.href.includes(cruise.cruise.id)) {
+			// 				this.removeCruise(cruise.cruise.id);
+			// 			}
+			// 		});
+			// // console.log('this._cruises', this._cruises);
+
+			// 	}, 1000);
+			// }
 		})
 		// window.addEventListener('cruisesDataLoadedInApi', (event: CustomEvent) => {
 		// 	console.log('cruisesDataLoadedInApi', event.detail);
@@ -267,6 +279,7 @@ export default class CruiseMap {
 	}
 
 	addCruise(cruise: Cruise): Promise<void> {
+		if (document.location.href.includes('cruise=') && !document.location.href.includes(cruise.id)) return;
 		if (this._cruises.has( cruise.id ))
 			return;
 
