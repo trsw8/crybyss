@@ -156,8 +156,7 @@ export default class MapOverlay extends DOMComponent {
             pointElement.className = 'range--deco range--deco-point';
             pointElement.textContent = date.toLocaleDateString('ru-RU', {
               day: '2-digit',
-              month: '2-digit',
-              year: '2-digit'
+              month: '2-digit'
             });
             
             // Вычисляем позицию точки на основе временных меток

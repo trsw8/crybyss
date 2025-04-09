@@ -1087,4 +1087,5 @@ body .map-overlay--range-dates .rs-container .rs-pointer {
 .range--deco-point {
   top: 48px;
   transform: translateX(-50%);
+  width: 37px;
 }
