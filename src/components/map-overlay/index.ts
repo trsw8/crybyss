@@ -172,6 +172,13 @@ export default class MapOverlay extends DOMComponent {
       });
     }
     // страница круиза конец
+    // страница стоянок начало
+    console.log(new URL(location.toString()).searchParams.get('stops'));
+    if (new URL(location.toString()).searchParams.get('stops')) {
+      document.body.classList.add('stops-page');
+    }
+    
+    // страница стоянок конец
   }
 }
 

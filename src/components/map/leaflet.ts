@@ -375,6 +375,27 @@ export default abstract class LeafletMap extends Map {
       });
     }
     // страница круиза конец
+    // страница стоянок начало
+    if (new URL(location.toString()).searchParams.get('stops')) {
+      window.addEventListener('cruiseStopsCreated', (event: Event) => {
+        const {stops} = (event as CustomEvent).detail;
+        const {northPoint, southPoint, westPoint, eastPoint} = stops;
+
+        // Создаем границы для карты
+        const bounds = L.latLngBounds(
+          [southPoint.lat, westPoint.lng], // юго-западная точка
+          [northPoint.lat, eastPoint.lng]  // северо-восточная точка
+        );
+        
+        // Устанавливаем вид карты по границам с небольшим отступом
+        this.map.fitBounds(bounds, {
+          padding: [20, 20], // отступ в пикселях со всех сторон
+          maxZoom: 12, // ограничиваем максимальное приближение
+          animate: true // плавная анимация
+        });        
+      });
+    }
+    // страница стоянок конец
   }
 
   addLayer() {
