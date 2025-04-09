@@ -1118,3 +1118,7 @@ body .map-overlay--range-dates .rs-container .rs-pointer {
     right: 74px;
   }
 }
+
+.one-stop-page .map-overlay--line {
+  display: none;
+}

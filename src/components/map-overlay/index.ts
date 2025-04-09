@@ -182,8 +182,19 @@ export default class MapOverlay extends DOMComponent {
       const sightsButton = document.querySelector('.map-overlay--place') as HTMLInputElement;
       if (sightsButton) sightsButton.click();
     }
-    
     // страница стоянок конец
+    // страница одной стоянки начало
+    if (new URL(location.toString()).searchParams.get('stop_page')) {
+      document.body.classList.add('stops-page');
+      document.body.classList.add('one-stop-page');
+      const shipButton = document.querySelector('.map-overlay--ship') as HTMLInputElement;
+      if (shipButton) shipButton.click();
+      const gatewaysButton = document.querySelector('.map-overlay--gateways') as HTMLInputElement;
+      if (gatewaysButton) gatewaysButton.click();
+      const sightsButton = document.querySelector('.map-overlay--place') as HTMLInputElement;
+      if (sightsButton) sightsButton.click();
+    }
+    // страница одной стоянки конец
   }
 }
 

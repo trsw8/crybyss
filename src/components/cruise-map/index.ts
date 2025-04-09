@@ -244,7 +244,9 @@ export default class CruiseMap {
 
 			// стоянки
 			setTimeout(() => {
-				if (new URL(location.toString()).searchParams.get('stops')) {
+				if (new URL(location.toString()).searchParams.get('stops')
+				|| new URL(location.toString()).searchParams.get('stop_page')
+				) {
 					const stops: any[] = [];
 					const stopKeys: string[] = [];
 
@@ -793,6 +795,8 @@ class CruiseAssets {
 	showStops() {
 		for (const stop of this.cruise.stops) {
 			const { id, lat, lng } = stop;
+			if (document.location.href.includes('stop_page=')
+			&& !document.location.href.includes(id)) return;
 			if (!this.stops[ id ]) {
 				this.stops[ id ] = this.map.attachLocationMarker(
 					id, LocationType.REGULAR, lat, lng,
@@ -811,6 +815,7 @@ class CruiseAssets {
 	showSights() {
 		for (const sight of this.cruise.sights) {
 			const { id, lat, lng } = sight;
+			// console.log('id', id)
 			if (!this.sights[ id ]) {
 				this.sights[ id ] = this.map.attachLocationMarker(
 					id, LocationType.SHOWPLACE, lat, lng,
