@@ -240,18 +240,23 @@ export default class CruiseMap {
 
 					window.dispatchEvent(new CustomEvent('cruisePointsCreated', {detail: {cruise, points: {northPoint, southPoint, westPoint, eastPoint}}}))
 				}
+			}, 1000);
 
+			// стоянки
+			setTimeout(() => {
 				if (new URL(location.toString()).searchParams.get('stops')) {
 					const stops: any[] = [];
+					const stopKeys: string[] = [];
+
 					Array.from(this._cruises.values()).forEach((item) => {
-						// console.log(item.stops);
-						const stopsArray = Object.values(item.stops);
-						console.log('stopsArray', stopsArray);
+						const stopsArray = Object.entries(item.stops);
 						stopsArray.forEach((value) => {
-							stops.push({lat: value.lat, lng: value.lng});
+							if (!stopKeys.includes(value[0])) {
+								stopKeys.push(value[0]);
+								stops.push({lat: value[1].lat, lng: value[1].lng});
+							}
 						});
 					});
-					console.log('stops', stops);
 					const latitudes = stops.map(p => p.lat);
 					const longitudes = stops.map(p => p.lng);
 
@@ -262,7 +267,7 @@ export default class CruiseMap {
 
 					window.dispatchEvent(new CustomEvent('cruiseStopsCreated', {detail: { stops: {northPoint, southPoint, westPoint, eastPoint}}}))
 				}
-			}, 1000);
+			}, 1500)
 		})
 		//видимость трека круиза по урлу конец
 	}

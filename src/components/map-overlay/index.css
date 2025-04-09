@@ -1089,3 +1089,15 @@ body .map-overlay--range-dates .rs-container .rs-pointer {
   transform: translateX(-50%);
   width: 37px;
 }
+
+.stops-page .map-overlay--search,
+.stops-page .map-overlay--time-indicator,
+.stops-page .map-overlay--ships-wrapper,
+.stops-page .map-overlay--time,
+.stops-page .map-overlay--ship,
+.stops-page .map-overlay--buttons-selector,
+.stops-page .map-overlay--menu,
+.stops-page .map-overlay--buttons-wrapper,
+ {
+  /* display: none; */
+}
