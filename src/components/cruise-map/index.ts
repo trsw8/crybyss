@@ -223,11 +223,10 @@ export default class CruiseMap {
 		});
 
 		//видимость трека круиза по урлу начало
-		console.log('url', document.location.href)
-
 		window.addEventListener('cruisesDataLoaded', (event: Event) => {
 			console.log('cruisesDataLoaded', event);
 			console.log('this._cruises', this._cruises);
+			console.log('url', document.location.href)
 		})
 		// window.addEventListener('cruisesDataLoadedInApi', (event: CustomEvent) => {
 		// 	console.log('cruisesDataLoadedInApi', event.detail);

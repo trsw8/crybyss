@@ -990,3 +990,21 @@ body .map-overlay--range-dates .rs-container .rs-pointer {
     font-size: 16px;
   }
 }
+
+@media (max-width: 690px) {
+  .map-overlay--time-indicator {
+    right: 28%;
+  }
+
+  .map-overlay--time-indicator-date {
+    display: none;
+  }
+}
+
+@media (max-width: 639px) {
+  .map-overlay--time-indicator {
+    top: 70px;
+    right: 50%;
+    transform: translateX(50%);
+  }
+}
