@@ -226,6 +226,7 @@ export default class CruiseMap {
 		window.addEventListener('cruisesDataLoaded', (event: Event) => {
 			// console.log('cruisesDataLoaded', event);
 			console.log('this._cruises', this._cruises);
+			console.log('ships', this._ships);
 			// console.log('url', document.location.href)
 			// if (document.location.href.includes('cruise=')) {
 			// 	setTimeout(() => {
@@ -301,6 +302,12 @@ export default class CruiseMap {
 		if (this._ships.has( ship.id )) return;
 		const navigationStartDate = ship.navigationStartDate;
 		const navigationEndDate = ship.navigationEndDate;
+
+		const cruise = ship.cruiseOn(this.timelinePoint);
+		console.log('cruise', cruise.id)
+
+		if (document.location.href.includes('cruise=') && !document.location.href.includes(cruise.id)) return;
+    
 		if (navigationStartDate && navigationEndDate) {
 			let [start, end] = this._timelineRange;
 			if (+start === 0) start = navigationStartDate;
@@ -315,7 +322,6 @@ export default class CruiseMap {
 		}
 
 		const company = await ship.company();
-		const cruise = ship.cruiseOn( this.timelinePoint );
 		if (cruise) this.addCruise( cruise );
 
 		const shipMarker = new ShipMarker(
