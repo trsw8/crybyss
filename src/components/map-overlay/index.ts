@@ -813,7 +813,7 @@ class DateFilter {
     });
 
     window.addEventListener("DOMContentLoaded", () => {
-      if (window.innerWidth < 901) {
+      if (window.innerWidth < 901 && !document.body.classList.contains('cruise-page')) {
         const copyBtn = document.querySelector(".map-overlay--copy") as HTMLElement;
         if (copyBtn) copyBtn.click();
         const menuBtn = document.querySelector(".map-overlay--menu") as HTMLElement;

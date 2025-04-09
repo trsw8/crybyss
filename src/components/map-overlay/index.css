@@ -1066,6 +1066,11 @@ body .map-overlay--range-dates .rs-container .rs-pointer {
     top: 20px;
     right: 20px;
   }
+
+  .cruise-page .map-overlay--overlays {
+    top: calc(20px + var(--height) + 15px);
+    right: 20px;
+  }
 }
 
 .rs-marker {
