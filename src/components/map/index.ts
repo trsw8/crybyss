@@ -60,12 +60,12 @@ export abstract class Layer<
 	abstract hide(): void;
 	abstract toggle(): void;
 
-	/**
-	 * intersect - Обнаружено пересечение нескольких маркеров, см. IntersectionEvent.
-	 */
+	//~ /**
+	 //~ * intersect - Обнаружено пересечение нескольких маркеров, см. IntersectionEvent.
+	 //~ */
 	events: TypedEventTarget<{
 		visibilitychange: Event,
-		intersect: IntersectionEvent<TMarker>,
+		//~ intersect: IntersectionEvent<TMarker>,
 	}> = new TypedEventTarget();
 
 }
@@ -116,27 +116,27 @@ export class PointerEvent extends Event {
 
 }
 
-/** Пересечение маркеров. */
-export class IntersectionEvent<
-	TMarker extends MapMarker = MapMarker
-> extends Event {
+//~ /** Пересечение маркеров. */
+//~ export class IntersectionEvent<
+	//~ TMarker extends MapMarker = MapMarker
+//~ > extends Event {
 
-	/** Точки входа в граф intersections. */
-	declare affectedMarkers: Set<TMarker>;
-	/**
-	 * Ребра отражают пересечение маркеров друг с другом.
-	 * Стоит иметь ввиду, что для непересекающихся маркеров отсутствуют какие-либо ребра.
-	 */
-	declare intersections: Graph<TMarker>;
+	//~ /** Точки входа в граф intersections. */
+	//~ declare affectedMarkers: Set<TMarker>;
+	//~ /**
+	 //~ * Ребра отражают пересечение маркеров друг с другом.
+	 //~ * Стоит иметь ввиду, что для непересекающихся маркеров отсутствуют какие-либо ребра.
+	 //~ */
+	//~ declare intersections: Graph<TMarker>;
 
-	constructor(
-		type: string,
-		affectedMarkers: Set<TMarker>,
-		intersections: Graph<TMarker>
-	) {
-		super(type);
-		this.affectedMarkers = affectedMarkers;
-		this.intersections = intersections;
-	}
+	//~ constructor(
+		//~ type: string,
+		//~ affectedMarkers: Set<TMarker>,
+		//~ intersections: Graph<TMarker>
+	//~ ) {
+		//~ super(type);
+		//~ this.affectedMarkers = affectedMarkers;
+		//~ this.intersections = intersections;
+	//~ }
 
-}
+//~ }

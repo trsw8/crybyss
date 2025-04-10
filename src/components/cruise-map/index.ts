@@ -170,23 +170,23 @@ export default class CruiseMap {
 			else this._trackLayer.hide();
 		} );
 
-		// Пока n-ному маркеру из сегмента пересечений добавляется кратное n значение сдвига.
-		// Не самое красивое решение...
-		this._shipLayer.events.addEventListener('intersect', ({
-			affectedMarkers, intersections
-		}) => {
-			affectedMarkers = new Set(affectedMarkers);
-			while (affectedMarkers.size > 0) {
-				const {value} = affectedMarkers.values().next();
-				let index = 0;
-				intersections.traverseBfs(value, marker => {
-					affectedMarkers.delete(marker);
-					marker.setIntersectionIndex(index++);
-				});
-				if (index <= 1)
-					value.unsetIntersectionIndex();
-			}
-		});
+		//~ // Пока n-ному маркеру из сегмента пересечений добавляется кратное n значение сдвига.
+		//~ // Не самое красивое решение...
+		//~ this._shipLayer.events.addEventListener('intersect', ({
+			//~ affectedMarkers, intersections
+		//~ }) => {
+			//~ affectedMarkers = new Set(affectedMarkers);
+			//~ while (affectedMarkers.size > 0) {
+				//~ const {value} = affectedMarkers.values().next();
+				//~ let index = 0;
+				//~ intersections.traverseBfs(value, marker => {
+					//~ affectedMarkers.delete(marker);
+					//~ marker.setIntersectionIndex(index++);
+				//~ });
+				//~ if (index <= 1)
+					//~ value.unsetIntersectionIndex();
+			//~ }
+		//~ });
 	}
 
 	updateShipsCounter() {
@@ -292,7 +292,7 @@ class ShipMarker implements InteractiveMapMarker {
 
 	declare ship: Ship;
 	private rotateAngle = 0;
-	private intersectionIndex?: number = undefined;
+	//~ private intersectionIndex?: number = undefined;
 
 	constructor(
 		map: CruiseMap,
@@ -456,31 +456,28 @@ class ShipMarker implements InteractiveMapMarker {
 		this._isDeleted = true;
 	}
 
-	/** Установить сдвиг */
-	setIntersectionIndex(index: number): void {
-		this.intersectionIndex = index;
-		this.icon.style.setProperty(
-			'--cruise-map__marker_intersection-index',
-			`${index}`,
-		);
-		this.rotate();
-	}
+	//~ /** Установить сдвиг */
+	//~ setIntersectionIndex(index: number): void {
+		//~ this.intersectionIndex = index;
+		//~ this.icon.style.setProperty(
+			//~ '--cruise-map__marker_intersection-index',
+			//~ `${index}`,
+		//~ );
+		//~ this.rotate();
+	//~ }
 
-	/** Убрать сдвиг */
-	unsetIntersectionIndex(): void {
-		this.intersectionIndex = undefined;
-		this.icon.style.removeProperty('--cruise-map__marker_intersection-index');
-		this.rotate();
-	}
+	//~ /** Убрать сдвиг */
+	//~ unsetIntersectionIndex(): void {
+		//~ this.intersectionIndex = undefined;
+		//~ this.icon.style.removeProperty('--cruise-map__marker_intersection-index');
+		//~ this.rotate();
+	//~ }
 
 	private rotate(): void {
-		//~ if (this.intersectionIndex === undefined)
 			this.icon.style.setProperty(
 				'--cruise-map__marker_angle',
 				`${this.rotateAngle}turn`,
 			);
-		//~ else
-			//~ this.icon.style.removeProperty('--cruise-map__marker_angle');
 	}
 
 	_createMarker(): void {

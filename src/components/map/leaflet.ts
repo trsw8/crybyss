@@ -19,9 +19,9 @@ import {
 } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import {AuditableEventTarget} from "../../util/events";
-import IntersectionSearchTree, {
-  Marker as IntersectionMarker,
-} from "../../util/intersection";
+//~ import IntersectionSearchTree, {
+  //~ Marker as IntersectionMarker,
+//~ } from "../../util/intersection";
 import Map, {
   Layer,
   MapMarker,
@@ -29,7 +29,7 @@ import Map, {
   MapPolyline,
   InteractiveMapPolyline,
   PointerEvent,
-  IntersectionEvent,
+  //~ IntersectionEvent,
 } from ".";
 import "./index.css";
 import "./leaflet.css";
@@ -412,19 +412,19 @@ class LeafletPane<
   private representations: WeakMap<TMarker | MapPolyline, LLayer[]> =
     new WeakMap();
 
-  private intersections: IntersectionSearchTree<
-    IntersectionMapMarker<TMarker>
-  > = new IntersectionSearchTree();
-  /** Соответствия маркеров пересечений маркерам приложения */
-  private intersectionMarkers: WeakMap<
-    TMarker,
-    IntersectionMapMarker<TMarker>
-  > = new WeakMap();
-  /**
-   * Запланированные для проверки пересечений маркеры (для оптимизации).
-   * true означает проверку всех имеющихся.
-   */
-  private plannedIntersectionChecks: Set<TMarker> | true = new Set();
+  //~ private intersections: IntersectionSearchTree<
+    //~ IntersectionMapMarker<TMarker>
+  //~ > = new IntersectionSearchTree();
+  //~ /** Соответствия маркеров пересечений маркерам приложения */
+  //~ private intersectionMarkers: WeakMap<
+    //~ TMarker,
+    //~ IntersectionMapMarker<TMarker>
+  //~ > = new WeakMap();
+  //~ /**
+   //~ * Запланированные для проверки пересечений маркеры (для оптимизации).
+   //~ * true означает проверку всех имеющихся.
+   //~ */
+  //~ private plannedIntersectionChecks: Set<TMarker> | true = new Set();
 
   events: AuditableEventTarget<
     Layer<TMarker>['events'] extends TypedEventTarget<infer E> ? E : never
@@ -450,7 +450,7 @@ class LeafletPane<
       pane: this.compositePaneName("overlayPane"),
     });
 
-    this.map.on("zoomend", () => this.checkAllIntersections());
+    //~ this.map.on("zoomend", () => this.checkAllIntersections());
   }
 
   show() {
@@ -458,7 +458,7 @@ class LeafletPane<
     this.visible = true;
     for (const pane of this.panes()) pane.classList.add("map__layer_visible");
     this.events.dispatchEvent(new Event("visibilitychange"));
-    this.checkAllIntersections();
+    //~ this.checkAllIntersections();
   }
 
   hide() {
@@ -620,10 +620,10 @@ class LeafletPane<
 
   removeMarker(marker: TMarker) {
     if (marker.marker) {
-      this.checkSiblingsIntersections(marker);
+      //~ this.checkSiblingsIntersections(marker);
       this.removePath(marker);
-      this.intersections.remove(this.intersectionMarkers.get(marker));
-      this.intersectionMarkers.delete(marker);
+      //~ this.intersections.remove(this.intersectionMarkers.get(marker));
+      //~ this.intersectionMarkers.delete(marker);
       marker.marker = undefined;
     }
   }
@@ -632,69 +632,69 @@ class LeafletPane<
   private syncMarker(marker: TMarker): void {
     const lMarker = marker.marker;
     this.representations.set(marker, [lMarker]);
-    const intersectionMarker = new IntersectionMapMarker(marker);
-    this.intersectionMarkers.set(marker, intersectionMarker);
-    this.intersections.add(intersectionMarker);
+    //~ const intersectionMarker = new IntersectionMapMarker(marker);
+    //~ this.intersectionMarkers.set(marker, intersectionMarker);
+    //~ this.intersections.add(intersectionMarker);
     marker.events.addEventListener("locationchange", () => {
       lMarker.setLatLng([marker.lat, marker.lng]);
-      this.intersections.update(intersectionMarker);
-      this.checkIntersections([marker]);
+      //~ this.intersections.update(intersectionMarker);
+      //~ this.checkIntersections([marker]);
     });
     lMarker.addTo(this.map);
-    this.checkIntersections([marker]);
+    //~ this.checkIntersections([marker]);
   }
 
-  private checkIntersections(markers: TMarker[]): void {
-    if (this.plannedIntersectionChecks === true) return;
-    if (markers.length > 0 && this.plannedIntersectionChecks.size === 0)
-      window.queueMicrotask(() => {
-        if (this.plannedIntersectionChecks === true) return;
-        const markers = new Set<IntersectionMapMarker<TMarker>>();
-        for (const marker of this.plannedIntersectionChecks)
-          if (this.intersectionMarkers.has(marker))
-            markers.add(this.intersectionMarkers.get(marker));
-        this.plannedIntersectionChecks.clear();
-        if (
-          this.events.listenersCount("intersect") === 0
-          || markers.size === 0
-        ) return;
-        const { entries, graph } = this.intersections.check(markers, (obj) =>
-          obj && obj.marker ? obj.marker : null
-        );
-        this.events.dispatchEvent(
-          new IntersectionEvent("intersect", entries, graph)
-        );
-      });
-    for (const marker of markers) this.plannedIntersectionChecks.add(marker);
-  }
+  //~ private checkIntersections(markers: TMarker[]): void {
+    //~ if (this.plannedIntersectionChecks === true) return;
+    //~ if (markers.length > 0 && this.plannedIntersectionChecks.size === 0)
+      //~ window.queueMicrotask(() => {
+        //~ if (this.plannedIntersectionChecks === true) return;
+        //~ const markers = new Set<IntersectionMapMarker<TMarker>>();
+        //~ for (const marker of this.plannedIntersectionChecks)
+          //~ if (this.intersectionMarkers.has(marker))
+            //~ markers.add(this.intersectionMarkers.get(marker));
+        //~ this.plannedIntersectionChecks.clear();
+        //~ if (
+          //~ this.events.listenersCount("intersect") === 0
+          //~ || markers.size === 0
+        //~ ) return;
+        //~ const { entries, graph } = this.intersections.check(markers, (obj) =>
+          //~ obj && obj.marker ? obj.marker : null
+        //~ );
+        //~ this.events.dispatchEvent(
+          //~ new IntersectionEvent("intersect", entries, graph)
+        //~ );
+      //~ });
+    //~ for (const marker of markers) this.plannedIntersectionChecks.add(marker);
+  //~ }
 
-  private checkAllIntersections(): void {
-    this.plannedIntersectionChecks = true;
-    window.queueMicrotask(() => {
-      if (this.plannedIntersectionChecks !== true) return;
-      this.plannedIntersectionChecks = new Set();
-      if (this.events.listenersCount("intersect") === 0) return;
-      const { entries, graph } = this.intersections.checkAll((obj) =>
-        obj && obj.marker ? obj.marker : null
-      );
-      if (entries.size > 0)
-        this.events.dispatchEvent(
-          new IntersectionEvent("intersect", entries, graph)
-        );
-    });
-  }
+  //~ private checkAllIntersections(): void {
+    //~ this.plannedIntersectionChecks = true;
+    //~ window.queueMicrotask(() => {
+      //~ if (this.plannedIntersectionChecks !== true) return;
+      //~ this.plannedIntersectionChecks = new Set();
+      //~ if (this.events.listenersCount("intersect") === 0) return;
+      //~ const { entries, graph } = this.intersections.checkAll((obj) =>
+        //~ obj && obj.marker ? obj.marker : null
+      //~ );
+      //~ if (entries.size > 0)
+        //~ this.events.dispatchEvent(
+          //~ new IntersectionEvent("intersect", entries, graph)
+        //~ );
+    //~ });
+  //~ }
 
-  /**
-   * Проверить пересечения всех маркеров, в данный момент пересекающихся с указанным.
-   * Используется перед удалением.
-   */
-  private checkSiblingsIntersections(marker: TMarker): void {
-    const { entries: siblings } = this.intersections.check(
-      new Set([this.intersectionMarkers.get(marker)]),
-      (obj) => obj && obj.marker ? obj.marker : null,
-    );
-    this.checkIntersections([...siblings]);
-  }
+  //~ /**
+   //~ * Проверить пересечения всех маркеров, в данный момент пересекающихся с указанным.
+   //~ * Используется перед удалением.
+   //~ */
+  //~ private checkSiblingsIntersections(marker: TMarker): void {
+    //~ const { entries: siblings } = this.intersections.check(
+      //~ new Set([this.intersectionMarkers.get(marker)]),
+      //~ (obj) => obj && obj.marker ? obj.marker : null,
+    //~ );
+    //~ this.checkIntersections([...siblings]);
+  //~ }
 
   /** В данный момент никак не реализован InteractiveMapPolylinePoint */
   drawPolyline(mapPolyline: MapPolyline | InteractiveMapPolyline) {
@@ -786,26 +786,26 @@ const DOMIcon = DivIcon.extend({
   },
 }) as any; // С конструкторами объектов leaflet сложности, поэтому any
 
-/** Адаптер маркера для рассчета пересечений */
-class IntersectionMapMarker<TMarker extends MapMarker = MapMarker>
-  implements IntersectionMarker {
+//~ /** Адаптер маркера для рассчета пересечений */
+//~ class IntersectionMapMarker<TMarker extends MapMarker = MapMarker>
+  //~ implements IntersectionMarker {
 
-  declare marker: TMarker;
+  //~ declare marker: TMarker;
 
-  get x() {
-    return this.marker.lng;
-  }
+  //~ get x() {
+    //~ return this.marker.lng;
+  //~ }
 
-  get y() {
-    return -this.marker.lat;
-  }
+  //~ get y() {
+    //~ return -this.marker.lat;
+  //~ }
 
-  constructor(marker: TMarker) {
-    this.marker = marker;
-  }
+  //~ constructor(marker: TMarker) {
+    //~ this.marker = marker;
+  //~ }
 
-  rect() {
-    const icon = this.marker.marker?.options.icon as ExposedDivIcon;
-    return icon?.container.getBoundingClientRect() || new DOMRect;
-  }
-}
+  //~ rect() {
+    //~ const icon = this.marker.marker?.options.icon as ExposedDivIcon;
+    //~ return icon?.container.getBoundingClientRect() || new DOMRect;
+  //~ }
+//~ }
