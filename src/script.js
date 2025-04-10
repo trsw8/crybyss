@@ -86,7 +86,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
     }
-    
+
     document.addEventListener("click", (event) => {
         if (!event.target.closest('.datepicker-label')
         && !event.target.closest('#datepicker-calendar')) {

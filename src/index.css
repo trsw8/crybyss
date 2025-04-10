@@ -72,6 +72,7 @@
     border-radius: 50%;
     font-size: 12px;
     line-height: 17px;
+    text-align: center;
   }
 
   p {
@@ -102,6 +103,7 @@
     font-size: 9px;
     line-height: 9px;
     padding: 0px 2px;
+    text-align: center;
   }
 }
 
