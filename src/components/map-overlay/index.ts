@@ -173,8 +173,9 @@ export default class MapOverlay extends DOMComponent {
     }
     // страница круиза конец
     // страница стоянок начало
-    if (new URL(location.toString()).searchParams.get('stops') === 'true') {
+    if (new URL(location.toString()).searchParams.get('stops')) {
       document.body.classList.add('stops-page');
+      if (new URL(location.toString()).searchParams.get('stops') !== 'true') document.body.classList.add('one-stop-page');
       const shipButton = document.querySelector('.map-overlay--ship') as HTMLInputElement;
       if (shipButton) shipButton.click();
       const gatewaysButton = document.querySelector('.map-overlay--gateways') as HTMLInputElement;
@@ -183,22 +184,10 @@ export default class MapOverlay extends DOMComponent {
       if (sightsButton) sightsButton.click();
     }
     // страница стоянок конец
-    // страница одной стоянки начало
-    if (new URL(location.toString()).searchParams.get('stops')
-      && new URL(location.toString()).searchParams.get('stops') !== 'true') {
-      document.body.classList.add('stops-page');
-      document.body.classList.add('one-stop-page');
-      const shipButton = document.querySelector('.map-overlay--ship') as HTMLInputElement;
-      if (shipButton) shipButton.click();
-      const gatewaysButton = document.querySelector('.map-overlay--gateways') as HTMLInputElement;
-      if (gatewaysButton) gatewaysButton.click();
-      const sightsButton = document.querySelector('.map-overlay--place') as HTMLInputElement;
-      if (sightsButton) sightsButton.click();
-    }
-    // страница одной стоянки конец
     // страница достопримечательностей начало
-    if (new URL(location.toString()).searchParams.get('place') === 'true') {
+    if (new URL(location.toString()).searchParams.get('place')) {
       document.body.classList.add('stops-page');
+      if (new URL(location.toString()).searchParams.get('place') !== 'true') document.body.classList.add('one-stop-page');
       const shipButton = document.querySelector('.map-overlay--ship') as HTMLInputElement;
       if (shipButton) shipButton.click();
       const gatewaysButton = document.querySelector('.map-overlay--gateways') as HTMLInputElement;

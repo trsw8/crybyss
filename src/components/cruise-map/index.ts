@@ -844,6 +844,9 @@ class CruiseAssets {
 		for (const sight of this.cruise.sights) {
 			const { id, lat, lng } = sight;
 			// console.log('id', id)
+			if (new URL(location.toString()).searchParams.get('place')
+			&& new URL(location.toString()).searchParams.get('place') !== 'true'
+			&& !document.location.href.includes(id)) return;
 			if (!this.sights[ id ]) {
 				this.sights[ id ] = this.map.attachLocationMarker(
 					id, LocationType.SHOWPLACE, lat, lng,

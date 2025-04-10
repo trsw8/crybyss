@@ -421,7 +421,7 @@ export default abstract class LeafletMap extends Map {
     }
     // страница одной стоянки конец
     // страница достопримечательностей начало
-    if (new URL(location.toString()).searchParams.get('place') === 'true') {
+    if (new URL(location.toString()).searchParams.get('place')) {
       window.addEventListener('cruisePlaceCreated', (event: Event) => {
         const {sights} = (event as CustomEvent).detail;
         const {northPoint, southPoint, westPoint, eastPoint} = sights;
@@ -440,8 +440,8 @@ export default abstract class LeafletMap extends Map {
         });        
       });
     }
-    // страница достопримечательностей конец
   }
+  // страница достопримечательностей конец
 
   addLayer() {
     return new LeafletPane(
