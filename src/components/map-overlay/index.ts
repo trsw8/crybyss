@@ -105,6 +105,96 @@ export default class MapOverlay extends DOMComponent {
 		};
 		setOverlayBounds();
 		window.addEventListener("resize", setOverlayBounds);
+
+		// страница круиза начало
+		if (new URL(location.toString()).searchParams.has('cruise')) {
+			document.body.classList.add('cruise-page');
+
+			window.addEventListener('cruisePointsCreated', (event: CustomEvent) => {
+				const {cruise} = event.detail;
+				const departureDate = new Date(cruise.cruise.departure);
+				console.log('departureDate', departureDate)
+				const arrivalDate = new Date(cruise.cruise.arrival);
+				console.log('arrivalDate', arrivalDate)
+
+				// Создаем массив дат между отправлением и прибытием
+				const getDatesArray = (start: Date, end: Date): Date[] => {
+					const dates: Date[] = [];
+					const currentDate = new Date(start);
+					
+					while (currentDate <= end) {
+						dates.push(new Date(currentDate.setHours(3, 0, 0, 0))); // 00:00 по МСК (UTC+3)
+						currentDate.setDate(currentDate.getDate() + 1);
+					}
+					
+					return dates;
+				};
+				
+				const datesArray = getDatesArray(departureDate, arrivalDate);
+				console.log('datesArray', datesArray)
+				
+				// Находим контейнер для точек
+				const rangeContainer = document.querySelector('.map-overlay--range-dates');
+				const pointsContainer = document.querySelector('.rs-container');
+				
+				if (rangeContainer) {
+					// Очищаем существующие точки, если они есть
+					const existingPoints = rangeContainer.querySelectorAll('.range--deco:not(.range--deco-left):not(.range--deco-right)');
+					existingPoints.forEach(point => point.remove());
+					
+					// Вычисляем общую длительность круиза в миллисекундах
+					const totalDuration = arrivalDate.getTime() - departureDate.getTime();
+					
+					// Добавляем новые точки для каждой даты
+					datesArray.forEach((date, index) => {
+						if (index === 0) return; // Пропускаем первую и последнюю даты
+						
+						const markerElement = document.createElement('div');
+						markerElement.className = 'rs-marker';
+
+						const pointElement = document.createElement('div');
+						pointElement.className = 'range--deco range--deco-point';
+						pointElement.textContent = date.toLocaleDateString('ru-RU', {
+							day: '2-digit',
+							month: '2-digit'
+						});
+						
+						// Вычисляем позицию точки на основе временных меток
+						const timeDifference = date.getTime() - departureDate.getTime();
+						const progress = (timeDifference / totalDuration) * 100;
+						markerElement.style.left = `${progress}%`;
+						pointElement.style.left = `${progress}%`;
+						
+						pointsContainer?.appendChild(markerElement);
+						pointsContainer?.appendChild(pointElement);
+					});
+				}
+			});
+		}
+		// страница круиза конец
+		// страница стоянок начало
+		if (new URL(location.toString()).searchParams.has('stops')) {
+			document.body.classList.add('stops-page');
+			const shipButton = document.querySelector('.map-overlay--ship') as HTMLInputElement;
+			if (shipButton) shipButton.click();
+			const gatewaysButton = document.querySelector('.map-overlay--gateways') as HTMLInputElement;
+			if (gatewaysButton) gatewaysButton.click();
+			const sightsButton = document.querySelector('.map-overlay--place') as HTMLInputElement;
+			if (sightsButton) sightsButton.click();
+		}
+		// страница стоянок конец
+		// страница одной стоянки начало
+		if (new URL(location.toString()).searchParams.has('stop')) {
+			document.body.classList.add('stops-page');
+			document.body.classList.add('one-stop-page');
+			const shipButton = document.querySelector('.map-overlay--ship') as HTMLInputElement;
+			if (shipButton) shipButton.click();
+			const gatewaysButton = document.querySelector('.map-overlay--gateways') as HTMLInputElement;
+			if (gatewaysButton) gatewaysButton.click();
+			const sightsButton = document.querySelector('.map-overlay--place') as HTMLInputElement;
+			if (sightsButton) sightsButton.click();
+		}
+		// страница одной стоянки конец
 	}
 }
 
@@ -701,7 +791,7 @@ class DateFilter {
 		});
 
 		window.addEventListener("DOMContentLoaded", () => {
-			if (window.innerWidth < 901) {
+			if (window.innerWidth < 901 && !document.body.classList.contains('cruise-page')) {
 				const copyBtn = document.querySelector(".map-overlay--copy") as HTMLElement;
 				if (copyBtn) copyBtn.click();
 				const menuBtn = document.querySelector(".map-overlay--menu") as HTMLElement;

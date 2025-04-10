@@ -187,6 +187,62 @@ export default class CruiseMap {
 					value.unsetIntersectionIndex();
 			}
 		});
+
+		//видимость трека круиза по урлу начало
+		window.addEventListener('cruisesDataLoaded', (event: Event) => {
+			setTimeout(async () => {
+				const cruiseId = new URL(location.toString()).searchParams.get('cruise');
+				if (!!cruiseId) {
+					const cruise = this.cruiseAsset( cruiseId );
+					if (cruise) {
+						cruise.showTrack(null);
+						// Найти крайние точки маршрута
+						const points = ( await cruise.cruise.route ).points;
+						const latitudes = points.map(p => p.lat);
+						const longitudes = points.map(p => p.lng);
+						
+						const northPoint = points.find(p => p.lat === Math.max(...latitudes));
+						const southPoint = points.find(p => p.lat === Math.min(...latitudes));
+						const westPoint = points.find(p => p.lng === Math.min(...longitudes));
+						const eastPoint = points.find(p => p.lng === Math.max(...longitudes));
+
+						window.dispatchEvent(new CustomEvent('cruisePointsCreated', {detail: {cruise, points: {northPoint, southPoint, westPoint, eastPoint}}}))
+					}
+				}
+			}, 1000);
+
+			// стоянки
+			setTimeout(async () => {
+				if (new URL(location.toString()).searchParams.has('stops')
+				|| new URL(location.toString()).searchParams.has('stop')
+				) {
+					const stops: any[] = [];
+					const stopKeys: string[] = [];
+
+					for (const item of this._cruises.values()) {
+						const stopsArray = await item.cruise.stops;
+						stopsArray.forEach((value) => {
+							if (!stopKeys.includes(value.location.id)) {
+								stopKeys.push(value.location.id);
+								stops.push({lat: value.location.lat, lng: value.location.lng});
+							}
+						});
+					};
+					const latitudes = stops.map(p => p.lat);
+					const longitudes = stops.map(p => p.lng);
+
+					const northPoint =  Math.max(...latitudes);
+					const southPoint =  Math.min(...latitudes);
+					const westPoint =  Math.min(...longitudes);
+					const eastPoint =  Math.max(...longitudes);
+
+					if (!!northPoint && !!southPoint && !!westPoint && !!eastPoint) {
+						window.dispatchEvent(new CustomEvent('cruiseStopsCreated', {detail: { stops: {northPoint, southPoint, westPoint, eastPoint}}}));
+					}
+				}
+			}, 1500)
+		})
+		//видимость трека круиза по урлу конец
 	}
 
 	updateShipsCounter() {
@@ -198,6 +254,8 @@ export default class CruiseMap {
 	}
 
 	addCruise(cruise: Cruise) {
+		const cruiseId = new URL(location.toString()).searchParams.get('cruise');
+		if (!!cruiseId && cruiseId !== cruise.id) return;
 		if (this._cruises.has( cruise.id ))
 			return;
 
@@ -214,6 +272,10 @@ export default class CruiseMap {
 
 	addShip(ship: Ship) {
 		if (this._ships.has( ship.id )) return;
+
+		const cruise = ship.cruiseOn(this.timelinePoint);
+		const cruiseId = new URL(location.toString()).searchParams.get('cruise');
+		if (!!cruiseId && cruiseId !== cruise?.id) return;
 
 		const shipMarker = new ShipMarker(
 			this, ship, ship.company,
@@ -759,9 +821,11 @@ class CruiseAssets {
 		if (!this._stopsVisible && this.map.selectedShip?.cruises.includes( this.cruise )) {
 			this._stopsVisible = true;
 			const stops = await this.cruise.stops;
+			const stopId = new URL(location.toString()).searchParams.get('stop');
 			if (this._stopsVisible) {
 				for (const stop of stops) {
 					const { id, lat, lng } = stop.location;
+					if (!!stopId && stopId !== id) continue;
 					if (!this.stops[ id ]) {
 						this.stops[ id ] = this.map.attachLocationMarker(
 							id, LocationType.REGULAR, lat, lng,
