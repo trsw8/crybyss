@@ -1,5 +1,3 @@
-/// @todo: Убрать проверку пересечений и сделать расстановку кораблей на стоянке
-
 import {Marker} from 'leaflet';
 import {TypedEventTarget} from 'typescript-event-target';
 import showplaceMarkerIcon from '../../icons/showplace-marker.png';
