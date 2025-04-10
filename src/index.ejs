@@ -19,11 +19,11 @@
 				<div class="_label">
 					<p>Выберите дату <span class="symbol"> ?</span></p>
 					<div class="datepicker-container">
-						<label class="datepicker-label">
+						<div class="datepicker-label">
 							<input type="text" id="datepicker-input" placeholder="" readonly>
-							<%- include('./icons/calendar.svg') %>
-						</label>
-						<div id="datepicker-calendar" class="hidden">
+							<div class="calendar-svg-wrapper"><%- include('./icons/calendar.svg') %></div>
+						</div>
+						<div id="datepicker-calendar" class="hidden hidden-calendar">
 							<div class="calendar-header">
 								<span id="calendar-title"></span>
 								<button id="prev-month">‹</button>
@@ -39,7 +39,7 @@
 								<div>сб</div>
 							</div>
 							<div id="calendar-body"></div>
-							<button id="confirm">сбросить</button>
+							<button id="confirm">установить</button>
 						</div>
 					</div>
 					<div class="mobile-datepicker-container">

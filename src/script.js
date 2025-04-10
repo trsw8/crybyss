@@ -57,14 +57,42 @@ document.addEventListener("DOMContentLoaded", function () {
         calendar.classList.add("hidden");
     });
 
-    input.addEventListener("focus", function () {
-        calendar.classList.remove("hidden");
-        updateCalendar();
-    });
+    const calendarSvgWrapper = document.querySelector('.calendar-svg-wrapper');
+    if (calendarSvgWrapper) {
+        calendarSvgWrapper.addEventListener("click", (event) => {
+            if (!calendar.classList.contains('hidden-calendar')) {
+                calendar.classList.add('hidden-calendar');
+            } else {
+                calendar.classList.remove('hidden-calendar');
+            }
+        });
+    }
 
-    document.addEventListener("click", function (event) {
-        if (!input.contains(event.target) && !calendar.contains(event.target)) {
-            calendar.classList.add("hidden");
+    const datepickerLabel = document.querySelector('.datepicker-label input');
+    if (datepickerLabel) {
+        datepickerLabel.addEventListener("click", (event) => {
+            if (event.target.closest('.calendar-svg-wrapper')) return;
+            if (!calendar.classList.contains('hidden-calendar')) {
+                calendar.classList.add('hidden-calendar');
+            }
+        });
+    }
+
+    const confirmBtn = document.querySelector('#confirm');
+    if (confirmBtn) {
+        confirmBtn.addEventListener("click", (event) => {
+            if (!calendar.classList.contains('hidden-calendar')) {
+                calendar.classList.add('hidden-calendar');
+            }
+        });
+    }
+    
+    document.addEventListener("click", (event) => {
+        if (!event.target.closest('.datepicker-label')
+        && !event.target.closest('#datepicker-calendar')) {
+            if (!calendar.classList.contains('hidden-calendar')) {
+                calendar.classList.add('hidden-calendar');
+            }
         }
     });
 

@@ -66,11 +66,12 @@
     display: inline-block;
     border: 1px solid #32739d;
     color: #32739d;
-    padding: 0px 4px;
+    padding: 0px 5px;
     width: 17.5px;
     height: 17.5px;
     border-radius: 50%;
-    font-size: 14px;
+    font-size: 12px;
+    line-height: 17px;
   }
 
   p {
@@ -136,24 +137,25 @@
   position: absolute;
   top: 70px;
   left: 0;
-  width: 400px;
+  width: 280px;
   max-width: calc(100vw - 40px);
   background: white;
   border: 1px solid #ddd;
   border-radius: 10px;
-  box-shadow: 0 0px 4px rgba(0, 0, 0, 0.226);
-  padding: 10px 20px 20px;
+  /* box-shadow: 0 0px 4px rgba(0, 0, 0, 0.226); */
+  padding: 10px 11px 11px;
   z-index: 1000;
 
   >button {
     width: 100%;
-    height: 50px;
+    height: 42px;
     border-radius: 10px;
     border: none;
     background: #32739d;
     color: white;
     text-transform: uppercase;
     font-weight: 600;
+    font-size: 14px;
   }
 }
 
@@ -161,23 +163,37 @@
   display: none;
 }
 
+#datepicker-calendar.hidden {
+  display: block;
+}
+
+#datepicker-calendar.hidden-calendar {
+  display: none;
+}
+
 .calendar-header {
   display: flex;
+  justify-content: space-between;
   align-items: center;
   gap: 10px;
   padding: 10px;
   border-radius: 5px;
   font-weight: 600;
-  font-size: 25px;
+  font-size: 14px;
 }
 
 .calendar-header button {
   background: none;
   border: none;
   color: #000;
-  font-size: 38px;
+  font-size: 28px;
+  line-height: 14px;
   padding-bottom: 4px;
   cursor: pointer;
+}
+
+#prev-month {
+  order: -1;
 }
 
 .calendar-days {
@@ -191,13 +207,14 @@
 #calendar-body {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 5px;
+  gap: 0;
   padding: 10px 0;
+  padding-bottom: 18px;
 }
 
 .day {
-  width: 40px;
-  height: 40px;
+  width: 36.8px;
+  height: 36.8px;
   line-height: 40px;
   text-align: center;
   cursor: pointer;
@@ -342,7 +359,7 @@
   .filter-box {
     top: 171px;
     right: 118px;
-    padding: 12px;
+    /* padding: 12px; */
   }
 }
 
