@@ -241,6 +241,35 @@ export default class CruiseMap {
 					}
 				}
 			}, 1500)
+
+			// достопримечательности
+			setTimeout(() => {
+				if (new URL(location.toString()).searchParams.get('place')) {
+					const sights: any[] = [];
+					const sightKeys: string[] = [];
+
+					console.log(Array.from(this._cruises.values()));
+
+					Array.from(this._cruises.values()).forEach((item) => {
+						const sightsArray = Object.entries(item.sights);
+						sightsArray.forEach((value) => {
+							if (!sightKeys.includes(value[0])) {
+								sightKeys.push(value[0]);
+								sights.push({lat: value[1].lat, lng: value[1].lng});
+							}
+						});
+					});
+					const latitudes = sights.map(p => p.lat);
+					const longitudes = sights.map(p => p.lng);
+
+					const northPoint = sights.find(p => p.lat === Math.max(...latitudes));
+					const southPoint = sights.find(p => p.lat === Math.min(...latitudes));
+					const westPoint = sights.find(p => p.lng === Math.min(...longitudes));
+					const eastPoint = sights.find(p => p.lng === Math.max(...longitudes));
+
+					window.dispatchEvent(new CustomEvent('cruisePlaceCreated', {detail: { sights: {northPoint, southPoint, westPoint, eastPoint}}}))
+				}
+			}, 1500)
 		})
 		//видимость трека круиза по урлу конец
 	}

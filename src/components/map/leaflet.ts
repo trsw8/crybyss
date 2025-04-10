@@ -421,7 +421,28 @@ export default abstract class LeafletMap extends Map {
       });
     }
     // страница одной стоянки конец
+    // страница достопримечательностей начало
+    if (new URL(location.toString()).searchParams.get('place')) {
+      window.addEventListener('cruisePlaceCreated', (event: Event) => {
+        const {sights} = (event as CustomEvent).detail;
+        const {northPoint, southPoint, westPoint, eastPoint} = sights;
+        console.log('place', sights)
+        // Создаем границы для карты
+        const bounds = L.latLngBounds(
+          [southPoint.lat, westPoint.lng], // юго-западная точка
+          [northPoint.lat, eastPoint.lng]  // северо-восточная точка
+        );
+        
+        // Устанавливаем вид карты по границам с небольшим отступом
+        this.map.fitBounds(bounds, {
+          padding: [20, 20], // отступ в пикселях со всех сторон
+          maxZoom: 12, // ограничиваем максимальное приближение
+          animate: true // плавная анимация
+        });        
+      });
+    }
   }
+  // страница достопримечательностей конец
 
   addLayer() {
     return new LeafletPane(
