@@ -196,6 +196,10 @@ export default class MapOverlay extends DOMComponent {
       if (anchorButton) anchorButton.click();
     }
     // страница достопримечательностей конец
+    // яндекс
+    const yandexMap = document.querySelector('.map-overlay--overlays-box #over2') as HTMLElement;
+    console.log('yandexMap', yandexMap)
+    if (yandexMap) yandexMap.click();
   }
 }
 
