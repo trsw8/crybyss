@@ -16,6 +16,9 @@ export default abstract class Map extends DOMComponent {
 	abstract addLayer(): Layer;
 
 	abstract panTo(lat: number, lng: number): void;
+
+	abstract fitBounds( south: number, west: number, north: number, east: number ): void;
+
 	/** Установка границ, за которые не будут выходить попапы */
 	abstract setOverlayBounds(
 		top: number,

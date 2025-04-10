@@ -152,35 +152,4 @@ export class CruiseRoute {
 
         return { arrival: datetime, lat, lng, angle, isStop: false };
 	}
-
-/*
-	pointIndexInMoment(moment: Date): number {
-		const needle = +moment;
-		let sliceStart = 0;
-		let sliceEnd = this.points.length - 1;
-		while (sliceStart < sliceEnd) {
-			const center = Math.floor((sliceStart + sliceEnd) / 2);
-			const arrival = +this.points[center].arrival;
-			if (arrival === needle)
-				return center;
-			if (arrival < needle)
-				sliceStart = center + 1;
-			if (arrival > needle)
-				sliceEnd = center - 1;
-		}
-		const
-			candidatesStart = Math.max(sliceStart - 1, 0),
-			candidatesEnd = Math.min(sliceStart + 1, this.points.length - 1);
-		let result = candidatesStart;
-		let minDifference = Infinity;
-		for (let i = candidatesStart; i <= candidatesEnd; i++) {
-			const difference = Math.abs(needle - +this.points[i].arrival);
-			if (difference < minDifference) {
-				result = i;
-				minDifference = difference;
-			}
-		}
-		return result;
-	}
-*/
 }

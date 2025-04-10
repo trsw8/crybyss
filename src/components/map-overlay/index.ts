@@ -106,49 +106,52 @@ export default class MapOverlay extends DOMComponent {
 		setOverlayBounds();
 		window.addEventListener("resize", setOverlayBounds);
 
+		const mapMode = cruiseMap.mapMode;
+
 		// страница круиза начало
-		if (new URL(location.toString()).searchParams.has('cruise')) {
+		if (mapMode === 'cruise') {
 			document.body.classList.add('cruise-page');
 
-			window.addEventListener('cruisePointsCreated', (event: CustomEvent) => {
-				const {cruise} = event.detail;
-				const departureDate = new Date(cruise.cruise.departure);
-				console.log('departureDate', departureDate)
-				const arrivalDate = new Date(cruise.cruise.arrival);
-				console.log('arrivalDate', arrivalDate)
+			window.addEventListener("cruisesDataLoaded", () => {
+				const ship: Ship = api.allShips()[Symbol.iterator]().next().value;
+				const cruise = ship?.cruises()[Symbol.iterator]().next().value;
+				if (!ship || !cruise) return;
+
+				cruiseMap.addShip( ship );
+				const departureDate = new Date(cruise.departure);
+				const arrivalDate = new Date(cruise.arrival);
 
 				// Создаем массив дат между отправлением и прибытием
 				const getDatesArray = (start: Date, end: Date): Date[] => {
 					const dates: Date[] = [];
 					const currentDate = new Date(start);
-					
+
 					while (currentDate <= end) {
 						dates.push(new Date(currentDate.setHours(3, 0, 0, 0))); // 00:00 по МСК (UTC+3)
 						currentDate.setDate(currentDate.getDate() + 1);
 					}
-					
+
 					return dates;
 				};
-				
+
 				const datesArray = getDatesArray(departureDate, arrivalDate);
-				console.log('datesArray', datesArray)
-				
+
 				// Находим контейнер для точек
 				const rangeContainer = document.querySelector('.map-overlay--range-dates');
 				const pointsContainer = document.querySelector('.rs-container');
-				
+
 				if (rangeContainer) {
 					// Очищаем существующие точки, если они есть
 					const existingPoints = rangeContainer.querySelectorAll('.range--deco:not(.range--deco-left):not(.range--deco-right)');
 					existingPoints.forEach(point => point.remove());
-					
+
 					// Вычисляем общую длительность круиза в миллисекундах
 					const totalDuration = arrivalDate.getTime() - departureDate.getTime();
-					
+
 					// Добавляем новые точки для каждой даты
 					datesArray.forEach((date, index) => {
 						if (index === 0) return; // Пропускаем первую и последнюю даты
-						
+
 						const markerElement = document.createElement('div');
 						markerElement.className = 'rs-marker';
 
@@ -158,13 +161,13 @@ export default class MapOverlay extends DOMComponent {
 							day: '2-digit',
 							month: '2-digit'
 						});
-						
+
 						// Вычисляем позицию точки на основе временных меток
 						const timeDifference = date.getTime() - departureDate.getTime();
 						const progress = (timeDifference / totalDuration) * 100;
 						markerElement.style.left = `${progress}%`;
 						pointElement.style.left = `${progress}%`;
-						
+
 						pointsContainer?.appendChild(markerElement);
 						pointsContainer?.appendChild(pointElement);
 					});
@@ -173,9 +176,9 @@ export default class MapOverlay extends DOMComponent {
 		}
 		// страница круиза конец
 		// страница стоянок начало
-		if (new URL(location.toString()).searchParams.has('stops') || new URL(location.toString()).searchParams.has('stop')) {
+		if (mapMode === 'stops' || mapMode === 'single-stop' || mapMode === 'place') {
 			document.body.classList.add('stops-page');
-			if (new URL(location.toString()).searchParams.has('stop')) document.body.classList.add('one-stop-page');
+			if (mapMode === 'single-stop' || mapMode === 'place') document.body.classList.add('one-stop-page');
 			const shipButton = document.querySelector('.map-overlay--ship') as HTMLInputElement;
 			if (shipButton) shipButton.click();
 			const gatewaysButton = document.querySelector('.map-overlay--gateways') as HTMLInputElement;
@@ -184,19 +187,6 @@ export default class MapOverlay extends DOMComponent {
 			if (sightsButton) sightsButton.click();
 		}
 
-		// страница стоянок конец
-		// страница достопримечательностей начало
-		if (new URL(location.toString()).searchParams.get('place')) {
-			document.body.classList.add('stops-page');
-			if (new URL(location.toString()).searchParams.get('place') !== 'true') document.body.classList.add('one-stop-page');
-			const shipButton = document.querySelector('.map-overlay--ship') as HTMLInputElement;
-			if (shipButton) shipButton.click();
-			const gatewaysButton = document.querySelector('.map-overlay--gateways') as HTMLInputElement;
-			if (gatewaysButton) gatewaysButton.click();
-			const anchorButton = document.querySelector('.map-overlay--anchor') as HTMLInputElement;
-			if (anchorButton) anchorButton.click();
-		}
-		// страница достопримечательностей конец
 		// яндекс
 		const yandexMap = document.querySelector('.map-overlay--overlays-box #over2') as HTMLElement;
 		console.log('yandexMap', yandexMap)
@@ -264,45 +254,47 @@ class SearchBox extends DOMComponent {
 					})
 				})
 			}
-		checkboxOpening()
+		checkboxOpening();
 
-		let searchLock = Promise.resolve();
+		if (cruiseMap.mapMode === 'default') {
+			let searchLock = Promise.resolve();
 
-		const onInput = () => {
-			let value = input.value;
-			searchLock = searchLock.then(async () => {
-				if (value !== input.value)
-					return;
-				await new Promise( resolve => { setTimeout( resolve, 400 ); } );   // задержка 0.4 секунды
-				if (value !== input.value)
-					return;
+			const onInput = () => {
+				let value = input.value;
+				searchLock = searchLock.then(async () => {
+					if (value !== input.value)
+						return;
+					await new Promise( resolve => { setTimeout( resolve, 400 ); } );   // задержка 0.4 секунды
+					if (value !== input.value)
+						return;
 
-				companiesElement.textContent = '';
-				shipsElement.textContent = '';
-				const companiesCheckboxes = [];
-				const shipsCheckboxes = [];
-				if (value.length < 2) value = '';   // поиск от 2 букв
-				api.setFilter({ companyName: value, shipName: value });
-				for (const company of api.allCompanies()) {
-					companiesCheckboxes.push(
-						...this.createCompanyElements(company),
-					);
-				}
-				
-				const allShips = [ ...api.allShips() ];
-				for (const ship of this.cruiseMap.ships) {
-					if (!allShips.includes( ship )) this.cruiseMap.removeShip( ship );
-				}
-				for (const ship of allShips) {
-					shipsCheckboxes.push( ...this.createShipElements( ship ) );
-				}
-				companiesElement.prepend(...companiesCheckboxes);
-				shipsElement.prepend(...shipsCheckboxes);
-			});
-		};
+					companiesElement.textContent = '';
+					shipsElement.textContent = '';
+					const companiesCheckboxes = [];
+					const shipsCheckboxes = [];
+					if (value.length < 2) value = '';   // поиск от 2 букв
+					api.setFilter({ companyName: value, shipName: value });
+					for (const company of api.allCompanies()) {
+						companiesCheckboxes.push(
+							...this.createCompanyElements(company),
+						);
+					}
 
-		window.addEventListener('cruisesDataLoaded', onInput);
-		input.addEventListener('input', onInput);
+					const allShips = [ ...api.allShips() ];
+					for (const ship of this.cruiseMap.ships) {
+						if (!allShips.includes( ship )) this.cruiseMap.removeShip( ship );
+					}
+					for (const ship of allShips) {
+						shipsCheckboxes.push( ...this.createShipElements( ship ) );
+					}
+					companiesElement.prepend(...companiesCheckboxes);
+					shipsElement.prepend(...shipsCheckboxes);
+				});
+			};
+
+			window.addEventListener('cruisesDataLoaded', onInput);
+			input.addEventListener('input', onInput);
+		}
 
 		// мобильный датапикер начало
 		document.addEventListener("DOMContentLoaded", function () {
@@ -567,7 +559,7 @@ class DateFilter {
 			createDate();
 			window.dispatchEvent(new Event("filterchange"));
 		};
-		
+
 		const updateDateInput = () => {
 			date.value = dateValue;
 		};
@@ -576,7 +568,7 @@ class DateFilter {
 			timeValue =
 				String( Math.floor( Number( slider.value ) / 60 ) ).padStart( 2, "0" ) +
 				":" +
-				String( Number( slider.value ) % 60 ).padStart( 2, "0" ) + 
+				String( Number( slider.value ) % 60 ).padStart( 2, "0" ) +
 				":00";
 			createDate();
 			window.dispatchEvent(new Event("filterchange"));
@@ -648,7 +640,7 @@ class DateFilter {
 				"." +
 				datetime.getFullYear().toString();
 			dateValue = dateString;
-			
+
 			updateDateInput();
 
 			timeValue =
@@ -658,17 +650,17 @@ class DateFilter {
 				":" +
 				datetime.getSeconds().toString().padStart(2, "0");
 			updateTimeSlider(timeValue);
-			
+
 			time.value = timeValue;
 			document.getElementById("timeDisplay").innerText = timeValue;
 
 			cruiseMap.timelinePoint = datetime;
-			shipSlider.setSlider( datetime );			
-			
+			shipSlider.setSlider( datetime );
+
 			window.dispatchEvent( new CustomEvent( 'timeline-change', { detail: datetime } ) );
 		};
-		
-		let isclockActive = true;
+
+		let isclockActive = cruiseMap.mapMode === 'default';
 
 		document.addEventListener("DOMContentLoaded", () => {
 			updateFilter();
@@ -691,7 +683,7 @@ class DateFilter {
 			};
 			pointer.addEventListener("mousedown", onPointerDown);
 			pointer.addEventListener("touchstart", onPointerDown, { passive: true });
-			
+
 			window.addEventListener( "timelinemove", ( event: CustomEvent ) => {
 				if (!isclockActive) {
 					setDateTime( event.detail );
@@ -714,7 +706,7 @@ class DateFilter {
 						const timeIndicator = document.querySelector(".map-overlay--time-indicator") as HTMLElement;
 						if (timeIndicator) timeIndicator.classList.add("active");
 					}
-					
+
 					if (clockBtn.classList.contains("active")) {
 						clockBtn.classList.remove("active");
 
@@ -729,7 +721,7 @@ class DateFilter {
 
 						const filterBox = document.querySelector(".filter-box");
 						if (filterBox) filterBox.classList.add("active");
-						
+
 						const layersBtn = document.querySelector(".map-overlay--copy.active") as HTMLElement;
 						if (layersBtn) layersBtn.click();
 						const cardsBtn = document.querySelector(".map-overlay--menu.active") as HTMLElement;
@@ -791,9 +783,15 @@ class DateFilter {
 		});
 
 		window.addEventListener("cruisesDataLoaded", () => {
-			setTimeout(() => {
-				updateFilter();
-			}, 200);
+			if (cruiseMap.mapMode === 'cruise') {
+				const ship: Ship = api.allShips()[Symbol.iterator]().next().value;
+				const cruise = ship?.cruises()[Symbol.iterator]().next().value;
+				if (!ship || !cruise) return;
+
+				const mapTime = cruiseMap.timelinePoint;
+				if (+mapTime < +cruise.departure) setDateTime( cruise.departure );
+				else if (+mapTime > cruise.arrival) setDateTime( cruise.arrival );
+			}
 		});
 
 		window.addEventListener("DOMContentLoaded", () => {
@@ -846,12 +844,12 @@ class TimelineSlider extends DOMComponent {
 	get timelineRange(): readonly [Date, Date] {
 		return this._timelineRange;
 	}
-	
+
 	constructor(domNode: HTMLElement, cruiseMap: CruiseMap) {
 		super(domNode);
-		
+
 		this.cruiseMap = cruiseMap;
-		
+
 		const slider = domNode.getElementsByClassName("rs-container")[0];
 		const fromElement = domNode.getElementsByClassName(
 			"range--deco-left"
@@ -867,10 +865,10 @@ class TimelineSlider extends DOMComponent {
 			const ships = cruiseMap.ships;
 			const navigationStartDate = Math.min( ...ships.map( ship => +( ship.navigationStartDate ?? Infinity ) ) );
 			const navigationEndDate = Math.max( ...ships.map( ship => +( ship.navigationEndDate ?? -Infinity ) ) );
-			
+
 			if (Number.isFinite( navigationStartDate ) && Number.isFinite( navigationEndDate )) {
 				this._timelineRange = [ new Date( navigationStartDate ), new Date( navigationEndDate ) ];
-				window.dispatchEvent( new CustomEvent( 
+				window.dispatchEvent( new CustomEvent(
 					'timelinemove',
 					{ detail: new Date( Math.min( Math.max( +cruiseMap.timelinePoint, navigationStartDate ), navigationEndDate ) ) }
 				) );

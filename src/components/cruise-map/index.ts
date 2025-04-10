@@ -14,7 +14,7 @@ import sunsetIcon from '../../icons/sunset.svg';
 import linerMarkerIcon from '../../icons/liner-marker.svg';
 import {svgAsset} from '../../util';
 import Text from '../../state/text';
-import {Cruise, Company, Ship, Location, TrackPoint, TrackLocation, LocationType, defaultCompanyColor} from '../../state/cruise';
+import {Cruise, Company, Ship, Location, CruiseRoute, TrackPoint, TrackLocation, LocationType, defaultCompanyColor} from '../../state/cruise';
 import WorldMap, {
 	VisibilityControl, Layer,
 	MapMarker, InteractiveMapMarker, MapPolyline, InteractiveMapPolyline
@@ -36,6 +36,9 @@ import './index.css';
 export default class CruiseMap {
 
 	declare private map: WorldMap;
+
+	declare private _mapMode: string;
+	get mapMode() { return this._mapMode; }
 
 	declare private _trackLayer: Layer;
 	get trackLayer(): VisibilityControl {return this._trackLayer;}
@@ -141,8 +144,9 @@ export default class CruiseMap {
 		timerangechanged: Event,
 	}> = new TypedEventTarget();
 
-	constructor(map: WorldMap, text: Text) {
+	constructor(map: WorldMap, text: Text, mapMode: string) {
 		this.map = map;
+		this._mapMode = mapMode;
 		this._trackLayer = map.addLayer();
 		this._sightsLayer = map.addLayer();
 		this._gatewaysLayer = map.addLayer();
@@ -188,29 +192,7 @@ export default class CruiseMap {
 			}
 		});
 
-		//видимость трека круиза по урлу начало
 		window.addEventListener('cruisesDataLoaded', (event: Event) => {
-			setTimeout(async () => {
-				const cruiseId = new URL(location.toString()).searchParams.get('cruise');
-				if (!!cruiseId) {
-					const cruise = this.cruiseAsset( cruiseId );
-					if (cruise) {
-						cruise.showTrack(null);
-						// Найти крайние точки маршрута
-						const points = ( await cruise.cruise.route ).points;
-						const latitudes = points.map(p => p.lat);
-						const longitudes = points.map(p => p.lng);
-						
-						const northPoint = points.find(p => p.lat === Math.max(...latitudes));
-						const southPoint = points.find(p => p.lat === Math.min(...latitudes));
-						const westPoint = points.find(p => p.lng === Math.min(...longitudes));
-						const eastPoint = points.find(p => p.lng === Math.max(...longitudes));
-
-						window.dispatchEvent(new CustomEvent('cruisePointsCreated', {detail: {cruise, points: {northPoint, southPoint, westPoint, eastPoint}}}))
-					}
-				}
-			}, 1000);
-
 			// стоянки
 			setTimeout(async () => {
 				if (new URL(location.toString()).searchParams.has('stops')
@@ -271,8 +253,9 @@ export default class CruiseMap {
 				}
 			}, 1500)
 		})
-		//видимость трека круиза по урлу конец
 	}
+
+
 
 	updateShipsCounter() {
 		const shipsNotInCruise = [ ...this._ships.values() ].filter( ship => !ship.activeCruise ).length;
@@ -283,8 +266,6 @@ export default class CruiseMap {
 	}
 
 	addCruise(cruise: Cruise) {
-		const cruiseId = new URL(location.toString()).searchParams.get('cruise');
-		if (!!cruiseId && cruiseId !== cruise.id) return;
 		if (this._cruises.has( cruise.id ))
 			return;
 
@@ -302,10 +283,6 @@ export default class CruiseMap {
 	addShip(ship: Ship) {
 		if (this._ships.has( ship.id )) return;
 
-		const cruise = ship.cruiseOn(this.timelinePoint);
-		const cruiseId = new URL(location.toString()).searchParams.get('cruise');
-		if (!!cruiseId && cruiseId !== cruise?.id) return;
-
 		const shipMarker = new ShipMarker(
 			this, ship, ship.company,
 			this.timelinePoint
@@ -313,6 +290,26 @@ export default class CruiseMap {
 
 		this._ships.set( ship.id, shipMarker );
 		this.updateShipsCounter();
+
+		if (this._mapMode === 'cruise') {
+			shipMarker.activate();
+			const cruise = ship.cruises()[Symbol.iterator]().next().value;
+			cruise.route.then( ( route: CruiseRoute ) => {
+				const [ latitudes, longitudes ] = route.points.reduce( ( ret, point ) => {
+					ret[0].push( point.lat );
+					ret[1].push( point.lng );
+					return ret;
+				}, [ [], [] ] );
+
+				const north = Math.max( ...latitudes );
+				const south = Math.min( ...latitudes );
+				const west = Math.min( ...longitudes );
+				const east = Math.max( ...longitudes );
+
+				this.map.fitBounds( south, west, north, east );
+			} );
+		}
+
 		this.events.dispatchEvent(new Event('timerangechanged'));
 	}
 
@@ -523,7 +520,7 @@ class ShipMarker implements InteractiveMapMarker {
 			for (const cruise of this.cruises) {
 				this.map.cruiseAsset( cruise.id ).showAll();
 			}
-			this.map.cruiseAsset( this.activeCruise?.id )?.showTrack( this.marker );
+			if (this.marker) this.map.cruiseAsset( this.activeCruise?.id )?.showTrack( this.marker );
 		}
 	}
 
@@ -629,10 +626,12 @@ class ShipMarker implements InteractiveMapMarker {
 				}
 				onMouseOut();
 			} );
-			this.marker.on( 'click', () => {
-				if (this.map.selectedShip !== this) this.activate();
-				else this.deactivate();
-			} );
+			if (this.map.mapMode !== 'cruise') {
+				this.marker.on( 'click', () => {
+					if (this.map.selectedShip !== this) this.activate();
+					else this.deactivate();
+				} );
+			}
 		}
 	}
 

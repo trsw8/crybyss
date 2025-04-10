@@ -357,27 +357,6 @@ export default abstract class LeafletMap extends Map {
       });
     }
     // блок с кнопками масштабирования конец
-    // страница круиза начало
-    if (new URL(location.toString()).searchParams.has('cruise')) {
-      window.addEventListener('cruisePointsCreated', (event: Event) => {
-        const {cruise, points} = (event as CustomEvent).detail;
-        const {northPoint, southPoint, westPoint, eastPoint} = points;
-        
-        // Создаем границы для карты
-        const bounds = L.latLngBounds(
-          [southPoint.lat, westPoint.lng], // юго-западная точка
-          [northPoint.lat, eastPoint.lng]  // северо-восточная точка
-        );
-        
-        // Устанавливаем вид карты по границам с небольшим отступом
-        this.map.fitBounds(bounds, {
-          padding: [20, 20], // отступ в пикселях со всех сторон
-          maxZoom: 12, // ограничиваем максимальное приближение
-          animate: true // плавная анимация
-        });
-      });
-    }
-    // страница круиза конец
     // страница стоянок начало
     if (new URL(location.toString()).searchParams.has('stops')) {
       window.addEventListener('cruiseStopsCreated', (event: Event) => {
@@ -389,13 +368,13 @@ export default abstract class LeafletMap extends Map {
           [southPoint, westPoint], // юго-западная точка
           [northPoint, eastPoint]  // северо-восточная точка
         );
-        
+
         // Устанавливаем вид карты по границам с небольшим отступом
         this.map.fitBounds(bounds, {
           padding: [20, 20], // отступ в пикселях со всех сторон
           maxZoom: 12, // ограничиваем максимальное приближение
           animate: true // плавная анимация
-        });        
+        });
       });
     }
     // страница стоянок конец
@@ -411,13 +390,13 @@ export default abstract class LeafletMap extends Map {
           [southPoint.lat, westPoint.lng], // юго-западная точка
           [northPoint.lat, eastPoint.lng]  // северо-восточная точка
         );
-        
+
         // Устанавливаем вид карты по границам с небольшим отступом
         this.map.fitBounds(bounds, {
           padding: [20, 20], // отступ в пикселях со всех сторон
           maxZoom: 12, // ограничиваем максимальное приближение
           animate: true // плавная анимация
-        });        
+        });
       });
     }
     // страница одной стоянки конец
@@ -426,23 +405,37 @@ export default abstract class LeafletMap extends Map {
       window.addEventListener('cruisePlaceCreated', (event: Event) => {
         const {sights} = (event as CustomEvent).detail;
         const {northPoint, southPoint, westPoint, eastPoint} = sights;
-        console.log('place', sights)
         // Создаем границы для карты
         const bounds = L.latLngBounds(
           [southPoint.lat, westPoint.lng], // юго-западная точка
           [northPoint.lat, eastPoint.lng]  // северо-восточная точка
         );
-        
+
         // Устанавливаем вид карты по границам с небольшим отступом
         this.map.fitBounds(bounds, {
           padding: [20, 20], // отступ в пикселях со всех сторон
           maxZoom: 12, // ограничиваем максимальное приближение
           animate: true // плавная анимация
-        });        
+        });
       });
     }
   }
   // страница достопримечательностей конец
+
+  fitBounds( south: number, west: number, north: number, east: number ) {
+    // Создаем границы для карты
+    const bounds = L.latLngBounds(
+      [south, west], // юго-западная точка
+      [north, east]  // северо-восточная точка
+    );
+
+    // Устанавливаем вид карты по границам с небольшим отступом
+    this.map.fitBounds(bounds, {
+      padding: [20, 20], // отступ в пикселях со всех сторон
+      maxZoom: 12, // ограничиваем максимальное приближение
+      animate: true // плавная анимация
+    });
+  }
 
   addLayer() {
     return new LeafletPane(
@@ -604,7 +597,7 @@ class LeafletPane<
         const popupDiv = document.createElement("div");
         popupDiv.classList.add("map__popup", "map__popup_loaded");
         popupDiv.appendChild( contentDiv );
-        
+
         // Ищем оптимальное положение попапа
         popupDiv.style.maxWidth = null;
         popupDiv.style.maxHeight = null;
@@ -666,7 +659,7 @@ class LeafletPane<
             contentDiv.style.maxHeight = `${height - 40}px`;
           }
         }
-        
+
         if (coord !== markerCoord) {
           offset[0] += coord.x - markerCoord.x;
           offset[1] += coord.y - markerCoord.y;

@@ -9,7 +9,7 @@ const siteURL = 'https://krubiss.ru';
 const apiURL = 'https://krubiss.ru/api2';
 const apiEntries = {
 	start : '?service=map&method=start',
-	//~ cruiseByID : 'cruis/byID/',
+	startCruise : '?service=map&method=start&option=cruise',
 	stops : '?service=map&method=stops',
 	cruiseSights : '?service=map&method=sights&option=byCruiseId',
 	sightsByIds : '?service=map&method=sights&option=byIds',
@@ -187,7 +187,7 @@ class CruiseData implements Cruise {
 			company: cache.ship( data.shipId )?.company,
 			routeReady: false
 		} );
-		
+
 		if (!!cache.stops) {
 			const stops = data.stops.map( ( stop: any ) => ({
 				arrival: parseDate( stop.arrival ),
@@ -209,8 +209,23 @@ class CruiseData implements Cruise {
 				window.addEventListener( 'trackstops-loaded', initStops, { once: true } );
 			} );
 		}
+
+		if (!!data.sights) {
+			const sights = data.sights.map( ( item: any ) => ({
+				arrival: parseDate( item.arrival ),
+				side: item.side.toLowerCase(),
+				location: cache.sights[ item.id ] as Location
+			}) );
+			this._sights = Promise.resolve( sights );
+		}
+
+		if (!!data.points) {
+			const points = this._parseRoute( data.points );
+			this._route = Promise.resolve( new CruiseRoute( points ) );
+			this.routeReady = true;
+		}
 	}
-	
+
 	get sights() {
 		if (!this._sights) this._sights = new Promise( async resolve => {
 			const data = await fetchCruiseSights( this.id );
@@ -230,67 +245,72 @@ class CruiseData implements Cruise {
 		} );
 		return this._sights;
 	}
-	
+
 	get gateways() {
 		if (this._gateways) return this._gateways;
 		return this.route.then( () => this._gateways );
 	}
-	
+
 	get sunrises() {
 		if (this._sunrises) return Promise.resolve( this._sunrises );
 		return this.route.then( () => this._sunrises );
 	}
-	
+
 	get sunsets() {
 		if (this._sunsets) return Promise.resolve( this._sunsets );
 		return this.route.then( () => this._sunsets );
 	}
-	
+
+	_parseRoute( data: any ) {
+		this._sunrises = [];
+		this._sunsets = [];
+		const gateways: any[] = [];
+		const points = data.map( ( item: any ) => {
+			const ret: TrackPoint = {
+				lat: item.lat,
+				lng: item.lng,
+				arrival: parseDate( item.arrival ),
+				angle: item.angle,
+				isStop: !!item.isStop
+			};
+			if (item.sunrise) this._sunrises.push( ret );
+			if (item.sunset) this._sunsets.push( ret );
+			if (!!item.gateway) {
+				gateways.push({
+					arrival: ret.arrival,
+					gateway: item.gateway
+				});
+			}
+			return ret;
+		} );
+		if (!!cache.gateways) {
+			this._gateways = Promise.resolve(
+				gateways.map( ( item: any ) => ({
+					arrival: item.arrival,
+					location: cache.gateways[ item.gateway ]
+				}) )
+			);
+		}
+		else {
+			this._gateways = new Promise( resolve => {
+				const initGateways = () => {
+					resolve(
+						gateways.map( ( item: any ) => ({
+							arrival: item.arrival,
+							location: cache.gateways[ item.gateway ]
+						}) )
+					);
+				};
+				window.addEventListener( 'gateways-loaded', initGateways, { once: true } );
+			} );
+		}
+		return points;
+	}
+
 	get route() {
 		if (!this._route) this._route = new Promise( async resolve => {
 			const data = await fetchCruiseTracks( this.id );
-			this._sunrises = [];
-			this._sunsets = [];
-			const gateways: any[] = [];
-			const points = data.map( ( item: any ) => {
-				const ret: TrackPoint = {
-					lat: item.lat,
-					lng: item.lng,					
-					arrival: parseDate( item.arrival ),
-					angle: item.angle,
-					isStop: !!item.isStop
-				};
-				if (item.sunrise) this._sunrises.push( ret );
-				if (item.sunset) this._sunsets.push( ret );
-				if (!!item.gateway) {
-					gateways.push({
-						arrival: ret.arrival,
-						gateway: item.gateway
-					});
-				}
-				return ret;
-			} );
-			if (!!cache.gateways) {
-				this._gateways = Promise.resolve(
-					gateways.map( ( item: any ) => ({
-						arrival: item.arrival,
-						location: cache.gateways[ item.gateway ]
-					}) )
-				);
-			}
-			else {
-				this._gateways = new Promise( resolve => {
-					const initGateways = () => {
-						resolve(
-							gateways.map( ( item: any ) => ({
-								arrival: item.arrival,
-								location: cache.gateways[ item.gateway ]
-							}) )
-						);
-					};
-					window.addEventListener( 'gateways-loaded', initGateways, { once: true } );
-				} );
-			}
+			const points = this._parseRoute( data );
 			resolve( new CruiseRoute( points ) );
 			this.routeReady = true;
 		} );
@@ -347,7 +367,7 @@ class ShipData implements Ship {
 		}
 		return found;
 	}
-	
+
 	cruiseOn( datetime: Date ): Cruise | undefined {
 		const cruises = this.cruisesOn( datetime );
 		let i = 0;
@@ -398,16 +418,6 @@ function dataIsSane( type: 'cruise' | 'company' | 'ship', data: any ): boolean {
 	return true;
 }
 
-/*
-async function fetchCruise( id: string ) : Promise<Cruise> {
-	const data = await connector.send( apiEntries.cruiseByID, { id } ) ?? [];
-	if (!dataIsSane( 'cruise', data )) throw new Error( 'Invalid data' );
-	const ret = new CruiseData( data );
-	if (ret.shipId) await cache.ship( ret.shipId );
-	return ret;
-}
-*/
-
 let cruiseTracksToFetch: Record<string, ( data: any ) => void> = {};
 function fetchCruiseTracks( id: string ) {
 	const ret: Promise<any[]> = new Promise( resolve => {
@@ -424,7 +434,7 @@ function fetchCruiseTracks( id: string ) {
 			}
 		}
 	}, 10 );
-	
+
 	return ret;
 }
 
@@ -444,7 +454,7 @@ function fetchCruiseSights( id: string ) {
 			}
 		}
 	}, 10 );
-	
+
 	return ret;
 }
 
@@ -473,7 +483,7 @@ async function fetchSights( ids: string[] ) {
 			};
 		} );
 	}
-	
+
 	const promisesSet = new Set;
 	ids.forEach( id => {
 		if (cache.sights[ id ] instanceof Promise) promisesSet.add( cache.sights[ id ] );
@@ -547,6 +557,72 @@ async function fetchStartCruises() {
 	return;
 }
 
+async function fetchStartSingleCruise( cruiseId: string ) {
+	const { ship, company, 'stops-data': stops, 'sights-data': sights, gateways, ...cruise } = await connector.send( apiEntries.startCruise, { id: cruiseId } );
+
+	if (dataIsSane( 'company', company )) {
+		cache.companies.add( new CompanyData( company ) );
+	}
+	if (dataIsSane( 'ship', ship )) {
+		cache.ships.add( new ShipData( ship ) );
+	}
+
+	if (dataIsSane( 'cruise', cruise )) {
+		cache.stops = ( stops || [] ).reduce(
+			( ret: Record<string, Location>, item: any ) => {
+				ret[ item.id ] = {
+					id: item.id,
+					type: LocationType.REGULAR,
+					lat: item.lat,
+					lng: item.lng,
+					name: item.name,
+					//~ description: item.description,
+					//~ image: item.image,
+					// Это для тестирования. После переноса приложения на основной сайт проверку url можно будет убрать
+					image: item.image ? ( /^https?:\/\//.test( item.image ) ? '' : siteURL ) + item.image : '',
+					//~ link: item.url,
+					// Это для тестирования. После переноса приложения на основной сайт проверку url можно будет убрать
+					link: item.url ? ( /^https?:\/\//.test( item.url ) ? '' : siteURL ) + item.url : ''
+				};
+				return ret;
+			}, {}
+		) as Record<string, Location>;
+
+		( sights || [] ).forEach( ( item: any ) => {
+			cache.sights[ item.id ] = {
+				id: item.id,
+				type: LocationType.SHOWPLACE,
+				lat: item.lat,
+				lng: item.lng,
+				name: item.name,
+				category: item.category,
+				//~ description: item.description,
+				//~ image: item.image,
+				// Это для тестирования. После переноса приложения на основной сайт проверку url можно будет убрать
+				image: item.image ? ( /^https?:\/\//.test( item.image ) ? '' : siteURL ) + item.image : ''
+			};
+		} );
+
+		cache.gateways = ( gateways || [] ).reduce(
+			( ret: Record<string, Location>, item: any ) => {
+				ret[ item.id ] = {
+					id: item.id,
+					type: LocationType.GATEWAY,
+					lat: item.lat,
+					lng: item.lng,
+					name: item.name
+				};
+				return ret;
+			}, {}
+		) as Record<string, Location>;
+
+		cache.cruises.add( new CruiseData( cruise ) );
+		cache.setFilter({});
+
+		window.dispatchEvent( new Event( 'cruisesDataLoaded' ) );
+	}
+}
+
 class Cache {
 	activeCruises : number[] = [];
 	companies = new SortedList<Company>( ( a, b ) => a.name.localeCompare( b.name, 'ru', { ignorePunctuation: true } ) );
@@ -569,9 +645,15 @@ class CruiseAPICache extends Cache implements CruiseAPI {
 		endDate?: Date | null
 	} = {};
 
-	constructor() {
+	constructor( mapMode: string, entityId: string ) {
 		super();
-		fetchStartCruises();
+		switch (mapMode) {
+		case 'cruise':
+			fetchStartSingleCruise( entityId );
+			break;
+		default:
+			fetchStartCruises();
+		}
 	}
 
 	get navigationStartDate(): Date | undefined {
@@ -591,7 +673,7 @@ class CruiseAPICache extends Cache implements CruiseAPI {
 			else return;
 		}
 	}
-	
+
 	company( id : string ) : Company {
 		return this.companies.item( id );
 	}
@@ -647,9 +729,12 @@ class CruiseAPICache extends Cache implements CruiseAPI {
 	};
 }
 
-const cache = new CruiseAPICache;
+let cache: CruiseAPICache;
 
-export default cache;
+export default function init( mapMode: string, entityId: string ) {
+	cache = new CruiseAPICache( mapMode, entityId );
+	return cache;
+}
 
 function parseDate(dateString: string): Date {
 	let match = dateString
@@ -669,7 +754,7 @@ function parseDate(dateString: string): Date {
 function parseDepartureDate( dateString: string ): Date {
 	const date = parseDate( dateString );
 	if (!date) return;
-	
+
 	date.setHours( 0 );
 	date.setMinutes( 0 );
 	date.setSeconds( 0 );
@@ -680,7 +765,7 @@ function parseDepartureDate( dateString: string ): Date {
 function parseArrivalDate( dateString: string ): Date {
 	const date = parseDate( dateString );
 	if (!date) return;
-	
+
 	date.setHours( 23 );
 	date.setMinutes( 59 );
 	date.setSeconds( 59 );
