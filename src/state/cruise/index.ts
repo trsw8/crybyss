@@ -115,7 +115,7 @@ export class CruiseRoute {
 				let index = center;
 				while (index < this.points.length - 1 && !this.points[ index ].isStop && this.points[ index ].arrival >= this.points[ index + 1 ].arrival) index++;
 				while (index > 0 && !this.points[ index ].isStop && this.points[ index ].arrival <= this.points[ index - 1 ].arrival) index--;
-				return index > 0 && index < this.points.length - 1 ? this.points[index] : { ...this.points[index], angle: undefined };
+				return this.points[index];
 			}
 			if (arrival < needle) {
 				previous = center;
@@ -126,11 +126,11 @@ export class CruiseRoute {
 			}
 		}
 		if (previous < 0) {
-			return { ...this.points[0], angle: undefined };
+			return this.points[0];
 		}
 		else {
 			while (previous < this.points.length - 1 && this.points[ previous + 1 ].arrival <= this.points[ previous ].arrival) previous++;
-			if (previous >= this.points.length - 1) return { ...this.points[ this.points.length - 1 ], angle: undefined };
+			if (previous >= this.points.length - 1) return this.points[ this.points.length - 1 ];
 		};
 
 		const frac = (needle - +this.points[ previous ].arrival) / ( +this.points[ previous + 1 ].arrival - +this.points[ previous ].arrival );
@@ -152,6 +152,6 @@ export class CruiseRoute {
 		else if (!this.points[ previous ].isStop && !this.points[ previous + 1 ].isStop && this.points[ previous ].angle !== undefined) angle = this.points[ previous ].angle;
 		else if (!this.points[ previous ].isStop && !this.points[ previous + 1 ].isStop && this.points[ previous + 1 ].angle !== undefined) angle = this.points[ previous + 1 ].angle;
 
-        return { arrival: datetime, lat, lng, angle, isStop: false };
+        return { arrival: datetime, lat, lng, angle, isStop: this.points[ previous ].isStop || this.points[ previous + 1 ].isStop };
 	}
 }

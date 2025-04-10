@@ -1,5 +1,3 @@
-/// @todo: Убрать проверку пересечений и сделать расстановку кораблей на стоянке
-
 import {Marker} from 'leaflet';
 import {TypedEventTarget} from 'typescript-event-target';
 import showplaceMarkerIcon from '../../icons/showplace-marker.png';
@@ -83,6 +81,8 @@ export default class CruiseMap {
 	get ships(): Ship[] { return [ ...this._ships.values() ].map( item => item.ship ); }
 
 	declare selectedShip: ShipMarker | undefined;
+
+	private stoppedShips: Record<string, SVGElement[]> = {};
 
 	declare private _text: Text;
 	get text() { return this._text; }
@@ -173,24 +173,6 @@ export default class CruiseMap {
 			if (this._shipLayer.visible) this._trackLayer.show();
 			else this._trackLayer.hide();
 		} );
-
-		// Пока n-ному маркеру из сегмента пересечений добавляется кратное n значение сдвига.
-		// Не самое красивое решение...
-		this._shipLayer.events.addEventListener('intersect', ({
-			affectedMarkers, intersections
-		}) => {
-			affectedMarkers = new Set(affectedMarkers);
-			while (affectedMarkers.size > 0) {
-				const {value} = affectedMarkers.values().next();
-				let index = 0;
-				intersections.traverseBfs(value, marker => {
-					affectedMarkers.delete(marker);
-					marker.setIntersectionIndex(index++);
-				});
-				if (index <= 1)
-					value.unsetIntersectionIndex();
-			}
-		});
 	}
 
 	updateShipsCounter() {
@@ -252,7 +234,7 @@ export default class CruiseMap {
 	removeShip({id}: {id: string}): void {
 		if (!this._ships.has( id )) return;
 		const shipMarker = this._ships.get( id );
-		this._ships.delete( id )
+		this._ships.delete( id );
 		this.updateShipsCounter();
 
 		shipMarker.remove();
@@ -279,6 +261,29 @@ export default class CruiseMap {
 		const east = Math.max( ...longitudes );
 
 		this.map.fitBounds( south, west, north, east );
+	}
+
+	checkStoppedShips( coord: string, icon: SVGElement, atStop: boolean ) {
+		if (atStop) {
+			( this.stoppedShips[ coord ] ??= [] ).push( icon );
+		}
+		else {
+			icon.style.removeProperty( '--cruise-map__marker_intersection-index' );
+			if (this.stoppedShips[ coord ]) {
+				const el = this.stoppedShips[ coord ].indexOf( icon );
+				if (el >= 0) this.stoppedShips[ coord ].splice( el, 1 );
+			}
+		}
+
+		if (this.stoppedShips[ coord ]) {
+			const halfCount = this.stoppedShips[ coord ].length / 2 - 0.5;
+			this.stoppedShips[ coord ].forEach( ( icon, index ) => {
+				icon.style.setProperty(
+					'--cruise-map__marker_intersection-index',
+					`${index - halfCount}`,
+				);
+			} );
+		}
 	}
 }
 
@@ -327,6 +332,7 @@ class ShipMarker implements InteractiveMapMarker {
 	declare isHover: boolean;
 	declare _isDeleted: boolean;
 
+	_atStop: string = '';
 	cruises: Cruise[] = [];
 
 	icon = svgAsset(
@@ -338,7 +344,6 @@ class ShipMarker implements InteractiveMapMarker {
 
 	declare ship: Ship;
 	private rotateAngle = 0;
-	private intersectionIndex?: number = undefined;
 
 	constructor(
 		map: CruiseMap,
@@ -440,28 +445,52 @@ class ShipMarker implements InteractiveMapMarker {
 		}
 
 		if (cruise) {
-			const {lat, lng, angle} = await this.ship.positionAt( datetime );
+			let {lat, lng, angle, isStop} = await this.ship.positionAt( datetime );
 			if (!this._isDeleted && datetime === this.datetime) {      // Выполняем только последнее запрошенное перемещение
 				if (lat === this.lat && lng === this.lng)
 					return;
+
+				if (!lat || !lng) {
+					lat = 0;
+					lng = 0;
+					angle = null;
+					isStop = false;
+				}
+
+				const stopCoords = isStop ? `${lat.toFixed(4)},${lng.toFixed(4)}` : '';
+				if (!!this._atStop !== isStop || ( isStop && stopCoords !== this._atStop )) {
+					if (this._atStop) this.map.checkStoppedShips( this._atStop, this.icon, false );
+					if (isStop) {
+						this.map.checkStoppedShips( stopCoords, this.icon, true );
+						this._atStop = stopCoords;
+					}
+					else {
+						this._atStop = '';
+					}
+				}
+
 				this.lat = lat;
 				this.lng = lng;
-				//~ const nextPoint = points[
-					//~ points.length > pointIndex + 1 ? pointIndex + 1 : pointIndex
-				//~ ];
-				//~ const [x1, y1] = this.map.coordsToPoint(lat, lng);
-				//~ const [x2, y2] = this.map.coordsToPoint(nextPoint.lat, nextPoint.lng);
-				//~ this.rotateAngle = Math.atan2((y2 - y1), (x2 - x1)) / Math.PI / 2;
+
 				this.rotateAngle = ( ( angle ?? 90 ) - 90 ) / 360;
 				this.rotate();
 
-				if (!this.marker) {
-					this._createMarker();
-				}
-				else {
-					if (this.isHover || this === this.map.selectedShip ) {
-						this.map.cruiseAsset( this.activeCruise?.id )?.showTrack( this.marker );
+				if (lat && lng) {
+					if (!this.marker) {
+						this._createMarker();
 					}
+					else {
+						if (this.isHover || this === this.map.selectedShip ) {
+							this.map.cruiseAsset( this.activeCruise?.id )?.showTrack( this.marker );
+						}
+					}
+					if (this !== this.map.selectedShip) {
+						if (this._atStop) this.marker?.setZIndexOffset( -1000 );
+						else this.marker?.setZIndexOffset( 0 );
+					}
+				}
+				else if (this.marker) {
+					this._removeMarker();
 				}
 
 				this.events.dispatchEvent(new Event('locationchange'));
@@ -502,31 +531,11 @@ class ShipMarker implements InteractiveMapMarker {
 		this._isDeleted = true;
 	}
 
-	/** Установить сдвиг */
-	setIntersectionIndex(index: number): void {
-		this.intersectionIndex = index;
-		this.icon.style.setProperty(
-			'--cruise-map__marker_intersection-index',
-			`${index}`,
-		);
-		this.rotate();
-	}
-
-	/** Убрать сдвиг */
-	unsetIntersectionIndex(): void {
-		this.intersectionIndex = undefined;
-		this.icon.style.removeProperty('--cruise-map__marker_intersection-index');
-		this.rotate();
-	}
-
 	private rotate(): void {
-		//~ if (this.intersectionIndex === undefined)
 			this.icon.style.setProperty(
 				'--cruise-map__marker_angle',
 				`${this.rotateAngle}turn`,
 			);
-		//~ else
-			//~ this.icon.style.removeProperty('--cruise-map__marker_angle');
 	}
 
 	_createMarker(): void {
@@ -599,6 +608,7 @@ class ShipMarker implements InteractiveMapMarker {
 				const cruise = this.map.cruiseAsset( this.activeCruise.id );
 				cruise?.hideTrack();
 			}
+			if (this._atStop) this.map.checkStoppedShips( this._atStop, this.icon, false );
 			this.map.removeMarker( 'ship', this );
 		}
 	}
