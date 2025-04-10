@@ -376,7 +376,7 @@ export default abstract class LeafletMap extends Map {
     }
     // страница круиза конец
     // страница стоянок начало
-    if (new URL(location.toString()).searchParams.get('stops')) {
+    if (new URL(location.toString()).searchParams.get('stops') === 'true') {
       window.addEventListener('cruiseStopsCreated', (event: Event) => {
         const {stops} = (event as CustomEvent).detail;
         const {northPoint, southPoint, westPoint, eastPoint} = stops;
@@ -397,7 +397,9 @@ export default abstract class LeafletMap extends Map {
     }
     // страница стоянок конец
     // страница одной стоянки начало
-    if (new URL(location.toString()).searchParams.get('stop_page')) {
+    if (new URL(location.toString()).searchParams.get('stops')
+      && new URL(location.toString()).searchParams.get('stops') !== 'true'
+  ) {
       window.addEventListener('cruiseStopsCreated', (event: Event) => {
         const {stops} = (event as CustomEvent).detail;
         const {northPoint, southPoint, westPoint, eastPoint} = stops;

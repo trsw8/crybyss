@@ -173,7 +173,9 @@ export default class MapOverlay extends DOMComponent {
     }
     // страница круиза конец
     // страница стоянок начало
-    if (new URL(location.toString()).searchParams.get('stops')) {
+    console.log(new URL(location.toString()).searchParams.get('stops'));
+    
+    if (new URL(location.toString()).searchParams.get('stops') === 'true') {
       document.body.classList.add('stops-page');
       const shipButton = document.querySelector('.map-overlay--ship') as HTMLInputElement;
       if (shipButton) shipButton.click();
@@ -184,7 +186,8 @@ export default class MapOverlay extends DOMComponent {
     }
     // страница стоянок конец
     // страница одной стоянки начало
-    if (new URL(location.toString()).searchParams.get('stop_page')) {
+    if (new URL(location.toString()).searchParams.get('stops')
+      && new URL(location.toString()).searchParams.get('stops') !== 'true') {
       document.body.classList.add('stops-page');
       document.body.classList.add('one-stop-page');
       const shipButton = document.querySelector('.map-overlay--ship') as HTMLInputElement;
