@@ -318,7 +318,6 @@ class ShipMarker implements InteractiveMapMarker {
 
 	declare ship: Ship;
 	private rotateAngle = 0;
-	//~ private intersectionIndex?: number = undefined;
 
 	constructor(
 		map: CruiseMap,
@@ -500,23 +499,6 @@ class ShipMarker implements InteractiveMapMarker {
 		this._removeMarker();
 		this._isDeleted = true;
 	}
-
-	//~ /** Установить сдвиг */
-	//~ setIntersectionIndex(index: number): void {
-		//~ this.intersectionIndex = index;
-		//~ this.icon.style.setProperty(
-			//~ '--cruise-map__marker_intersection-index',
-			//~ `${index}`,
-		//~ );
-		//~ this.rotate();
-	//~ }
-
-	//~ /** Убрать сдвиг */
-	//~ unsetIntersectionIndex(): void {
-		//~ this.intersectionIndex = undefined;
-		//~ this.icon.style.removeProperty('--cruise-map__marker_intersection-index');
-		//~ this.rotate();
-	//~ }
 
 	private rotate(): void {
 			this.icon.style.setProperty(
