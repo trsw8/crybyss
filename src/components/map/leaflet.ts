@@ -357,68 +357,6 @@ export default abstract class LeafletMap extends Map {
       });
     }
     // блок с кнопками масштабирования конец
-    // страница стоянок начало
-    if (new URL(location.toString()).searchParams.has('stops')) {
-      window.addEventListener('cruiseStopsCreated', (event: Event) => {
-        const {stops} = (event as CustomEvent).detail;
-        const {northPoint, southPoint, westPoint, eastPoint} = stops;
-
-        // Создаем границы для карты
-        const bounds = L.latLngBounds(
-          [southPoint, westPoint], // юго-западная точка
-          [northPoint, eastPoint]  // северо-восточная точка
-        );
-
-        // Устанавливаем вид карты по границам с небольшим отступом
-        this.map.fitBounds(bounds, {
-          padding: [20, 20], // отступ в пикселях со всех сторон
-          maxZoom: 12, // ограничиваем максимальное приближение
-          animate: true // плавная анимация
-        });
-      });
-    }
-    // страница стоянок конец
-    // страница одной стоянки начало
-    if (new URL(location.toString()).searchParams.has('stop')) {
-      window.addEventListener('cruiseStopsCreated', (event: Event) => {
-        const {stops} = (event as CustomEvent).detail;
-        const {northPoint, southPoint, westPoint, eastPoint} = stops;
-        console.log('stops', stops)
-
-        // Создаем границы для карты
-        const bounds = L.latLngBounds(
-          [southPoint.lat, westPoint.lng], // юго-западная точка
-          [northPoint.lat, eastPoint.lng]  // северо-восточная точка
-        );
-
-        // Устанавливаем вид карты по границам с небольшим отступом
-        this.map.fitBounds(bounds, {
-          padding: [20, 20], // отступ в пикселях со всех сторон
-          maxZoom: 12, // ограничиваем максимальное приближение
-          animate: true // плавная анимация
-        });
-      });
-    }
-    // страница одной стоянки конец
-    // страница достопримечательностей начало
-    if (new URL(location.toString()).searchParams.get('place')) {
-      window.addEventListener('cruisePlaceCreated', (event: Event) => {
-        const {sights} = (event as CustomEvent).detail;
-        const {northPoint, southPoint, westPoint, eastPoint} = sights;
-        // Создаем границы для карты
-        const bounds = L.latLngBounds(
-          [southPoint.lat, westPoint.lng], // юго-западная точка
-          [northPoint.lat, eastPoint.lng]  // северо-восточная точка
-        );
-
-        // Устанавливаем вид карты по границам с небольшим отступом
-        this.map.fitBounds(bounds, {
-          padding: [20, 20], // отступ в пикселях со всех сторон
-          maxZoom: 12, // ограничиваем максимальное приближение
-          animate: true // плавная анимация
-        });
-      });
-    }
   }
   // страница достопримечательностей конец
 

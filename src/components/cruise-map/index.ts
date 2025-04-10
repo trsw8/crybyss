@@ -191,71 +191,7 @@ export default class CruiseMap {
 					value.unsetIntersectionIndex();
 			}
 		});
-
-		window.addEventListener('cruisesDataLoaded', (event: Event) => {
-			// стоянки
-			setTimeout(async () => {
-				if (new URL(location.toString()).searchParams.has('stops')
-				|| new URL(location.toString()).searchParams.has('stop')
-				) {
-					const stops: any[] = [];
-					const stopKeys: string[] = [];
-
-					for (const item of this._cruises.values()) {
-						const stopsArray = await item.cruise.stops;
-						stopsArray.forEach((value) => {
-							if (!stopKeys.includes(value.location.id)) {
-								stopKeys.push(value.location.id);
-								stops.push({lat: value.location.lat, lng: value.location.lng});
-							}
-						});
-					};
-					const latitudes = stops.map(p => p.lat);
-					const longitudes = stops.map(p => p.lng);
-
-					const northPoint =  Math.max(...latitudes);
-					const southPoint =  Math.min(...latitudes);
-					const westPoint =  Math.min(...longitudes);
-					const eastPoint =  Math.max(...longitudes);
-
-					if (!!northPoint && !!southPoint && !!westPoint && !!eastPoint) {
-						window.dispatchEvent(new CustomEvent('cruiseStopsCreated', {detail: { stops: {northPoint, southPoint, westPoint, eastPoint}}}));
-					}
-				}
-			}, 1500)
-
-			// достопримечательности
-			setTimeout(() => {
-				if (new URL(location.toString()).searchParams.get('place')) {
-					const sights: any[] = [];
-					const sightKeys: string[] = [];
-
-					console.log(Array.from(this._cruises.values()));
-
-					Array.from(this._cruises.values()).forEach((item) => {
-						const sightsArray = Object.entries(item.sights);
-						sightsArray.forEach((value) => {
-							if (!sightKeys.includes(value[0])) {
-								sightKeys.push(value[0]);
-								sights.push({lat: value[1].lat, lng: value[1].lng});
-							}
-						});
-					});
-					const latitudes = sights.map(p => p.lat);
-					const longitudes = sights.map(p => p.lng);
-
-					const northPoint = sights.find(p => p.lat === Math.max(...latitudes));
-					const southPoint = sights.find(p => p.lat === Math.min(...latitudes));
-					const westPoint = sights.find(p => p.lng === Math.min(...longitudes));
-					const eastPoint = sights.find(p => p.lng === Math.max(...longitudes));
-
-					window.dispatchEvent(new CustomEvent('cruisePlaceCreated', {detail: { sights: {northPoint, southPoint, westPoint, eastPoint}}}))
-				}
-			}, 1500)
-		})
 	}
-
-
 
 	updateShipsCounter() {
 		const shipsNotInCruise = [ ...this._ships.values() ].filter( ship => !ship.activeCruise ).length;
@@ -321,6 +257,28 @@ export default class CruiseMap {
 
 		shipMarker.remove();
 		this.events.dispatchEvent(new Event('timerangechanged'));
+	}
+	
+	forceShowPlaces( places: Location[] ) {
+		const latitudes = [];
+		const longitudes = [];
+
+		for (const place of places) {
+			const { id, type, lat, lng } = place;
+			this.attachLocationMarker(
+				id, type, lat, lng,
+				() => CruiseAssets.locationPopup( place, this ),
+			);
+			latitudes.push( lat );
+			longitudes.push( lng );
+		}
+
+		const north = Math.max( ...latitudes );
+		const south = Math.min( ...latitudes );
+		const west = Math.min( ...longitudes );
+		const east = Math.max( ...longitudes );
+
+		this.map.fitBounds( south, west, north, east );
 	}
 }
 
@@ -718,7 +676,7 @@ class CruiseAssets {
 		this.hideSunsets();
 	}
 
-	private static async locationPopup( stop: Location, map: CruiseMap ): Promise<Element> {
+	static async locationPopup( stop: Location, map: CruiseMap ): Promise<Element> {
 		//~ const {lat, lng, type, name, category, description, image, link } = stop;
 		const {lat, lng, type, name, category, image, link } = stop;
 		//~ const arrival;
@@ -745,6 +703,12 @@ class CruiseAssets {
 						LocatedItemDescriptionText.create(name, undefined, { title: true }),
 					], LocatedItemDescriptionGap.SMALL),
 					...categoryNameElements,
+					LocatedItemDescriptionButton.create(
+						map.text.GO_TO_PLACE,
+						() => {
+							location.assign( link );
+						},
+					),
 					LocatedItemDescriptionLocation.create(lat, lng),
 					//~ descriptionElement,
 				], LocatedItemDescriptionGap.MEDIUM),
@@ -849,11 +813,9 @@ class CruiseAssets {
 		if (!this._stopsVisible && this.map.selectedShip?.cruises.includes( this.cruise )) {
 			this._stopsVisible = true;
 			const stops = await this.cruise.stops;
-			const stopId = new URL(location.toString()).searchParams.get('stop');
 			if (this._stopsVisible) {
 				for (const stop of stops) {
 					const { id, lat, lng } = stop.location;
-					if (!!stopId && stopId !== id) continue;
 					if (!this.stops[ id ]) {
 						this.stops[ id ] = this.map.attachLocationMarker(
 							id, LocationType.REGULAR, lat, lng,

@@ -10,6 +10,8 @@ const apiURL = 'https://krubiss.ru/api2';
 const apiEntries = {
 	start : '?service=map&method=start',
 	startCruise : '?service=map&method=start&option=cruise',
+	startStops : '?service=map&method=start&option=stops',
+	startSights : '?service=map&method=start&option=sights',
 	stops : '?service=map&method=stops',
 	cruiseSights : '?service=map&method=sights&option=byCruiseId',
 	sightsByIds : '?service=map&method=sights&option=byIds',
@@ -599,7 +601,10 @@ async function fetchStartSingleCruise( cruiseId: string ) {
 				//~ description: item.description,
 				//~ image: item.image,
 				// Это для тестирования. После переноса приложения на основной сайт проверку url можно будет убрать
-				image: item.image ? ( /^https?:\/\//.test( item.image ) ? '' : siteURL ) + item.image : ''
+				image: item.image ? ( /^https?:\/\//.test( item.image ) ? '' : siteURL ) + item.image : '',
+				//~ link: item.url,
+				// Это для тестирования. После переноса приложения на основной сайт проверку url можно будет убрать
+				link: item.url ? ( /^https?:\/\//.test( item.url ) ? '' : siteURL ) + item.url : ''
 			};
 		} );
 
@@ -621,6 +626,38 @@ async function fetchStartSingleCruise( cruiseId: string ) {
 
 		window.dispatchEvent( new Event( 'cruisesDataLoaded' ) );
 	}
+}
+
+async function fetchStartLocations(type: string, id?: string) {
+	const url = type === 'stops' ? apiEntries.startStops : apiEntries.startSights;
+	const body = id ? { id } : null;
+	
+	const data = await connector.send( url, body );
+	const result = ( data || [] ).reduce(
+		( ret: Record<string, Location>, item: any ) => {
+			ret[ item.id ] = {
+				id: item.id,
+				type: type === 'stops' ? LocationType.REGULAR : LocationType.SHOWPLACE,
+				lat: item.lat,
+				lng: item.lng,
+				name: item.name,
+				//~ description: item.description,
+				//~ image: item.image,
+				// Это для тестирования. После переноса приложения на основной сайт проверку url можно будет убрать
+				image: item.image ? ( /^https?:\/\//.test( item.image ) ? '' : siteURL ) + item.image : '',
+				//~ link: item.url,
+				// Это для тестирования. После переноса приложения на основной сайт проверку url можно будет убрать
+				link: item.url ? ( /^https?:\/\//.test( item.url ) ? '' : siteURL ) + item.url : ''
+			};
+			if (type === 'sights') ret[ item.id ].category = item.category;
+			return ret;
+		}, {}
+	) as Record<string, Location>;
+	
+	if (type === 'stops') cache.stops = result;
+	else cache.sights = result;
+
+	window.dispatchEvent( new Event( 'cruisesDataLoaded' ) );
 }
 
 class Cache {
@@ -650,6 +687,18 @@ class CruiseAPICache extends Cache implements CruiseAPI {
 		switch (mapMode) {
 		case 'cruise':
 			fetchStartSingleCruise( entityId );
+			break;
+		case 'stops':
+			fetchStartLocations( 'stops' );
+			break;
+		case 'single-stop':
+			fetchStartLocations( 'stops', entityId );
+			break;
+		case 'places':
+			fetchStartLocations( 'sights' );
+			break;
+		case 'single-place':
+			fetchStartLocations( 'sights', entityId );
 			break;
 		default:
 			fetchStartCruises();
@@ -707,6 +756,15 @@ class CruiseAPICache extends Cache implements CruiseAPI {
 			companyIds[ ship.company.id ] = true;
 		}
 		yield* this.companies.filter( company => companyIds[ company.id ] );
+	}
+	
+	get allStops(): Location[] {
+		if (this.stops) return Object.values( this.stops );
+		else return [];
+	}
+	
+	get allSights(): Location[] {
+		return Object.values( this.sights ).filter( item => !( item instanceof Promise ) ) as Location[];
 	}
 
 	setFilter( options: { companyName?: string, shipName?: string, startDate?: Date | null, endDate?: Date | null } ) {

@@ -8,6 +8,7 @@ import './index.css';
 
 const text = {
 	GO_TO_TRACKSTOP: 'Перейти на стоянку',
+	GO_TO_PLACE: 'Перейти на место',
 };
 
 let mapMode;
@@ -24,8 +25,11 @@ else if (url.searchParams.has('stop')) {
 	mapMode = 'single-stop';
 	entityId = url.searchParams.get('stop');
 }
+else if (url.searchParams.has('places')) {
+	mapMode = 'places';
+}
 else if (url.searchParams.has('place')) {
-	mapMode = 'place';
+	mapMode = 'single-place';
 	entityId = url.searchParams.get('place');
 }
 else {

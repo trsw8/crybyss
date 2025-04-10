@@ -10,6 +10,8 @@ export interface CruiseAPI {
 	allShips: () => Iterable<Ship>;
 	allCompanies: () => Iterable<Company>;
 	setFilter: ( options: { companyName?: string, shipName?: string, startDate?: Date | null, endDate?: Date | null } ) => void;
+	allStops: Location[];
+	allSights: Location[];
 }
 
 export interface Cruise {

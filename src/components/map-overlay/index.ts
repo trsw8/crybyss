@@ -176,15 +176,26 @@ export default class MapOverlay extends DOMComponent {
 		}
 		// страница круиза конец
 		// страница стоянок начало
-		if (mapMode === 'stops' || mapMode === 'single-stop' || mapMode === 'place') {
+		if (mapMode === 'stops' || mapMode === 'single-stop' || mapMode === 'places' || mapMode === 'single-place') {
 			document.body.classList.add('stops-page');
-			if (mapMode === 'single-stop' || mapMode === 'place') document.body.classList.add('one-stop-page');
+			if (mapMode === 'single-stop' || mapMode === 'single-place') document.body.classList.add('one-stop-page');
 			const shipButton = document.querySelector('.map-overlay--ship') as HTMLInputElement;
 			if (shipButton) shipButton.click();
 			const gatewaysButton = document.querySelector('.map-overlay--gateways') as HTMLInputElement;
 			if (gatewaysButton) gatewaysButton.click();
-			const sightsButton = document.querySelector('.map-overlay--place') as HTMLInputElement;
-			if (sightsButton) sightsButton.click();
+			if (mapMode === 'stops' || mapMode === 'single-stop') {
+				const sightsButton = document.querySelector('.map-overlay--place') as HTMLInputElement;
+				if (sightsButton) sightsButton.click();
+			}
+			else {
+				const stopsButton = document.querySelector('.map-overlay--anchor') as HTMLInputElement;
+				if (stopsButton) stopsButton.click();
+			}
+			
+			window.addEventListener("cruisesDataLoaded", () => {
+				const locations = mapMode === 'stops' || mapMode === 'single-stop' ? api.allStops : api.allSights;
+				cruiseMap.forceShowPlaces( locations );
+			});
 		}
 
 		// яндекс
@@ -782,8 +793,8 @@ class DateFilter {
 			}
 		});
 
-		window.addEventListener("cruisesDataLoaded", () => {
-			if (cruiseMap.mapMode === 'cruise') {
+		if (cruiseMap.mapMode === 'cruise') {
+			window.addEventListener("cruisesDataLoaded", () => {
 				const ship: Ship = api.allShips()[Symbol.iterator]().next().value;
 				const cruise = ship?.cruises()[Symbol.iterator]().next().value;
 				if (!ship || !cruise) return;
@@ -791,8 +802,8 @@ class DateFilter {
 				const mapTime = cruiseMap.timelinePoint;
 				if (+mapTime < +cruise.departure) setDateTime( cruise.departure );
 				else if (+mapTime > cruise.arrival) setDateTime( cruise.arrival );
-			}
-		});
+			});
+		}
 
 		window.addEventListener("DOMContentLoaded", () => {
 			if (window.innerWidth < 901 && !document.body.classList.contains('cruise-page')) {
