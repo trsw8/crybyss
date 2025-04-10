@@ -81,6 +81,8 @@ export default class CruiseMap {
 
 	declare selectedShip: ShipMarker | undefined;
 
+	private stoppedShips: Record<string, SVGElement[]> = {};
+
 	declare private _text: Text;
 	get text() { return this._text; }
 	/** Счетчики остановок / достопримечательностей для избежания повторного их добавления */
@@ -228,11 +230,34 @@ export default class CruiseMap {
 	removeShip({id}: {id: string}): void {
 		if (!this._ships.has( id )) return;
 		const shipMarker = this._ships.get( id );
-		this._ships.delete( id )
+		this._ships.delete( id );
 		this.updateShipsCounter();
 
 		shipMarker.remove();
 		this.events.dispatchEvent(new Event('timerangechanged'));
+	}
+
+	checkStoppedShips( coord: string, icon: SVGElement, atStop: boolean ) {
+		if (atStop) {
+			( this.stoppedShips[ coord ] ??= [] ).push( icon );
+		}
+		else {
+			icon.style.removeProperty( '--cruise-map__marker_intersection-index' );
+			if (this.stoppedShips[ coord ]) {
+				const el = this.stoppedShips[ coord ].indexOf( icon );
+				if (el >= 0) this.stoppedShips[ coord ].splice( el, 1 );
+			}
+		}
+
+		if (this.stoppedShips[ coord ]) {
+			const halfCount = this.stoppedShips[ coord ].length / 2 - 0.5;
+			this.stoppedShips[ coord ].forEach( ( icon, index ) => {
+				icon.style.setProperty(
+					'--cruise-map__marker_intersection-index',
+					`${index - halfCount}`,
+				);
+			} );
+		}
 	}
 }
 
@@ -281,6 +306,7 @@ class ShipMarker implements InteractiveMapMarker {
 	declare isHover: boolean;
 	declare _isDeleted: boolean;
 
+	_atStop: string = '';
 	cruises: Cruise[] = [];
 
 	icon = svgAsset(
@@ -394,28 +420,47 @@ class ShipMarker implements InteractiveMapMarker {
 		}
 
 		if (cruise) {
-			const {lat, lng, angle} = await this.ship.positionAt( datetime );
+			let {lat, lng, angle, isStop} = await this.ship.positionAt( datetime );
 			if (!this._isDeleted && datetime === this.datetime) {      // Выполняем только последнее запрошенное перемещение
 				if (lat === this.lat && lng === this.lng)
 					return;
+
+				if (!lat || !lng) {
+					lat = 0;
+					lng = 0;
+					angle = null;
+					isStop = false;
+				}
+
+				const stopCoords = isStop ? `${lat.toFixed(4)},${lng.toFixed(4)}` : '';
+				if (!!this._atStop !== isStop || ( isStop && stopCoords !== this._atStop )) {
+					if (this._atStop) this.map.checkStoppedShips( this._atStop, this.icon, false );
+					if (isStop) this.map.checkStoppedShips( stopCoords, this.icon, true );
+					this._atStop = stopCoords;
+				}
+
 				this.lat = lat;
 				this.lng = lng;
-				//~ const nextPoint = points[
-					//~ points.length > pointIndex + 1 ? pointIndex + 1 : pointIndex
-				//~ ];
-				//~ const [x1, y1] = this.map.coordsToPoint(lat, lng);
-				//~ const [x2, y2] = this.map.coordsToPoint(nextPoint.lat, nextPoint.lng);
-				//~ this.rotateAngle = Math.atan2((y2 - y1), (x2 - x1)) / Math.PI / 2;
+
 				this.rotateAngle = ( ( angle ?? 90 ) - 90 ) / 360;
 				this.rotate();
 
-				if (!this.marker) {
-					this._createMarker();
-				}
-				else {
-					if (this.isHover || this === this.map.selectedShip ) {
-						this.map.cruiseAsset( this.activeCruise?.id )?.showTrack( this.marker );
+				if (lat && lng) {
+					if (!this.marker) {
+						this._createMarker();
 					}
+					else {
+						if (this.isHover || this === this.map.selectedShip ) {
+							this.map.cruiseAsset( this.activeCruise?.id )?.showTrack( this.marker );
+						}
+					}
+					if (this !== this.map.selectedShip) {
+						if (this._atStop) this.marker?.setZIndexOffset( -1000 );
+						else this.marker?.setZIndexOffset( 0 );
+					}
+				}
+				else if (this.marker) {
+					this._removeMarker();
 				}
 
 				this.events.dispatchEvent(new Event('locationchange'));
@@ -548,6 +593,7 @@ class ShipMarker implements InteractiveMapMarker {
 				const cruise = this.map.cruiseAsset( this.activeCruise.id );
 				cruise?.hideTrack();
 			}
+			if (this._atStop) this.map.checkStoppedShips( this._atStop, this.icon, false );
 			this.map.removeMarker( 'ship', this );
 		}
 	}
