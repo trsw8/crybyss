@@ -169,24 +169,6 @@ export default class CruiseMap {
 			if (this._shipLayer.visible) this._trackLayer.show();
 			else this._trackLayer.hide();
 		} );
-
-		//~ // Пока n-ному маркеру из сегмента пересечений добавляется кратное n значение сдвига.
-		//~ // Не самое красивое решение...
-		//~ this._shipLayer.events.addEventListener('intersect', ({
-			//~ affectedMarkers, intersections
-		//~ }) => {
-			//~ affectedMarkers = new Set(affectedMarkers);
-			//~ while (affectedMarkers.size > 0) {
-				//~ const {value} = affectedMarkers.values().next();
-				//~ let index = 0;
-				//~ intersections.traverseBfs(value, marker => {
-					//~ affectedMarkers.delete(marker);
-					//~ marker.setIntersectionIndex(index++);
-				//~ });
-				//~ if (index <= 1)
-					//~ value.unsetIntersectionIndex();
-			//~ }
-		//~ });
 	}
 
 	updateShipsCounter() {
@@ -432,8 +414,13 @@ class ShipMarker implements InteractiveMapMarker {
 				const stopCoords = isStop ? `${lat.toFixed(4)},${lng.toFixed(4)}` : '';
 				if (!!this._atStop !== isStop || ( isStop && stopCoords !== this._atStop )) {
 					if (this._atStop) this.map.checkStoppedShips( this._atStop, this.icon, false );
-					if (isStop) this.map.checkStoppedShips( stopCoords, this.icon, true );
-					this._atStop = stopCoords;
+					if (isStop) {
+						this.map.checkStoppedShips( stopCoords, this.icon, true );
+						this._atStop = stopCoords;
+					}
+					else {
+						this._atStop = '';
+					}
 				}
 
 				this.lat = lat;
