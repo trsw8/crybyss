@@ -63,16 +63,18 @@
   width: 100%;
 
   .symbol {
-    display: inline-block;
     border: 1px solid #32739d;
     color: #32739d;
-    padding: 0px 5px;
+    /* padding: 0px 5px; */
     width: 17.5px;
     height: 17.5px;
     border-radius: 50%;
     font-size: 12px;
     line-height: 17px;
     text-align: center;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
 
   p {
@@ -102,8 +104,11 @@
     height: 11px;
     font-size: 9px;
     line-height: 9px;
-    padding: 0px 2px;
-    text-align: center;
+    /* padding: 0px 2px;
+    text-align: center; */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
 }
 
