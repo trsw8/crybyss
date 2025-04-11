@@ -1090,6 +1090,12 @@ body .map-overlay--range-dates .rs-container .rs-pointer {
   width: 37px;
 }
 
+@media (max-width: 1023px) {
+  .range--deco-point {
+    display: none;
+  }
+}
+
 .stops-page .map-overlay--search,
 .stops-page .map-overlay--time-indicator,
 .stops-page .map-overlay--ships-wrapper,
