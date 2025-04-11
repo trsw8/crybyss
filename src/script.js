@@ -11,11 +11,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
     let selectedDate = new Date();
     function updateCalendar() {
-        const [ d, m, y ] = input.value.split( '.' ).map( Number );
-        if (d && m && y) selectedDate = new Date( y, m - 1, d );
         calendarBody.innerHTML = "";
         const year = selectedDate.getFullYear();
         const month = selectedDate.getMonth();
+        const d = selectedDate.getDate();
 
         const firstDay = new Date(year, month, 1).getDay();
         const lastDate = new Date(year, month + 1, 0).getDate();
@@ -56,36 +55,30 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    confirm.addEventListener("click", function () {
-        calendar.classList.add("hidden");
-    });
-
     const calendarSvgWrapper = document.querySelector('.calendar-svg-wrapper');
+    const toggleCalendar = (event) => {
+        if (!calendar.classList.contains('hidden')) {
+            calendar.classList.add('hidden');
+        } else {
+            const [ d, m, y ] = input.value.split( '.' ).map( Number );
+            if (d && m && y) selectedDate = new Date( y, m - 1, d );
+            updateCalendar();
+            calendar.classList.remove('hidden');
+        }
+    }
+    
     if (calendarSvgWrapper) {
-        calendarSvgWrapper.addEventListener("click", (event) => {
-            if (!calendar.classList.contains('hidden-calendar')) {
-                calendar.classList.add('hidden-calendar');
-            } else {
-                calendar.classList.remove('hidden-calendar');
-            }
-        });
+        calendarSvgWrapper.addEventListener("click", toggleCalendar);
     }
 
-    const datepickerLabel = document.querySelector('.datepicker-label input');
-    if (datepickerLabel) {
-        datepickerLabel.addEventListener("click", (event) => {
-            if (event.target.closest('.calendar-svg-wrapper')) return;
-            if (!calendar.classList.contains('hidden-calendar')) {
-                calendar.classList.add('hidden-calendar');
-            }
-        });
+    if (input) {
+        input.addEventListener("click", toggleCalendar);
     }
 
-    const confirmBtn = document.querySelector('#confirm');
-    if (confirmBtn) {
-        confirmBtn.addEventListener("click", (event) => {
-            if (!calendar.classList.contains('hidden-calendar')) {
-                calendar.classList.add('hidden-calendar');
+    if (confirm) {
+        confirm.addEventListener("click", (event) => {
+            if (!calendar.classList.contains('hidden')) {
+                calendar.classList.add('hidden');
             }
         });
     }
@@ -93,8 +86,8 @@ document.addEventListener("DOMContentLoaded", function () {
     document.addEventListener("click", (event) => {
         if (!event.target.closest('.datepicker-label')
         && !event.target.closest('#datepicker-calendar')) {
-            if (!calendar.classList.contains('hidden-calendar')) {
-                calendar.classList.add('hidden-calendar');
+            if (!calendar.classList.contains('hidden')) {
+                calendar.classList.add('hidden');
             }
         }
     });
@@ -136,13 +129,4 @@ document.addEventListener("DOMContentLoaded", function () {
     timeDisplay.addEventListener("click", function () {
         timeInput.showPicker(); //
     });
-
-    //~ window.addEventListener('timeline-change', function (event) {
-        //~ const date = event.detail;
-        //~ const day = date.getDate();
-        //~ const month = date.getMonth() + 1;
-        //~ const year = date.getFullYear();
-        //~ const formattedDate = `${day}/${month}/${year}`;
-        //~ input.value = formattedDate;
-    //~ });
 });

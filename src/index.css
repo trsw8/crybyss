@@ -169,14 +169,6 @@
   display: none;
 }
 
-#datepicker-calendar.hidden {
-  display: block;
-}
-
-#datepicker-calendar.hidden-calendar {
-  display: none;
-}
-
 .calendar-header {
   display: flex;
   justify-content: space-between;

@@ -192,15 +192,16 @@ export default class MapOverlay extends DOMComponent {
 				if (stopsButton) stopsButton.click();
 			}
 			
-			window.addEventListener("cruisesDataLoaded", () => {
-				const locations = mapMode === 'stops' || mapMode === 'single-stop' ? api.allStops : api.allSights;
-				cruiseMap.forceShowPlaces( locations );
-			});
+			if (mapMode === 'single-stop' || mapMode === 'single-place') {
+				window.addEventListener("cruisesDataLoaded", () => {
+					const locations = mapMode === 'single-stop' ? api.allStops : api.allSights;
+					cruiseMap.forceShowPlaces( locations );
+				});
+			}
 		}
 
 		// яндекс
 		const yandexMap = document.querySelector('.map-overlay--overlays-box #over2') as HTMLElement;
-		console.log('yandexMap', yandexMap)
 		if (yandexMap) yandexMap.click();
 	}
 }
