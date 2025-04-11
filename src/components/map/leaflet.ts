@@ -14,7 +14,8 @@ import {
   Point,
   PointExpression,
   LatLngExpression,
-  LeafletMouseEvent
+  LeafletMouseEvent,
+  DomEvent
 } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import Map, {
@@ -490,11 +491,36 @@ class LeafletPane<
       }
     );
     interactiveMarker.marker = lMarker;
+    let timer: ReturnType<typeof setTimeout>;
+
     // Удаление одноразового маркера
     lMarker.on("popupclose", () => {
       lMarker.unbindPopup();
       lMarker.isOpen = false;
+      if (timer) {
+        clearTimeout( timer );
+        timer = undefined;
+      }
     });
+
+    const popupClose = () => {
+      if (!timer) {
+        timer = setTimeout( () => {
+          const popup = lMarker.getPopup();
+          if (popup) {
+            popup.close();
+          }
+          timer = undefined;
+        }, 300 );
+      }
+    };
+
+    const onMouseOver = () => {
+      if (timer) {
+        clearTimeout( timer );
+        timer = undefined;
+      }
+    };
 
     // Создание и открытие одноразового маркера
     const open = async ( event: LeafletMouseEvent ) => {
@@ -576,6 +602,9 @@ class LeafletPane<
           offset[1] += coord.y - markerCoord.y;
         }
 
+        popupDiv.addEventListener('mouseover', onMouseOver);
+        popupDiv.addEventListener('mouseout', popupClose);
+
         lMarker.bindPopup(popupDiv, {
           closeButton: false,
           closeOnClick: false,
@@ -586,23 +615,13 @@ class LeafletPane<
       }
     };
 
+    lMarker.on("mouseover", onMouseOver);
+
     lMarker.on("mouseover click", ( event: LeafletMouseEvent ) => {
       if (!lMarker.isOpen) open( event );
     });
-    // Закрытие попапа только при выходе мыши за его пределы либо пределы маркера
-    lMarker.on("mouseout", event => {
-      const popup = lMarker.getPopup();
-      if (popup) {
-        const container = popup.getElement();
-        if (container.contains(event.originalEvent?.relatedTarget as Node)) {
-          container.addEventListener("mouseleave", () => {
-            popup.close();
-          });
-        } else {
-          popup.close();
-        }
-      }
-    });
+
+    lMarker.on("mouseout", popupClose);
 
     this.syncMarker(interactiveMarker);
   }

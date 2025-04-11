@@ -1,6 +1,5 @@
 import {Marker} from 'leaflet';
 import {TypedEventTarget} from 'typescript-event-target';
-import showplaceMarkerIcon from '../../icons/showplace-marker.png';
 import stopMarkerIcon from '../../icons/stop-marker.png';
 import gatewayMarkerIcon from '../../icons/gateway.svg';
 import linerIcon from '../../icons/liner.svg';
@@ -10,6 +9,15 @@ import stopIcon from '../../icons/stop.svg';
 import sunriseIcon from '../../icons/sunrise.svg';
 import sunsetIcon from '../../icons/sunset.svg';
 import linerMarkerIcon from '../../icons/liner-marker.svg';
+import museyIcon from '../../icons/musey.svg'
+import mostIcon from '../../icons/most.svg'
+import pillarIcon from '../../icons/pillar.svg'
+import derevoIcon from '../../icons/derevo.svg'
+import mayakIcon from '../../icons/mayak.svg'
+import foto_newIcon from '../../icons/foto_new.svg'
+import voenIcon from '../../icons/voen.svg'
+import yahtaIcon from '../../icons/yahta.svg'
+import yakorIcon from '../../icons/yakor.svg'
 import {svgAsset} from '../../util';
 import Text from '../../state/text';
 import {Cruise, Company, Ship, Location, CruiseRoute, TrackPoint, TrackLocation, LocationType, defaultCompanyColor} from '../../state/cruise';
@@ -29,6 +37,21 @@ import LocatedItemDescription, {
 	LocatedItemDescriptionGap,
 } from '../located-item-description';
 import './index.css';
+
+const categorizedIcons: Record<string, string> = {
+	'Путешествия' : pillarIcon, // default
+	'Музеи' : museyIcon,
+	'ГТС, мосты' : mostIcon,
+	'Исторические достопримечательности' : pillarIcon,
+	'Событийный туризм' : pillarIcon, // default
+	'Спорт' : pillarIcon, // default
+	'Памятники природы' : derevoIcon,
+	'Маяки' : mayakIcon,
+	'Фотографические места' : foto_newIcon,
+	'Памятники воинской славы' : voenIcon,
+	'Стоянки, укрытия, причалы' : yahtaIcon,
+	'Стоянки' : yakorIcon
+};
 
 /** Отображение круизов (кораблей, путей, остановок и т.д.) на карте */
 export default class CruiseMap {
@@ -100,14 +123,14 @@ export default class CruiseMap {
 		timesAttached: number,
 	}> = {};
 
-	attachLocationMarker( id: string, type: LocationType, lat: number, lng: number, popup: InteractiveMapMarker['popupContent'] ): LocationMarker {
+	attachLocationMarker( id: string, type: LocationType, category: string, lat: number, lng: number, popup: InteractiveMapMarker['popupContent'] ): LocationMarker {
 		const counter = [ this._attachedStops, this._attachedSights, this._attachedGateways ][ type ];
 		const layer = [ this._stopsLayer, this._sightsLayer, this._gatewaysLayer ][ type ];
 		if (!!counter[ id ]) {
 			counter[ id ].timesAttached++;
 		}
 		else {
-			const marker = new LocationMarker( type, lat, lng, popup );
+			const marker = new LocationMarker( type, category, lat, lng, popup );
 			layer.addInteractiveMarker( marker );
 			counter[ id ] = { marker, timesAttached: 1 };
 		}
@@ -212,7 +235,7 @@ export default class CruiseMap {
 		if (this._mapMode === 'cruise') {
 			shipMarker.activate();
 			const cruise = ship.cruises()[Symbol.iterator]().next().value;
-			cruise.route.then( ( route: CruiseRoute ) => {
+			cruise?.route.then( ( route: CruiseRoute ) => {
 				const [ latitudes, longitudes ] = route.points.reduce( ( ret, point ) => {
 					ret[0].push( point.lat );
 					ret[1].push( point.lng );
@@ -240,27 +263,29 @@ export default class CruiseMap {
 		shipMarker.remove();
 		this.events.dispatchEvent(new Event('timerangechanged'));
 	}
-	
+
 	forceShowPlaces( places: Location[] ) {
-		const latitudes = [];
-		const longitudes = [];
+		if (places?.length) {
+			const latitudes = [];
+			const longitudes = [];
 
-		for (const place of places) {
-			const { id, type, lat, lng } = place;
-			this.attachLocationMarker(
-				id, type, lat, lng,
-				() => CruiseAssets.locationPopup( place, this ),
-			);
-			latitudes.push( lat );
-			longitudes.push( lng );
+			for (const place of places) {
+				const { id, type, category, lat, lng } = place;
+				this.attachLocationMarker(
+					id, type, category ?? '', lat, lng,
+					() => CruiseAssets.locationPopup( place, this ),
+				);
+				latitudes.push( lat );
+				longitudes.push( lng );
+			}
+
+			const north = Math.max( ...latitudes );
+			const south = Math.min( ...latitudes );
+			const west = Math.min( ...longitudes );
+			const east = Math.max( ...longitudes );
+
+			this.map.fitBounds( south, west, north, east );
 		}
-
-		const north = Math.max( ...latitudes );
-		const south = Math.min( ...latitudes );
-		const west = Math.min( ...longitudes );
-		const east = Math.max( ...longitudes );
-
-		this.map.fitBounds( south, west, north, east );
 	}
 
 	checkStoppedShips( coord: string, icon: SVGElement, atStop: boolean ) {
@@ -299,11 +324,15 @@ class LocationMarker implements InteractiveMapMarker {
 
 	constructor(
 		locationType: LocationType,
+		locationCategory: string,
 		lat: number,
 		lng: number,
 		popupContent: InteractiveMapMarker['popupContent'],
 	) {
-		const iconString = [ stopMarkerIcon, showplaceMarkerIcon, gatewayMarkerIcon ][ locationType ];
+		const iconString =
+			locationType === LocationType.REGULAR ? stopMarkerIcon :
+			locationType === LocationType.GATEWAY ? gatewayMarkerIcon :
+			categorizedIcons[ locationCategory ] ?? pillarIcon;
 		if (iconString.startsWith( '<svg' )) {
 			this.icon = svgAsset( iconString, 'cruise-map__marker' );
 		}
@@ -828,7 +857,7 @@ class CruiseAssets {
 					const { id, lat, lng } = stop.location;
 					if (!this.stops[ id ]) {
 						this.stops[ id ] = this.map.attachLocationMarker(
-							id, LocationType.REGULAR, lat, lng,
+							id, LocationType.REGULAR, '', lat, lng,
 							() => CruiseAssets.locationPopup( stop.location, this.map ),
 						);
 					}
@@ -850,10 +879,10 @@ class CruiseAssets {
 			const sights = await this.cruise.sights;
 			if (this._sightsVisible) {
 				for (const sight of sights) {
-					const { id, lat, lng } = sight.location;
+					const { id, category, lat, lng } = sight.location;
 					if (!this.sights[ id ]) {
 						this.sights[ id ] = this.map.attachLocationMarker(
-							id, LocationType.SHOWPLACE, lat, lng,
+							id, LocationType.SHOWPLACE, category, lat, lng,
 							() => CruiseAssets.locationPopup( sight.location, this.map ),
 						);
 					}
@@ -931,7 +960,7 @@ class CruiseAssets {
 					const { id, lat, lng } = gateway.location;
 					if (!this.gateways[ id ]) {
 						this.gateways[ id ] = this.map.attachLocationMarker(
-							id, LocationType.GATEWAY, lat, lng,
+							id, LocationType.GATEWAY, '', lat, lng,
 							() => CruiseAssets.gatewayPopup( gateway.location, this.map ),
 						);
 					}

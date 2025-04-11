@@ -192,12 +192,10 @@ export default class MapOverlay extends DOMComponent {
 				if (stopsButton) stopsButton.click();
 			}
 			
-			if (mapMode === 'single-stop' || mapMode === 'single-place') {
-				window.addEventListener("cruisesDataLoaded", () => {
-					const locations = mapMode === 'single-stop' ? api.allStops : api.allSights;
-					cruiseMap.forceShowPlaces( locations );
-				});
-			}
+			window.addEventListener("cruisesDataLoaded", () => {
+				const locations = mapMode === 'stops' || mapMode === 'single-stop' ? api.allStops : api.allSights;
+				cruiseMap.forceShowPlaces( locations );
+			});
 		}
 
 		// яндекс

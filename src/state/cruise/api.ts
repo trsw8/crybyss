@@ -20,19 +20,20 @@ const apiEntries = {
 };
 
 const brandColors: Record<string, number> = {
-	'ООО "Туроператор Азурит"': 0x31739D
+	'АЗУРИТ': 0x31739D,
+	'Мостурфлот': 0xF8130D
 };
 const otherColors = [
 	0x8CE4CB,
 	0xFFC4A4,
 	0xFEBC43,
-	0xC84457,
 	0xB9D252,
 	0xE137C2,
 	0x9F9CB9,
 	0x8CB7B5,
 	0xF5AAB4,
 	0xFFFF00,
+	0xC84457,
 	0x76AA74,
 	0x715E7C,
 	0xFFA79B,
@@ -41,9 +42,9 @@ const otherColors = [
 	0x25E6E3,
 	0xDCF4E6,
 	0xDEF5AF,
-	0xFF0022,
 	0x936A60
 ];
+
 let usedColors = 0;
 
 class SortedList<T extends { id: string }> implements Iterable<T> {
@@ -628,32 +629,41 @@ async function fetchStartSingleCruise( cruiseId: string ) {
 	}
 }
 
-async function fetchStartLocations(type: string, id?: string) {
-	const url = type === 'stops' ? apiEntries.startStops : apiEntries.startSights;
-	const body = id ? { id } : null;
-	
-	const data = await connector.send( url, body );
-	const result = ( data || [] ).reduce(
-		( ret: Record<string, Location>, item: any ) => {
-			ret[ item.id ] = {
-				id: item.id,
-				type: type === 'stops' ? LocationType.REGULAR : LocationType.SHOWPLACE,
-				lat: item.lat,
-				lng: item.lng,
-				name: item.name,
-				//~ description: item.description,
-				//~ image: item.image,
-				// Это для тестирования. После переноса приложения на основной сайт проверку url можно будет убрать
-				image: item.image ? ( /^https?:\/\//.test( item.image ) ? '' : siteURL ) + item.image : '',
-				//~ link: item.url,
-				// Это для тестирования. После переноса приложения на основной сайт проверку url можно будет убрать
-				link: item.url ? ( /^https?:\/\//.test( item.url ) ? '' : siteURL ) + item.url : ''
-			};
-			if (type === 'sights') ret[ item.id ].category = item.category;
-			return ret;
-		}, {}
-	) as Record<string, Location>;
-	
+async function fetchStartLocations( type: string, id?: string | string[] ) {
+	let result;
+
+	if (!id || ( Array.isArray( id ) && !id.length )) {
+		await Promise.resolve();
+		result = {};
+	}
+	else {
+		const url = type === 'stops' ? apiEntries.startStops : apiEntries.startSights;
+
+		const data = await connector.send( url, { id } );
+		result = ( data || [] ).reduce(
+			( ret: Record<string, Location>, item: any ) => {
+				ret[ item.id ] = {
+					id: item.id,
+					type: type === 'stops' ? LocationType.REGULAR : LocationType.SHOWPLACE,
+					lat: item.lat,
+					lng: item.lng,
+					name: item.name,
+					//~ description: item.description,
+					//~ image: item.image,
+					// Это для тестирования. После переноса приложения на основной сайт проверку url можно будет убрать
+					image: item.image ? ( /^https?:\/\//.test( item.image ) ? '' : siteURL ) + item.image : '',
+					//~ link: item.url,
+					// Это для тестирования. После переноса приложения на основной сайт проверку url можно будет убрать
+					link: item.url ? ( /^https?:\/\//.test( item.url ) ? '' : siteURL ) + item.url : ''
+				};
+				if (type === 'sights') {
+					ret[ item.id ].category = item.category;
+				}
+				return ret;
+			}, {}
+		) as Record<string, Location>;
+	}
+
 	if (type === 'stops') cache.stops = result;
 	else cache.sights = result;
 
@@ -689,13 +699,13 @@ class CruiseAPICache extends Cache implements CruiseAPI {
 			fetchStartSingleCruise( entityId );
 			break;
 		case 'stops':
-			fetchStartLocations( 'stops' );
+			fetchStartLocations( 'stops', ( window.frameElement as HTMLIFrameElement )?.dataset.ids?.split(',') ?? [] );
 			break;
 		case 'single-stop':
 			fetchStartLocations( 'stops', entityId );
 			break;
 		case 'places':
-			fetchStartLocations( 'sights' );
+			fetchStartLocations( 'sights', ( window.frameElement as HTMLIFrameElement )?.dataset.ids?.split(',') ?? [] );
 			break;
 		case 'single-place':
 			fetchStartLocations( 'sights', entityId );
@@ -757,12 +767,12 @@ class CruiseAPICache extends Cache implements CruiseAPI {
 		}
 		yield* this.companies.filter( company => companyIds[ company.id ] );
 	}
-	
+
 	get allStops(): Location[] {
 		if (this.stops) return Object.values( this.stops );
 		else return [];
 	}
-	
+
 	get allSights(): Location[] {
 		return Object.values( this.sights ).filter( item => !( item instanceof Promise ) ) as Location[];
 	}
