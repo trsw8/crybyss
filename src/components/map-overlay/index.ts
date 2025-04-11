@@ -106,6 +106,10 @@ export default class MapOverlay extends DOMComponent {
 		setOverlayBounds();
 		window.addEventListener("resize", setOverlayBounds);
 
+		window.addEventListener("cruisesDataLoaded", () => {
+			( domNode as HTMLElement ).style.removeProperty( 'display' );
+		}, { once: true });
+
 		const mapMode = cruiseMap.mapMode;
 
 		// страница круиза начало
@@ -172,7 +176,7 @@ export default class MapOverlay extends DOMComponent {
 						pointsContainer?.appendChild(pointElement);
 					});
 				}
-			});
+			}, { once: true });
 		}
 		// страница круиза конец
 		// страница стоянок начало
@@ -195,7 +199,7 @@ export default class MapOverlay extends DOMComponent {
 			window.addEventListener("cruisesDataLoaded", () => {
 				const locations = mapMode === 'stops' || mapMode === 'single-stop' ? api.allStops : api.allSights;
 				cruiseMap.forceShowPlaces( locations );
-			});
+			}, { once: true });
 		}
 
 		// яндекс
@@ -302,7 +306,7 @@ class SearchBox extends DOMComponent {
 				});
 			};
 
-			window.addEventListener('cruisesDataLoaded', onInput);
+			window.addEventListener('cruisesDataLoaded', onInput, { once: true });
 			input.addEventListener('input', onInput);
 		}
 
@@ -801,7 +805,7 @@ class DateFilter {
 				const mapTime = cruiseMap.timelinePoint;
 				if (+mapTime < +cruise.departure) setDateTime( cruise.departure );
 				else if (+mapTime > cruise.arrival) setDateTime( cruise.arrival );
-			});
+			}, { once: true });
 		}
 
 		window.addEventListener("DOMContentLoaded", () => {
