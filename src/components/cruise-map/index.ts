@@ -397,17 +397,21 @@ class ShipMarker implements InteractiveMapMarker {
 				arrival = null,
 				departureLocationName = '',
 				arrivalLocationName = '',
+				url = ''
 			} = cruise;
 
 			return LocatedItemDescriptionRow.create([
-				LocatedItemDescriptionRange.create(...([
-					departure, arrival
-				]).map(value =>
-					value?.toLocaleDateString(undefined, {
-						day: '2-digit',
-						month: '2-digit',
-					}) ?? ''
-				) as [string, string]),
+				LocatedItemDescriptionButton.create(
+					LocatedItemDescriptionRange.create(...([
+						departure, arrival
+					]).map(value =>
+						value?.toLocaleDateString(undefined, {
+							day: '2-digit',
+							month: '2-digit',
+						}) ?? ''
+					) as [string, string]),
+					() => { url && window.open( url ); }
+				),
 				...(departureLocationName && arrivalLocationName ? [
 					LocatedItemDescriptionRange.create(
 						departureLocationName, arrivalLocationName,
@@ -436,7 +440,7 @@ class ShipMarker implements InteractiveMapMarker {
 					...descriptionElements
 				], LocatedItemDescriptionGap.SMALL)
 			], LocatedItemDescriptionGap.LARGE),
-		], ['cruise-map__popup'], {
+		], ['cruise-map__popup', 'ship-popup'], {
 			'--cruise-map__popup_company-color': `#${color.toString(16)}`
 		});
 		return itemDescription.domNode;
@@ -745,7 +749,7 @@ class CruiseAssets {
 					LocatedItemDescriptionButton.create(
 						map.text.GO_TO_PLACE,
 						() => {
-							location.assign( link );
+							link && window.open( link );
 						},
 					),
 					LocatedItemDescriptionLocation.create(lat, lng),
@@ -764,7 +768,7 @@ class CruiseAssets {
 					LocatedItemDescriptionButton.create(
 						map.text.GO_TO_TRACKSTOP,
 						() => {
-							location.assign( link );
+							link && window.open( link );
 						},
 					),
 					LocatedItemDescriptionLocation.create(lat, lng),

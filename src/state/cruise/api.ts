@@ -24,16 +24,15 @@ const brandColors: Record<string, number> = {
 	'Мостурфлот': 0xF8130D
 };
 const otherColors = [
+	0xE137C2,
 	0x8CE4CB,
 	0xFFC4A4,
 	0xFEBC43,
 	0xB9D252,
-	0xE137C2,
 	0x9F9CB9,
 	0x8CB7B5,
 	0xF5AAB4,
 	0xFFFF00,
-	0xC84457,
 	0x76AA74,
 	0x715E7C,
 	0xFFA79B,
@@ -42,6 +41,7 @@ const otherColors = [
 	0x25E6E3,
 	0xDCF4E6,
 	0xDEF5AF,
+	0xC84457,
 	0x936A60
 ];
 
@@ -185,7 +185,9 @@ class CruiseData implements Cruise {
 			arrival: parseArrivalDate( data.arrival ),
 			departureLocationName: data.departureLocationName,
 			arrivalLocationName: data.arrivalLocationName,
-			url: data.url,
+			//~ url: data.url,
+			// Это для тестирования. После переноса приложения на основной сайт проверку url можно будет убрать
+			url: data.url ? ( /^https?:\/\//.test( data.url ) ? '' : siteURL ) + data.url : '',
 			ship: cache.ship( data.shipId ),
 			company: cache.ship( data.shipId )?.company,
 			routeReady: false
@@ -482,7 +484,10 @@ async function fetchSights( ids: string[] ) {
 				//~ description: item.description,
 				//~ image: item.image,
 				// Это для тестирования. После переноса приложения на основной сайт проверку url можно будет убрать
-				image: item.image ? ( /^https?:\/\//.test( item.image ) ? '' : siteURL ) + item.image : ''
+				image: item.image ? ( /^https?:\/\//.test( item.image ) ? '' : siteURL ) + item.image : '',
+				//~ link: item.url,
+				// Это для тестирования. После переноса приложения на основной сайт проверку url можно будет убрать
+				link: item.url ? ( /^https?:\/\//.test( item.url ) ? '' : siteURL ) + item.url : ''
 			};
 		} );
 	}

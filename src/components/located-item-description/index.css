@@ -49,6 +49,10 @@
 	cursor: pointer;
 }
 
+.ship-popup .located-item-description__button {
+	opacity: 1;
+}
+
 .located-item-description__range {
 	font-weight: 600;
 	text-decoration: underline;

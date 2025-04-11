@@ -92,15 +92,15 @@ export class LocatedItemDescriptionText extends LocatedItemDescriptionChild {
 export class LocatedItemDescriptionRange extends LocatedItemDescriptionChild {
 
 	static create(from: string, to: string, className: string = 'located-item-description__range'): LocatedItemDescriptionRange {
-		const p = document.createElement('p');
-		p.classList.add(className);
+		const r = document.createElement('span');
+		r.classList.add(className);
 		for (const value of [from, to]) {
 			const span = document.createElement('span');
 			span.classList.add('located-item-description__range-value');
 			span.append(value);
-			p.appendChild(span);
+			r.appendChild(span);
 		}
-		return new LocatedItemDescriptionRange(p);
+		return new LocatedItemDescriptionRange(r);
 	}
 
 }
@@ -108,12 +108,12 @@ export class LocatedItemDescriptionRange extends LocatedItemDescriptionChild {
 export class LocatedItemDescriptionButton extends LocatedItemDescriptionChild {
 
 	static create(
-		text: string,
+		text: string | Element | DOMComponent,
 		action: () => void,
 	): LocatedItemDescriptionButton {
 		const button = document.createElement('button');
 		button.classList.add('located-item-description__button');
-		button.append(text);
+		button.append( text instanceof DOMComponent ? text.domNode : text );
 		button.addEventListener('click', action);
 		return new LocatedItemDescriptionButton(button);
 	}
