@@ -106,6 +106,19 @@ export default class MapOverlay extends DOMComponent {
     setOverlayBounds();
     window.addEventListener("resize", setOverlayBounds);
 
+    // кнопки
+    const gatewaysButton = document.querySelector('.map-overlay--gateways') as HTMLInputElement;
+    if (gatewaysButton) gatewaysButton.click();
+    const sightsButton = document.querySelector('.map-overlay--place') as HTMLInputElement;
+    if (sightsButton) sightsButton.click();
+    const anchorButton = document.querySelector('.map-overlay--anchor') as HTMLInputElement;
+    if (anchorButton) anchorButton.click();
+    const sunriseButton = document.querySelector('.map-overlay--sunrise') as HTMLInputElement;
+    if (sunriseButton) sunriseButton.click();
+    const sunsetButton = document.querySelector('.map-overlay--sunset') as HTMLInputElement;
+    if (sunsetButton) sunsetButton.click();
+
+
     // страница круиза начало
     if (document.location.href.includes('cruise=')) {
       document.body.classList.add('cruise-page');
@@ -178,10 +191,8 @@ export default class MapOverlay extends DOMComponent {
       if (new URL(location.toString()).searchParams.get('stops') !== 'true') document.body.classList.add('one-stop-page');
       const shipButton = document.querySelector('.map-overlay--ship') as HTMLInputElement;
       if (shipButton) shipButton.click();
-      const gatewaysButton = document.querySelector('.map-overlay--gateways') as HTMLInputElement;
-      if (gatewaysButton) gatewaysButton.click();
-      const sightsButton = document.querySelector('.map-overlay--place') as HTMLInputElement;
-      if (sightsButton) sightsButton.click();
+      const anchorButton = document.querySelector('.map-overlay--anchor') as HTMLInputElement;
+      if (anchorButton) anchorButton.click();
     }
     // страница стоянок конец
     // страница достопримечательностей начало
@@ -190,10 +201,8 @@ export default class MapOverlay extends DOMComponent {
       if (new URL(location.toString()).searchParams.get('place') !== 'true') document.body.classList.add('one-stop-page');
       const shipButton = document.querySelector('.map-overlay--ship') as HTMLInputElement;
       if (shipButton) shipButton.click();
-      const gatewaysButton = document.querySelector('.map-overlay--gateways') as HTMLInputElement;
-      if (gatewaysButton) gatewaysButton.click();
-      const anchorButton = document.querySelector('.map-overlay--anchor') as HTMLInputElement;
-      if (anchorButton) anchorButton.click();
+      const sightsButton = document.querySelector('.map-overlay--place') as HTMLInputElement;
+      if (sightsButton) sightsButton.click();
     }
     // страница достопримечательностей конец
     // яндекс
