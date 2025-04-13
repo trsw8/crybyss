@@ -66,7 +66,7 @@ document.addEventListener("DOMContentLoaded", function () {
             calendar.classList.remove('hidden');
         }
     }
-    
+
     if (calendarSvgWrapper) {
         calendarSvgWrapper.addEventListener("click", toggleCalendar);
     }

@@ -171,7 +171,7 @@ export default class MapOverlay extends DOMComponent {
 				const stopsButton = document.querySelector('.map-overlay--anchor') as HTMLInputElement;
 				if (stopsButton) stopsButton.click();
 			}
-			
+
 			window.addEventListener("cruisesDataLoaded", () => {
 				const locations = mapMode === 'stops' || mapMode === 'single-stop' ? api.allStops : api.allSights;
 				cruiseMap.forceShowPlaces( locations );

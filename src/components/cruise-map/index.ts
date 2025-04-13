@@ -18,6 +18,7 @@ import foto_newIcon from '../../icons/foto_new.svg'
 import voenIcon from '../../icons/voen.svg'
 import yahtaIcon from '../../icons/yahta.svg'
 import yakorIcon from '../../icons/yakor.svg'
+import circleIcon from '../../icons/circle.svg'
 import {svgAsset} from '../../util';
 import Text from '../../state/text';
 import {Cruise, Company, Ship, Location, CruiseRoute, TrackPoint, TrackLocation, LocationType, defaultCompanyColor} from '../../state/cruise';
@@ -51,6 +52,21 @@ const categorizedIcons: Record<string, string> = {
 	'Памятники воинской славы' : voenIcon,
 	'Стоянки, укрытия, причалы' : yahtaIcon,
 	'Стоянки' : yakorIcon
+};
+
+const iconColors: Record<string, string> = {
+	'Путешествия' : 'var(--main)', // default
+	'Музеи' : 'var(--main)',
+	'ГТС, мосты' : 'var(--main)',
+	'Исторические достопримечательности' : 'var(--main)',
+	'Событийный туризм' : 'var(--main)', // default
+	'Спорт' : 'var(--main)', // default
+	'Памятники природы' : '#00A651',
+	'Маяки' : 'var(--main)',
+	'Фотографические места' : '#00A651',
+	'Памятники воинской славы' : 'var(--main)',
+	'Стоянки, укрытия, причалы' : 'var(--main)',
+	'Стоянки' : 'var(--main)'
 };
 
 /** Отображение круизов (кораблей, путей, остановок и т.д.) на карте */
@@ -312,6 +328,7 @@ export default class CruiseMap {
 	}
 }
 
+let markersCounter = 0;
 class LocationMarker implements InteractiveMapMarker {
 
 	declare icon: InteractiveMapMarker['icon'];
@@ -329,18 +346,34 @@ class LocationMarker implements InteractiveMapMarker {
 		lng: number,
 		popupContent: InteractiveMapMarker['popupContent'],
 	) {
-		const iconString =
-			locationType === LocationType.REGULAR ? stopMarkerIcon :
-			locationType === LocationType.GATEWAY ? gatewayMarkerIcon :
-			categorizedIcons[ locationCategory ] ?? pillarIcon;
-		if (iconString.startsWith( '<svg' )) {
-			this.icon = svgAsset( iconString, 'cruise-map__marker' );
+		if (locationType === LocationType.SHOWPLACE && ++markersCounter % 20 !== 0) {
+			const mainIcon = svgAsset( categorizedIcons[ locationCategory ] ?? pillarIcon, 'collapsible' );
+			const iconColor = iconColors[ locationCategory ] ?? 'var(--main)';
+			const collapsedIcon = svgAsset( circleIcon, 'placeholder-icon' );
+			collapsedIcon.style.setProperty( '--cruise-map__marker_color', iconColor );
+
+			const iconWrapper = document.createElement('div');
+			iconWrapper.classList.add( 'cruise-map__marker' );
+			iconWrapper.append( mainIcon, collapsedIcon );
+			this.icon = iconWrapper;
 		}
 		else {
-			const icon = this.icon = document.createElement('img');
-			icon.src = iconString;
-			icon.classList.add('cruise-map__marker');
+			const iconString =
+				locationType === LocationType.REGULAR ? stopMarkerIcon :
+				locationType === LocationType.GATEWAY ? gatewayMarkerIcon :
+				categorizedIcons[ locationCategory ] ?? pillarIcon;
+
+			if (iconString.startsWith( '<svg' )) {
+				this.icon = svgAsset( iconString, 'cruise-map__marker' );
+			}
+			else {
+				const icon = this.icon = document.createElement('img');
+				icon.src = iconString;
+				icon.classList.add('cruise-map__marker');
+			}
 		}
+
+
 		this.lat = lat;
 		this.lng = lng;
 		this.popupContent = popupContent;

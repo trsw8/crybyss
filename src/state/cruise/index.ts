@@ -102,7 +102,7 @@ export class CruiseRoute {
 		if (!this.points.length) {
 			return { arrival: datetime, lat: 0, lng: 0, isStop: true };
 		}
-		
+
 		const needle = +datetime;
 		let sliceStart = 0;
 		let sliceEnd = this.points.length - 1;

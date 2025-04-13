@@ -45,7 +45,7 @@
 }
 
 .leaflet-marker-icon svg *,
-.leaflet-marker-icon.leaflet-interactive :not(svg) {
+.leaflet-marker-icon.leaflet-interactive :not(svg):not(div) {
 	pointer-events: auto;
 }
 
