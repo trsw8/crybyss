@@ -44,13 +44,13 @@
 }
 
 .located-item-description__button {
-	opacity: .7;
+	color: var(--main);
 	font-weight: 600;
 	cursor: pointer;
 }
 
 .ship-popup .located-item-description__button {
-	opacity: 1;
+	color: unset;
 }
 
 .located-item-description__range {
