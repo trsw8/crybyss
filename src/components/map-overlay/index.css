@@ -831,15 +831,13 @@ body .map-overlay--range-dates .rs-container .rs-pointer {
 
 .map-overlay--zoom-block {
   position: absolute;
-  top: 50%;
+  top: max(50% - 80px, 230px);
   right: 24px;
-  transform: translateY(-50%);
 }
 
 @media (max-width: 639px) {
   .map-overlay--zoom-block {
     top: 297px;
-    transform: translateY(0);
   }
 }
 
