@@ -226,52 +226,31 @@ export default abstract class LeafletMap extends Map {
     );
 
     const updateMileWidth = () => {
-      const zoom = this.map.getZoom();
-      const center = this.map.getCenter();
-      const point1 = this.map.project(center);
-
-      const kmWidth = 60;
-      let distance = 1000;
-
-      // Находим точку на расстоянии distance метров от центра
-      const point2 = this.map.project([
-        center.lat,
-        center.lng +
-          distance / (111320 * Math.cos((center.lat * Math.PI) / 180)),
-      ]);
-
-      // Вычисляем ширину в пикселях
-      const width = Math.abs(point2.x - point1.x);
-
-      const precent = (width / kmWidth) * 100;
-      const kmValue = (distance * 100) / precent / 1000;
-      let kmValueText = kmValue;
-      if (kmValue > 1) {
-        kmValueText = Math.round(kmValue);
-      } else {
-        kmValueText = Math.round(kmValue * 100) / 100;
-      }
+      const bounds = this.map.getPixelBounds();
+      const point1 = point( bounds.min.x + 80, bounds.max.y - 37 );
+      const center = this.map.unproject( point1 );
+      const distance = center.distanceTo( this.map.unproject( point1.add([ 60, 0 ]) ) );
+      const power = Math.pow( 10, Math.floor( Math.log10( distance ) ) );
+      const m = Math.ceil( distance / power ) * power;
+      const mLength = Math.round( 60 * m / distance );
+      const mlLength = Math.round( 60 * m * 1.609344 / distance );
+      const mText = m >= 1000 ? `${m/1000} km` : `${m} m`
+      const mlText = `${m/1000} ml`;
 
       const kmBlock = mileDiv.querySelector(".leaflet-mile__block_type_km");
       const mileBlock = mileDiv.querySelector(".leaflet-mile__block_type_mile");
-      const kmTextBlock = kmBlock?.querySelector(
-        ".leaflet-mile__block-text_type_km"
-      );
-      const mileTextBlock = mileBlock?.querySelector(
-        ".leaflet-mile__block-text_type_mile"
-      );
+      const kmTextBlock = kmBlock?.querySelector(".leaflet-mile__block-text_type_km");
+      const mileTextBlock = mileBlock?.querySelector(".leaflet-mile__block-text_type_mile");
 
       if (kmBlock && mileBlock && kmTextBlock && mileTextBlock) {
-        kmTextBlock.textContent = `${kmValueText} km`;
-        mileTextBlock.textContent = `${kmValueText} ml`;
-        (kmBlock as HTMLElement).style.width = `${(width * 100) / precent}px`;
-        (mileBlock as HTMLElement).style.width = `${
-          ((width * 100) / precent) * 1.609
-        }px`;
+        kmTextBlock.textContent = mText;
+        mileTextBlock.textContent = mlText;
+        (kmBlock as HTMLElement).style.width = `${mLength}px`;
+        (mileBlock as HTMLElement).style.width = `${mlLength}px`;
       }
     };
 
-    this.map.on("zoomend", updateMileWidth);
+    this.map.on("moveend zoomend", updateMileWidth);
     updateMileWidth();
     this.map.getContainer().appendChild(mileDiv);
     // отрезок конец
