@@ -19,16 +19,8 @@ export default class MapOverlay extends DOMComponent {
 			["map-overlay--ship", "ship-layer-checkbox", cruiseMap.shipLayer],
 			["map-overlay--anchor", "stops-layer-checkbox", cruiseMap.stopsLayer],
 			["map-overlay--place", "sights-layer-checkbox", cruiseMap.sightsLayer],
-			[
-				"map-overlay--gateways",
-				"gateways-layer-checkbox",
-				cruiseMap.gatewaysLayer,
-			],
-			[
-				"map-overlay--sunrise",
-				"sunrises-layer-checkbox",
-				cruiseMap.sunrisesLayer,
-			],
+			["map-overlay--gateways", "gateways-layer-checkbox", cruiseMap.gatewaysLayer],
+			["map-overlay--sunrise", "sunrises-layer-checkbox", cruiseMap.sunrisesLayer],
 			["map-overlay--sunset", "sunsets-layer-checkbox", cruiseMap.sunsetsLayer],
 		] as [string, string, VisibilityControl][]) {
 			new LayerVisibilityButton(
@@ -50,19 +42,6 @@ export default class MapOverlay extends DOMComponent {
 			"map-overlay--toggle-btn"
 		)) {
 			new ToggleButton(button);
-		}
-
-		const buttonSelector = domNode.getElementsByClassName(
-			"map-overlay--buttons-selector"
-		)[0] as HTMLElement;
-		const buttonSelectorContent = domNode.getElementsByClassName(
-			"map-overlay--buttons-content"
-		)[0] as HTMLElement;
-		if (buttonSelector) {
-			buttonSelector.addEventListener("click", () => {
-				buttonSelector.classList.toggle("active");
-				buttonSelectorContent.classList.toggle("active");
-			});
 		}
 
 		const shipSlider = new TimelineSlider(
@@ -179,19 +158,15 @@ export default class MapOverlay extends DOMComponent {
 			}, { once: true });
 		}
 		// страница круиза конец
-		// страница стоянок начало
+		// страницы стоянок и мест начало
 		if (mapMode === 'stops' || mapMode === 'single-stop' || mapMode === 'places' || mapMode === 'single-place') {
 			document.body.classList.add('stops-page');
 			if (mapMode === 'single-stop' || mapMode === 'single-place') document.body.classList.add('one-stop-page');
 			const shipButton = document.querySelector('.map-overlay--ship') as HTMLInputElement;
 			if (shipButton) shipButton.click();
-			const gatewaysButton = document.querySelector('.map-overlay--gateways') as HTMLInputElement;
-			if (gatewaysButton) gatewaysButton.click();
-			if (mapMode === 'stops' || mapMode === 'single-stop') {
+			if (mapMode === 'places' || mapMode === 'single-place') {
 				const sightsButton = document.querySelector('.map-overlay--place') as HTMLInputElement;
 				if (sightsButton) sightsButton.click();
-			}
-			else {
 				const stopsButton = document.querySelector('.map-overlay--anchor') as HTMLInputElement;
 				if (stopsButton) stopsButton.click();
 			}
@@ -201,6 +176,7 @@ export default class MapOverlay extends DOMComponent {
 				cruiseMap.forceShowPlaces( locations );
 			}, { once: true });
 		}
+		// страницы стоянок и мест конец
 
 		// яндекс
 		const yandexMap = document.querySelector('.map-overlay--overlays-box #over2') as HTMLElement;
@@ -735,11 +711,6 @@ class DateFilter {
 
 						const filterBox = document.querySelector(".filter-box");
 						if (filterBox) filterBox.classList.add("active");
-
-						const layersBtn = document.querySelector(".map-overlay--copy.active") as HTMLElement;
-						if (layersBtn) layersBtn.click();
-						const cardsBtn = document.querySelector(".map-overlay--menu.active") as HTMLElement;
-						if (cardsBtn && window.innerWidth < 901) cardsBtn.click();
 					}
 
 					window.dispatchEvent(new Event("filterchange"));
@@ -753,30 +724,6 @@ class DateFilter {
 				filterBtn.addEventListener("click", () => {
 					resetTime(true);
 				});
-
-				const cardsBtn = document.querySelector(".map-overlay--menu");
-				if (cardsBtn) {
-					cardsBtn.addEventListener("click", () => {
-						const content = document.querySelector(".map-overlay--buttons-content");
-						const wrapper = document.querySelector(".map-overlay--buttons-wrapper");
-
-						if (content && wrapper) {
-							setTimeout(() => {
-								if (cardsBtn.classList.contains("active")) {
-									content.classList.add("active");
-									wrapper.classList.add("active");
-									const layersBtn = document.querySelector(".map-overlay--copy.active") as HTMLElement;
-									if (layersBtn) layersBtn.click();
-									const clockBtn = document.querySelector(".map-overlay--time.active") as HTMLElement;
-									if (clockBtn) clockBtn.click();
-								} else {
-									content.classList.remove("active");
-									wrapper.classList.remove("active");
-								}
-							}, 100);
-						}
-					});
-				}
 
 				const layersBtn = document.querySelector(
 					".map-overlay--copy.active"
@@ -810,10 +757,8 @@ class DateFilter {
 
 		window.addEventListener("DOMContentLoaded", () => {
 			if (window.innerWidth < 901 && !document.body.classList.contains('cruise-page')) {
-				const copyBtn = document.querySelector(".map-overlay--copy") as HTMLElement;
-				if (copyBtn) copyBtn.click();
 				const menuBtn = document.querySelector(".map-overlay--menu") as HTMLElement;
-				if (menuBtn) menuBtn.classList.add("active");
+				if (menuBtn) menuBtn.classList.remove("active");
 			}
 		});
 	}
