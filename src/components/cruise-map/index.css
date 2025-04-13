@@ -16,7 +16,7 @@
 }
 
 .cruise-map__marker_type_ship.active {
-	animation: 1.5s ease-in-out infinite alternate highlight;
+	animation: 0.5s ease-in-out infinite alternate highlight;
 }
 
 .cruise-map__icon {
