@@ -189,7 +189,7 @@ body .rs-tooltip {
   border-radius: 10px;
   padding: 20px;
   padding-right: 10px;
-  max-height: calc(100vh - 400px);
+  max-height: calc(100vh - 210px);
 }
 
 @media (max-width: 800px) {
@@ -208,8 +208,15 @@ body .rs-tooltip {
   margin-bottom: 20px;
   display: flex;
   flex-direction: column;
-  flex: auto;
-  max-height: calc((100vh - 400px - 80px) / 2);
+  min-height: 0;
+}
+
+.map-overlay--search-block.map-overlay--search-companies {
+  flex: 0 3 auto;
+}
+
+.map-overlay--search-block.map-overlay--search-ships {
+  flex: 0 4 auto;
 }
 
 .map-overlay--search-block:last-child {
