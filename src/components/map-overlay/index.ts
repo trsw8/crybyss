@@ -4,6 +4,7 @@ import { CruiseAPI, Cruise, Ship, Company } from "../../state/cruise";
 import { DOMComponent } from "../dom";
 import { VisibilityControl } from "../map";
 import CruiseMap from "../cruise-map";
+import '../hintbox';
 import "./index.css";
 
 export default class MapOverlay extends DOMComponent {

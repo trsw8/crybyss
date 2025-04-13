@@ -16,7 +16,7 @@
 		<div class="filter-overlay">
 			<div class="filter-box">
 				<div class="_label">
-					<p>Выберите дату <span class="symbol">?</span></p>
+					<p>Выберите дату<%- include('./components/hintbox/index', { text: 'Выберите дату' }) %></p>
 					<div class="datepicker-container">
 						<div class="datepicker-label">
 							<input type="text" id="datepicker-input" placeholder="" readonly>
@@ -72,7 +72,7 @@
 					</div>
 				</div>
 				<div class="_label">
-					<p>Шкала времени <span class="symbol">?</span></p>
+					<p>Шкала времени<%- include('./components/hintbox/index', { text: 'Шкала времени' }) %></p>
 					<div class="range-container">
 						<div class="slider-container">
 							<input type="range" id="time-slider" min="0" max="1439" value="720">
@@ -87,7 +87,7 @@
 					</div>
 				</div>
 				<div class="_label">
-					<p class="time-picker-label">Текущее время <span class="symbol">?</span></p>
+					<p class="time-picker-label">Текущее время<%- include('./components/hintbox/index', { text: 'Текущее время' }) %></p>
 					<label for="timeInput" class="time-picker-container">
 						<input type="time" id="timeInput" step="1">
 						<span id="timeDisplay">00:00:00</span>
