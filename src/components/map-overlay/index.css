@@ -860,7 +860,12 @@ body .map-overlay--range-dates .rs-container .rs-pointer {
 
 @media (max-width: 639px) {
   .map-overlay--zoom-block {
-    top: 297px;
+    top: max(60% - 80px, 280px);
+  }
+
+  .stops-page .map-overlay--zoom-block,
+  .cruise-map .map-overlay--zoom-block {
+    top: max(50% - 80px, 80px);
   }
 }
 
@@ -1117,9 +1122,10 @@ body .map-overlay--range-dates .rs-container .rs-pointer {
     right: 20px;
   }
 
+  .cruise-map .map-overlay--overlays,
   .stops-page .map-overlay--overlays {
     top: calc(20px + var(--height) + 15px);
-    right: 20px;
+    right: calc(25px + var(--height));
   }
 
   .stops-page .map-overlay--line {
