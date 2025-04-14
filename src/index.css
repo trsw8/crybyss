@@ -210,6 +210,11 @@
   padding-bottom: 18px;
 }
 
+.calendar-days > :nth-child(7),
+#calendar-body > :nth-child(7n) {
+  color: #BF0000;
+}
+
 .day {
   width: 36.8px;
   height: 36.8px;

@@ -33,7 +33,7 @@ export interface Cruise {
 	route: Promise<CruiseRoute>;
 }
 
-export const defaultCompanyColor = 0x888888;
+export const defaultCompanyColor = 0x7F7F7F;
 
 export interface Company {
 	id: string;

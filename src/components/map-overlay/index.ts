@@ -66,6 +66,8 @@ export default class MapOverlay extends DOMComponent {
 			api
 		);
 
+		new DatePicker( document.getElementsByClassName("datepicker-container")[0] as HTMLInputElement );
+
 		const overlayBoundsElements = [
 			"map-overlay--search-box",
 			"map-overlay--overlays",
@@ -918,5 +920,148 @@ class TimelineSlider extends DOMComponent {
 			month: "2-digit",
 			year: isYear ? "2-digit" : undefined,
 		});
+	}
+}
+
+class DatePicker extends DOMComponent {
+	declare input: HTMLInputElement;
+	declare calendar: HTMLDivElement;
+	declare calendarBody: HTMLDivElement;
+	declare calendarTitle: HTMLSpanElement;
+	declare confirm: HTMLButtonElement;
+	declare prevMonthBtn: HTMLButtonElement;
+	declare nextMonthBtn: HTMLButtonElement;
+	declare selectedDate: Date;
+
+	constructor( domNode: HTMLDivElement ) {
+		super( domNode );
+		this.input = document.getElementById("datepicker-input") as HTMLInputElement;
+		this.calendar = document.getElementById("datepicker-calendar") as HTMLDivElement;
+		this.calendarBody = document.getElementById("calendar-body") as HTMLDivElement;
+		this.calendarTitle = document.getElementById("calendar-title") as HTMLSpanElement;
+		this.confirm = document.getElementById("confirm") as HTMLButtonElement;
+		this.prevMonthBtn = document.getElementById("prev-month") as HTMLButtonElement;
+		this.nextMonthBtn = document.getElementById("next-month") as HTMLButtonElement;
+		this.selectedDate = new Date();
+
+		const calendarSvgWrapper = domNode.querySelector('.calendar-svg-wrapper');
+		const toggleCalendar = (event: Event) => {
+			if (!this.calendar.classList.contains('hidden')) {
+				this.calendar.classList.add('hidden');
+			} else {
+				const [ d, m, y ] = this.input.value.split( '.' ).map( Number );
+				if (d && m && y) this.selectedDate = new Date( y, m - 1, d );
+				this.updateCalendar();
+				this.calendar.classList.remove('hidden');
+			}
+		}
+
+		if (calendarSvgWrapper) {
+			calendarSvgWrapper.addEventListener("click", toggleCalendar);
+		}
+
+		if (this.input) {
+			this.input.addEventListener("click", toggleCalendar);
+		}
+
+		if (this.confirm) {
+			this.confirm.addEventListener("click", (event) => {
+				if (!this.calendar.classList.contains('hidden')) {
+					this.calendar.classList.add('hidden');
+				}
+			});
+		}
+
+		document.addEventListener("click", (event) => {
+			if (!( event.target as HTMLElement ).closest('.datepicker-label')
+			&& !( event.target as HTMLElement ).closest('#datepicker-calendar')) {
+				if (!this.calendar.classList.contains('hidden')) {
+					this.calendar.classList.add('hidden');
+				}
+			}
+		});
+
+		this.prevMonthBtn.addEventListener("click", () => {
+			this.selectedDate.setMonth(this.selectedDate.getMonth() - 1);
+			this.updateCalendar();
+		});
+
+		this.nextMonthBtn.addEventListener("click", () => {
+			this.selectedDate.setMonth(this.selectedDate.getMonth() + 1);
+			this.updateCalendar();
+		});
+
+		this.updateCalendar();
+
+		//time range
+		const timeSlider = document.getElementById("time-slider");
+		const timeTooltip = document.getElementById("time-tooltip");
+
+		const formatTime = (minutes: number) => {
+			let hours = Math.floor(minutes / 60);
+			let mins = minutes % 60;
+			return `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
+		}
+
+		//hours
+		const timeInput = document.getElementById("timeInput") as HTMLInputElement;
+		const timeDisplay = document.getElementById("timeDisplay");
+
+		const formatTimer = (timeStr: string) => {
+			return timeStr ? timeStr : "00:00:00";
+		}
+
+		timeInput.addEventListener("input", () => {
+			timeDisplay.textContent = formatTimer(timeInput.value);
+		});
+
+		timeDisplay.addEventListener("click", () => {
+			timeInput.showPicker(); //
+		});
+	}
+
+	updateCalendar() {
+		this.calendarBody.innerHTML = "";
+		const year = this.selectedDate.getFullYear();
+		const month = this.selectedDate.getMonth();
+		const [ d, m, y ] = this.input.value.split('.').map(Number);
+
+		const firstDay = new Date(year, month, 1).getDay() || 7;
+		const lastDate = new Date(year, month + 1, 0).getDate();
+
+		this.calendarTitle.textContent = `${this.selectedDate.toLocaleString("ru-RU", { month: "long" })}`;
+
+		for (let i = 1; i < firstDay; i++) {
+			const emptyDiv = document.createElement("div");
+			this.calendarBody.appendChild(emptyDiv);
+		}
+
+		for (let day = 1; day <= lastDate; day++) {
+			const dayElement = document.createElement("div");
+			dayElement.textContent = String(day);
+			dayElement.classList.add("day");
+			if (day === d && month + 1 === m && year === y) dayElement.classList.add("selected");
+
+			dayElement.addEventListener("click", () => {
+				this.selectedDate.setDate(day);
+				// seleced date value
+				this.input.value = `${day}.${String( month + 1 ).padStart( 2, '0' )}.${year}`;
+				window.dispatchEvent(new CustomEvent('datepicker-change', {
+					detail: {
+						date: this.input.value
+					}
+				}));
+				dayElement.classList.add("selected");
+
+				const days = this.domNode.querySelectorAll(".day");
+				days.forEach((day: Element) => {
+					if (day !== dayElement) {
+						day.classList.remove("selected");
+					}
+				});
+			});
+
+			this.calendarBody.appendChild(dayElement);
+		}
 	}
 }
