@@ -48,6 +48,7 @@
 	left: 12px;
 	bottom: 34px;
 	transform: translateX(-50%);
+	cursor: auto;
 	font-weight: 400;
 	text-align: center;
 	background: white;
