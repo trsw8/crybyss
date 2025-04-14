@@ -776,51 +776,51 @@ body .map-overlay--range-dates .rs-container .rs-pointer {
   }
 }
 
-.map-overlay--btn-primary-stroke.active svg path,
-.map-overlay--btn.active .map-overlay--btn-primary-stroke svg path {
+.map-overlay--btn-primary-stroke.active svg *,
+.map-overlay--btn.active .map-overlay--btn-primary-stroke svg * {
   stroke: #ffffff;
 }
 
 @media (min-width: 901px) {
-  .map-overlay--btn-primary-stroke:hover svg path,
-  .map-overlay--btn:hover .map-overlay--btn-primary-stroke svg path {
+  .map-overlay--btn-primary-stroke:hover svg *,
+  .map-overlay--btn:hover .map-overlay--btn-primary-stroke svg * {
     stroke: #ffffff;
   }
 }
 
-.map-overlay--btn-primary-stroke svg path {
+.map-overlay--btn-primary-stroke svg * {
   stroke: var(--main);
 }
 
 @media (min-width: 901px) {
-  .map-overlay--btn.active:hover .map-overlay--btn-primary-stroke svg path,
-  .map-overlay--btn-primary-stroke.active:hover svg path {
+  .map-overlay--btn.active:hover .map-overlay--btn-primary-stroke svg *,
+  .map-overlay--btn-primary-stroke.active:hover svg * {
     stroke: var(--main);
   }
 }
 
-.map-overlay--btn-primary-fill.active svg path,
-.map-overlay--btn.active .map-overlay--btn-primary-fill svg path {
+.map-overlay--btn-primary-fill.active svg *,
+.map-overlay--btn.active .map-overlay--btn-primary-fill svg * {
   fill: #ffffff;
   stroke: var(--main);
 }
 
 @media (min-width: 901px) {
-  .map-overlay--btn:hover .map-overlay--btn-primary-fill svg path,
-  .map-overlay--btn-primary-fill:hover svg path {
+  .map-overlay--btn:hover .map-overlay--btn-primary-fill svg *,
+  .map-overlay--btn-primary-fill:hover svg * {
     fill: #ffffff;
     stroke: var(--main);
   }
 }
 
-.map-overlay--btn-primary-fill svg path {
+.map-overlay--btn-primary-fill svg * {
   fill: var(--main);
   stroke: #ffffff;
 }
 
 @media (min-width: 901px) {
-  .map-overlay--btn-primary-fill.active:hover svg path,
-  .map-overlay--btn.active:hover .map-overlay--btn-primary-fill svg path {
+  .map-overlay--btn-primary-fill.active:hover svg *,
+  .map-overlay--btn.active:hover .map-overlay--btn-primary-fill svg * {
     fill: var(--main);
     stroke: #ffffff;
   }

@@ -89,6 +89,34 @@ export default class MapOverlay extends DOMComponent {
 		window.addEventListener("resize", setOverlayBounds);
 
 		window.addEventListener("cruisesDataLoaded", () => {
+			const menuBtn = ( domNode as HTMLElement ).querySelector( ".map-overlay--menu" ) as HTMLElement;
+			const clockBtn = ( domNode as HTMLElement ).querySelector( ".map-overlay--time" ) as HTMLElement;
+			const layersBtn = ( domNode as HTMLElement ).querySelector( ".map-overlay--copy" ) as HTMLElement;
+
+			const radioButtons = ( event: Event ) => {
+				const target = event.currentTarget as HTMLElement;
+				setTimeout (() => {
+					if (target.classList.contains( 'active' )) {
+						if (target === menuBtn && window.innerWidth < 901) {
+							if (clockBtn?.classList.contains( 'active' )) clockBtn.click();
+							if (layersBtn) layersBtn.classList.remove( 'active' );
+						}
+						else if (target === clockBtn) {
+							if (window.innerWidth < 901 && menuBtn) menuBtn.classList.remove( 'active' );
+							if (layersBtn) layersBtn.classList.remove( 'active' );
+						}
+						else if (target === layersBtn) {
+							if (window.innerWidth < 901 && menuBtn) menuBtn.classList.remove( 'active' );
+							if (clockBtn?.classList.contains( 'active' )) clockBtn.click();
+						}
+					}
+				}, 0);
+			};
+
+			for (const element of [ menuBtn, clockBtn, layersBtn ]) {
+				element?.addEventListener( 'click', radioButtons );
+			}
+
 			( domNode as HTMLElement ).style.removeProperty( 'display' );
 		}, { once: true });
 
@@ -727,22 +755,6 @@ class DateFilter {
 				filterBtn.addEventListener("click", () => {
 					resetTime(true);
 				});
-
-				const layersBtn = document.querySelector(
-					".map-overlay--copy.active"
-				) as HTMLElement;
-				if (layersBtn) {
-					layersBtn.addEventListener("click", () => {
-						setTimeout(() => {
-							if (layersBtn.classList.contains("active")) {
-								const clockBtn = document.querySelector(".map-overlay--time.active") as HTMLElement;
-								if (clockBtn) clockBtn.click();
-								const cardsBtn = document.querySelector(".map-overlay--menu.active") as HTMLElement;
-								if (cardsBtn && window.innerWidth < 901) cardsBtn.click();
-							}
-						}, 100);
-					});
-				}
 			}
 		});
 

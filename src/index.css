@@ -1,3 +1,7 @@
+svg {
+  transition: none;
+}
+
 .filter-overlay {
   position: relative;
   width: 100%;
