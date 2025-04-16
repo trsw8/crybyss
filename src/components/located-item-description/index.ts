@@ -46,6 +46,30 @@ export class LocatedItemDescriptionGroup extends LocatedItemDescriptionChild {
 
 }
 
+export class LocatedItemDescriptionRow extends LocatedItemDescriptionChild {
+
+	static create(
+		content: LocatedItemDescriptionChild[],
+		gap: LocatedItemDescriptionGap = LocatedItemDescriptionGap.SMALL,
+		alignment: string = 'center'
+	): LocatedItemDescriptionGroup {
+		const section = document.createElement('section');
+		section.classList.add(
+			'located-item-description__row',
+			'located-item-description__row_gap_' + {
+				[LocatedItemDescriptionGap.SMALL]: 'small',
+				[LocatedItemDescriptionGap.MEDIUM]: 'medium',
+				[LocatedItemDescriptionGap.LARGE]: 'large',
+			}[gap],
+			`located-item-description__row_align_${alignment}`
+		);
+		for (const child of content)
+			section.appendChild(child.domNode);
+		return new LocatedItemDescriptionRow(section);
+	}
+
+}
+
 export class LocatedItemDescriptionText extends LocatedItemDescriptionChild {
 
 	static create(text: string, classNames: string[] = [], {
@@ -67,16 +91,16 @@ export class LocatedItemDescriptionText extends LocatedItemDescriptionChild {
 
 export class LocatedItemDescriptionRange extends LocatedItemDescriptionChild {
 
-	static create(from: string, to: string): LocatedItemDescriptionRange {
-		const p = document.createElement('p');
-		p.classList.add('located-item-description__range');
+	static create(from: string, to: string, className: string = 'located-item-description__range'): LocatedItemDescriptionRange {
+		const r = document.createElement('span');
+		r.classList.add(className);
 		for (const value of [from, to]) {
 			const span = document.createElement('span');
 			span.classList.add('located-item-description__range-value');
 			span.append(value);
-			p.appendChild(span);
+			r.appendChild(span);
 		}
-		return new LocatedItemDescriptionRange(p);
+		return new LocatedItemDescriptionRange(r);
 	}
 
 }
@@ -84,12 +108,12 @@ export class LocatedItemDescriptionRange extends LocatedItemDescriptionChild {
 export class LocatedItemDescriptionButton extends LocatedItemDescriptionChild {
 
 	static create(
-		text: string,
+		text: string | Element | DOMComponent,
 		action: () => void,
 	): LocatedItemDescriptionButton {
 		const button = document.createElement('button');
 		button.classList.add('located-item-description__button');
-		button.append(text);
+		button.append( text instanceof DOMComponent ? text.domNode : text );
 		button.addEventListener('click', action);
 		return new LocatedItemDescriptionButton(button);
 	}

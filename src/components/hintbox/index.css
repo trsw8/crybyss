@@ -1,0 +1,66 @@
+.hint-toggle {
+	position: relative;
+	display: inline-block;
+	cursor: pointer;
+	margin-left: 2px;
+	vertical-align: -7px;
+}
+
+.hint-toggle svg path:first-child {
+	fill: none;
+	stroke: var(--main);
+}
+
+.hint-toggle svg path:last-child {
+	fill: var(--main);
+	stroke: none;
+}
+
+.hint-toggle.active svg path:first-child {
+	fill: var(--main);
+}
+
+.hint-toggle.active svg path:last-child {
+	fill: #ffffff;
+}
+
+@media (min-width: 901px) {
+	.hint-toggle:hover svg path:first-child {
+		fill: var(--main);
+	}
+
+	.hint-toggle:hover svg path:last-child {
+		fill: #ffffff;
+	}
+
+	.hint-toggle.active:hover svg path:first-child {
+		fill: none;
+	}
+
+	.hint-toggle.active:hover svg path:last-child {
+		fill: var(--main);
+	}
+}
+
+.hint-box {
+	position: absolute;
+	z-index: 1000;
+	left: 12px;
+	bottom: 34px;
+	transform: translateX(-50%);
+	cursor: auto;
+	font-weight: 400;
+	text-align: center;
+	background: white;
+	padding: 15px;
+	width: max-content;
+	min-width: 108px;
+	max-width: 300px;
+	min-height: 44px;
+	border: 1px solid var(--main);
+	border-radius: 10px;
+}
+
+.hint-toggle:not(.active) .hint-box {
+	display: none;
+}

@@ -189,7 +189,7 @@ body .rs-tooltip {
   border-radius: 10px;
   padding: 20px;
   padding-right: 10px;
-  max-height: calc(100vh - 400px);
+  max-height: calc(100vh - 210px);
 }
 
 @media (max-width: 800px) {
@@ -208,8 +208,15 @@ body .rs-tooltip {
   margin-bottom: 20px;
   display: flex;
   flex-direction: column;
-  flex: auto;
-  max-height: calc((100vh - 400px - 80px) / 2);
+  min-height: 0;
+}
+
+.map-overlay--search-block.map-overlay--search-companies {
+  flex: 0 3 auto;
+}
+
+.map-overlay--search-block.map-overlay--search-ships {
+  flex: 0 4 auto;
 }
 
 .map-overlay--search-block:last-child {
@@ -287,7 +294,7 @@ body .rs-tooltip {
 }
 
 .map-overlay--buttons-wrapper {
-  display: none;
+  display: flex;
   align-items: center;
   gap: 10px;
   position: absolute;
@@ -296,24 +303,15 @@ body .rs-tooltip {
   height: calc(var(--height) - 10px);
 }
 
-.map-overlay--buttons-wrapper.active {
-  display: flex;
-}
-
 @media (max-width: 900px) {
   .map-overlay--buttons-wrapper {
-    display: none;
+    display: block;
     height: auto;
     left: auto;
     top: 74px;
     right: 167px;
     background: #fff;
-    padding: 7px;
     border-radius: 7px;
-  }
-
-  .map-overlay--buttons-wrapper.active {
-    display: block;
   }
 }
 
@@ -325,19 +323,16 @@ body .rs-tooltip {
 }
 
 .map-overlay--buttons-content {
-  display: none;
+  display: flex;
   gap: 10px;
 }
 
 @media (max-width: 900px) {
   .map-overlay--buttons-content {
     flex-direction: column;
+    padding: 7px;
     gap: 7px;
   }
-}
-
-.map-overlay--buttons-content.active {
-  display: flex;
 }
 
 .map-overlay--btn {
@@ -387,8 +382,6 @@ body .rs-tooltip {
   }
 }
 
-.map-overlay--btn svg * {}
-
 .map-overlay--btn.active {
   background-color: var(--main);
 }
@@ -411,35 +404,59 @@ body .rs-tooltip {
 }
 
 .map-overlay--menu {
-  display: none;
+  width: 24px;
+  height: 38px;
+  order: 2;
 }
 
-@media (max-width: 900px) {
-  .map-overlay--menu {
-    position: absolute;
-    display: block;
-    top: 20px;
-    right: 167px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
+.map-overlay--menu .toggle svg {
+  width: 9px;
 }
 
-@media (max-width: 639px) {
-  .map-overlay--menu {
-    top: 69px;
-    right: 20px;
-  }
+.map-overlay--menu.active .toggle svg {
+  transform: rotate(180deg);
 }
 
+.map-overlay--menu .toggle,
 .map-overlay--menu .open,
 .map-overlay--menu .close {
   line-height: 0;
 }
 
-.map-overlay--menu:not(.active) .close,
-.map-overlay--menu.active .open,
+@media (min-width: 901px) {
+  .map-overlay--menu .open,
+  .map-overlay--menu .close {
+    display: none;
+  }
+}
+
+@media (max-width: 900px) {
+  .map-overlay--menu {
+    position: absolute;
+    order: unset;
+    top: calc(-4px - var(--height));
+    right: 0;
+    display: flex;
+    width: calc(var(--height) - 11px);
+    height: calc(var(--height) - 11px);
+    align-items: center;
+    justify-content: center;
+  }
+
+  .map-overlay--menu .toggle,
+  .map-overlay--menu:not(.active) .close,
+  .map-overlay--menu.active .open {
+    display: none;
+  }
+}
+
+@media (max-width: 639px) {
+  .map-overlay--menu {
+    top: 0;
+    right: calc(1px - var(--height));
+  }
+}
+
 .map-overlay--toggle-btn:not(.active)+div {
   display: none;
 }
@@ -749,7 +766,7 @@ body .map-overlay--range-dates .rs-container .rs-pointer {
   width: 28px;
   height: 28px;
   transition-duration: 0.4s;
-  transition-property: fill stroke;
+  transition-property: fill, stroke;
 }
 
 @media (max-width: 900px) {
@@ -759,45 +776,51 @@ body .map-overlay--range-dates .rs-container .rs-pointer {
   }
 }
 
-.map-overlay--btn-primary-stroke.active svg path {
+.map-overlay--btn-primary-stroke.active svg *,
+.map-overlay--btn.active .map-overlay--btn-primary-stroke svg * {
   stroke: #ffffff;
 }
 
 @media (min-width: 901px) {
-  .map-overlay--btn-primary-stroke:hover svg path {
+  .map-overlay--btn-primary-stroke:hover svg *,
+  .map-overlay--btn:hover .map-overlay--btn-primary-stroke svg * {
     stroke: #ffffff;
   }
 }
 
-.map-overlay--btn-primary-stroke svg path {
+.map-overlay--btn-primary-stroke svg * {
   stroke: var(--main);
 }
 
 @media (min-width: 901px) {
-  .map-overlay--btn-primary-stroke.active:hover svg path {
+  .map-overlay--btn.active:hover .map-overlay--btn-primary-stroke svg *,
+  .map-overlay--btn-primary-stroke.active:hover svg * {
     stroke: var(--main);
   }
 }
 
-.map-overlay--btn-primary-fill.active svg path {
+.map-overlay--btn-primary-fill.active svg *,
+.map-overlay--btn.active .map-overlay--btn-primary-fill svg * {
   fill: #ffffff;
   stroke: var(--main);
 }
 
 @media (min-width: 901px) {
-  .map-overlay--btn-primary-fill:hover svg path {
+  .map-overlay--btn:hover .map-overlay--btn-primary-fill svg *,
+  .map-overlay--btn-primary-fill:hover svg * {
     fill: #ffffff;
     stroke: var(--main);
   }
 }
 
-.map-overlay--btn-primary-fill svg path {
+.map-overlay--btn-primary-fill svg * {
   fill: var(--main);
   stroke: #ffffff;
 }
 
 @media (min-width: 901px) {
-  .map-overlay--btn-primary-fill.active:hover svg path {
+  .map-overlay--btn-primary-fill.active:hover svg *,
+  .map-overlay--btn.active:hover .map-overlay--btn-primary-fill svg * {
     fill: var(--main);
     stroke: #ffffff;
   }
@@ -831,15 +854,18 @@ body .map-overlay--range-dates .rs-container .rs-pointer {
 
 .map-overlay--zoom-block {
   position: absolute;
-  top: 50%;
+  top: max(50% - 80px, 230px);
   right: 24px;
-  transform: translateY(-50%);
 }
 
 @media (max-width: 639px) {
   .map-overlay--zoom-block {
-    top: 297px;
-    transform: translateY(0);
+    top: max(60% - 80px, 280px);
+  }
+
+  .stops-page .map-overlay--zoom-block,
+  .cruise-map .map-overlay--zoom-block {
+    top: max(50% - 80px, 80px);
   }
 }
 
@@ -886,19 +912,6 @@ body .map-overlay--range-dates .rs-container .rs-pointer {
   }
 }
 
-.map-overlay--buttons-selector.map-overlay--btn {
-  width: 24px;
-  height: 38px;
-}
-
-.map-overlay--buttons-selector.map-overlay--btn svg {
-  width: 9px;
-}
-
-.map-overlay--buttons-selector.map-overlay--btn.active svg {
-  transform: rotate(180deg);
-}
-
 .map-overlay--ships-wrapper {
   position: absolute;
   top: 20px;
@@ -916,12 +929,6 @@ body .map-overlay--range-dates .rs-container .rs-pointer {
 
 @media (max-width: 1199px) {
   .map-overlay--ships-wrapper {
-    display: none;
-  }
-}
-
-@media (max-width: 900px) {
-  .map-overlay--buttons-selector.map-overlay--btn {
     display: none;
   }
 }
@@ -1014,7 +1021,6 @@ body .map-overlay--range-dates .rs-container .rs-pointer {
 .cruise-page .map-overlay--ships-wrapper,
 .cruise-page .map-overlay--time,
 .cruise-page .map-overlay--ship,
-.cruise-page .map-overlay--buttons-selector,
 .cruise-page .map-overlay--menu {
   display: none;
 }
@@ -1022,6 +1028,9 @@ body .map-overlay--range-dates .rs-container .rs-pointer {
 .cruise-page .map-overlay--buttons-wrapper {
   top: 20px;
   left: 20px;
+  right: unset;
+  background: unset;
+  border-radius: unset;
 }
 
 @media (max-width: 900px) {
@@ -1035,6 +1044,7 @@ body .map-overlay--range-dates .rs-container .rs-pointer {
 
   .cruise-page .map-overlay--buttons-content {
     flex-direction: row;
+    padding: unset;
     gap: 10px;
   }
 
@@ -1090,13 +1100,17 @@ body .map-overlay--range-dates .rs-container .rs-pointer {
   width: 37px;
 }
 
+@media (max-width: 1023px) {
+  .range--deco-point {
+    display: none;
+  }
+}
+
 .stops-page .map-overlay--search,
 .stops-page .map-overlay--time-indicator,
 .stops-page .map-overlay--ships-wrapper,
 .stops-page .map-overlay--time,
 .stops-page .map-overlay--ship,
-.stops-page .map-overlay--buttons-selector,
-.stops-page .map-overlay--menu,
 .stops-page .map-overlay--buttons-wrapper,
 .stops-page .map-overlay--range-dates {
   display: none;
@@ -1108,9 +1122,10 @@ body .map-overlay--range-dates .rs-container .rs-pointer {
     right: 20px;
   }
 
+  .cruise-map .map-overlay--overlays,
   .stops-page .map-overlay--overlays {
     top: calc(20px + var(--height) + 15px);
-    right: 20px;
+    right: calc(25px + var(--height));
   }
 
   .stops-page .map-overlay--line {

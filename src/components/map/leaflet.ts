@@ -1,4 +1,3 @@
-import {TypedEventTarget} from 'typescript-event-target';
 import {
   map,
   Map as LMap,
@@ -15,12 +14,10 @@ import {
   Point,
   PointExpression,
   LatLngExpression,
+  LeafletMouseEvent,
+  DomEvent
 } from "leaflet";
 import "leaflet/dist/leaflet.css";
-import {AuditableEventTarget} from "../../util/events";
-import IntersectionSearchTree, {
-  Marker as IntersectionMarker,
-} from "../../util/intersection";
 import Map, {
   Layer,
   MapMarker,
@@ -28,7 +25,6 @@ import Map, {
   MapPolyline,
   InteractiveMapPolyline,
   PointerEvent,
-  IntersectionEvent,
 } from ".";
 import "./index.css";
 import "./leaflet.css";
@@ -45,18 +41,20 @@ export default abstract class LeafletMap extends Map {
     return new TileLayer(LeafletMap.TILE_LAYER_URL);
   }
 
-  private declare map: LMap;
-  private declare renderer: Renderer;
+  declare private map: LMap;
+  declare private renderer: Renderer;
   private layersCount = 0;
   private autoPan: [Point, Point] = [point(0, 0), point(0, 0)];
 
   declare mainLayer: Layer;
 
-  constructor(node: HTMLElement, center: LatLngExpression, zoom: number) {
+  constructor(node: HTMLElement, center: LatLngExpression, zoom: number, minZoom?: number | null, maxZoom?: number) {
     super(node);
     this.map = map(node, {
       center,
       zoom,
+      minZoom,
+      maxZoom,
       attributionControl: false,
       zoomControl: false,
       renderer: canvas(),
@@ -92,26 +90,21 @@ export default abstract class LeafletMap extends Map {
 
     const toggleMeasure = () => {
       measureOpenButton.classList.toggle("active");
-      setTimeout(() => {
-        const measureButton = document.querySelector(".map-overlay--line");
-        if (!measureButton.classList.contains("active")) {
-          removeMeasure();
+      if (!measureOpenButton.classList.contains("active")) {
+        removeMeasure();
+        this.map.getContainer().style.cursor = "grab";
+        this.map.on("dragstart", () => {
+          this.map.getContainer().style.cursor = "grabbing";
+        });
+        this.map.on("dragend", () => {
           this.map.getContainer().style.cursor = "grab";
-          this.map.on("dragstart", () => {
-            this.map.getContainer().style.cursor = "grabbing";
-          });
-          this.map.on("dragend", () => {
-            this.map.getContainer().style.cursor = "grab";
-          });
-        } else {
-          this.map.getContainer().style.cursor = "crosshair";
-        }
-      }, 100);
+        });
+      } else {
+        this.map.getContainer().style.cursor = "crosshair";
+      }
     };
 
-    measureOpenButton?.addEventListener("click", () => {
-      setTimeout(toggleMeasure, 100);
-    });
+    measureOpenButton?.addEventListener("click", toggleMeasure);
 
     this.map.on("mousedown", () => {
       if (isLine) {
@@ -228,52 +221,31 @@ export default abstract class LeafletMap extends Map {
     );
 
     const updateMileWidth = () => {
-      const zoom = this.map.getZoom();
-      const center = this.map.getCenter();
-      const point1 = this.map.project(center);
-
-      const kmWidth = 60;
-      let distance = 1000;
-
-      // Находим точку на расстоянии distance метров от центра
-      const point2 = this.map.project([
-        center.lat,
-        center.lng +
-          distance / (111320 * Math.cos((center.lat * Math.PI) / 180)),
-      ]);
-
-      // Вычисляем ширину в пикселях
-      const width = Math.abs(point2.x - point1.x);
-
-      const precent = (width / kmWidth) * 100;
-      const kmValue = (distance * 100) / precent / 1000;
-      let kmValueText = kmValue;
-      if (kmValue > 1) {
-        kmValueText = Math.round(kmValue);
-      } else {
-        kmValueText = Math.round(kmValue * 100) / 100;
-      }
+      const bounds = this.map.getPixelBounds();
+      const point1 = point( bounds.min.x + 80, bounds.max.y - 37 );
+      const center = this.map.unproject( point1 );
+      const distance = center.distanceTo( this.map.unproject( point1.add([ 60, 0 ]) ) );
+      const power = Math.pow( 10, Math.floor( Math.log10( distance ) ) );
+      const m = Math.ceil( distance / power ) * power;
+      const mLength = Math.round( 60 * m / distance );
+      const mlLength = Math.round( 60 * m * 1.609344 / distance );
+      const mText = m >= 1000 ? `${m/1000} km` : `${m} m`
+      const mlText = `${m/1000} ml`;
 
       const kmBlock = mileDiv.querySelector(".leaflet-mile__block_type_km");
       const mileBlock = mileDiv.querySelector(".leaflet-mile__block_type_mile");
-      const kmTextBlock = kmBlock?.querySelector(
-        ".leaflet-mile__block-text_type_km"
-      );
-      const mileTextBlock = mileBlock?.querySelector(
-        ".leaflet-mile__block-text_type_mile"
-      );
+      const kmTextBlock = kmBlock?.querySelector(".leaflet-mile__block-text_type_km");
+      const mileTextBlock = mileBlock?.querySelector(".leaflet-mile__block-text_type_mile");
 
       if (kmBlock && mileBlock && kmTextBlock && mileTextBlock) {
-        kmTextBlock.textContent = `${kmValueText} km`;
-        mileTextBlock.textContent = `${kmValueText} ml`;
-        (kmBlock as HTMLElement).style.width = `${(width * 100) / precent}px`;
-        (mileBlock as HTMLElement).style.width = `${
-          ((width * 100) / precent) * 1.609
-        }px`;
+        kmTextBlock.textContent = mText;
+        mileTextBlock.textContent = mlText;
+        (kmBlock as HTMLElement).style.width = `${mLength}px`;
+        (mileBlock as HTMLElement).style.width = `${mlLength}px`;
       }
     };
 
-    this.map.on("zoomend", updateMileWidth);
+    this.map.on("moveend zoomend", updateMileWidth);
     updateMileWidth();
     this.map.getContainer().appendChild(mileDiv);
     // отрезок конец
@@ -354,94 +326,33 @@ export default abstract class LeafletMap extends Map {
       });
     }
     // блок с кнопками масштабирования конец
-    // страница круиза начало
-    if (document.location.href.includes('cruise=')) {
-      window.addEventListener('cruisePointsCreated', (event: Event) => {
-        const {cruise, points} = (event as CustomEvent).detail;
-        const {northPoint, southPoint, westPoint, eastPoint} = points;
-        
-        // Создаем границы для карты
-        const bounds = L.latLngBounds(
-          [southPoint.lat, westPoint.lng], // юго-западная точка
-          [northPoint.lat, eastPoint.lng]  // северо-восточная точка
-        );
-        
-        // Устанавливаем вид карты по границам с небольшим отступом
-        this.map.fitBounds(bounds, {
-          padding: [20, 20], // отступ в пикселях со всех сторон
-          maxZoom: 12, // ограничиваем максимальное приближение
-          animate: true // плавная анимация
-        });
-      });
-    }
-    // страница круиза конец
-    // страница стоянок начало
-    if (new URL(location.toString()).searchParams.get('stops') === 'true') {
-      window.addEventListener('cruiseStopsCreated', (event: Event) => {
-        const {stops} = (event as CustomEvent).detail;
-        const {northPoint, southPoint, westPoint, eastPoint} = stops;
 
-        // Создаем границы для карты
-        const bounds = L.latLngBounds(
-          [southPoint.lat, westPoint.lng], // юго-западная точка
-          [northPoint.lat, eastPoint.lng]  // северо-восточная точка
-        );
-        
-        // Устанавливаем вид карты по границам с небольшим отступом
-        this.map.fitBounds(bounds, {
-          padding: [20, 20], // отступ в пикселях со всех сторон
-          maxZoom: 12, // ограничиваем максимальное приближение
-          animate: true // плавная анимация
-        });        
-      });
-    }
-    // страница стоянок конец
-    // страница одной стоянки начало
-    if (new URL(location.toString()).searchParams.get('stops')
-      && new URL(location.toString()).searchParams.get('stops') !== 'true'
-  ) {
-      window.addEventListener('cruiseStopsCreated', (event: Event) => {
-        const {stops} = (event as CustomEvent).detail;
-        const {northPoint, southPoint, westPoint, eastPoint} = stops;
-        console.log('stops', stops)
-
-        // Создаем границы для карты
-        const bounds = L.latLngBounds(
-          [southPoint.lat, westPoint.lng], // юго-западная точка
-          [northPoint.lat, eastPoint.lng]  // северо-восточная точка
-        );
-        
-        // Устанавливаем вид карты по границам с небольшим отступом
-        this.map.fitBounds(bounds, {
-          padding: [20, 20], // отступ в пикселях со всех сторон
-          maxZoom: 12, // ограничиваем максимальное приближение
-          animate: true // плавная анимация
-        });        
-      });
-    }
-    // страница одной стоянки конец
-    // страница достопримечательностей начало
-    if (new URL(location.toString()).searchParams.get('place')) {
-      window.addEventListener('cruisePlaceCreated', (event: Event) => {
-        const {sights} = (event as CustomEvent).detail;
-        const {northPoint, southPoint, westPoint, eastPoint} = sights;
-        console.log('place', sights)
-        // Создаем границы для карты
-        const bounds = L.latLngBounds(
-          [southPoint.lat, westPoint.lng], // юго-западная точка
-          [northPoint.lat, eastPoint.lng]  // северо-восточная точка
-        );
-        
-        // Устанавливаем вид карты по границам с небольшим отступом
-        this.map.fitBounds(bounds, {
-          padding: [20, 20], // отступ в пикселях со всех сторон
-          maxZoom: 12, // ограничиваем максимальное приближение
-          animate: true // плавная анимация
-        });        
-      });
-    }
+    const getZoom = () => {
+      if (this.map.getZoom() >= 9) {
+        ( this.domNode as HTMLElement ).classList.remove( 'zoomed-out' );
+      }
+      else {
+        ( this.domNode as HTMLElement ).classList.add( 'zoomed-out' );
+      }
+    };
+    this.map.on( 'zoomend', getZoom );
+    getZoom();
   }
-  // страница достопримечательностей конец
+
+  fitBounds( south: number, west: number, north: number, east: number ) {
+    // Создаем границы для карты
+    const bounds = L.latLngBounds(
+      [south, west], // юго-западная точка
+      [north, east]  // северо-восточная точка
+    );
+
+    // Устанавливаем вид карты по границам с небольшим отступом
+    this.map.fitBounds(bounds, {
+      padding: [20, 20], // отступ в пикселях со всех сторон
+      maxZoom: 12, // ограничиваем максимальное приближение
+      animate: true // плавная анимация
+    });
+  }
 
   addLayer() {
     return new LeafletPane(
@@ -496,24 +407,6 @@ class LeafletPane<
   private representations: WeakMap<TMarker | MapPolyline, LLayer[]> =
     new WeakMap();
 
-  private intersections: IntersectionSearchTree<
-    IntersectionMapMarker<TMarker>
-  > = new IntersectionSearchTree();
-  /** Соответствия маркеров пересечений маркерам приложения */
-  private intersectionMarkers: WeakMap<
-    TMarker,
-    IntersectionMapMarker<TMarker>
-  > = new WeakMap();
-  /**
-   * Запланированные для проверки пересечений маркеры (для оптимизации).
-   * true означает проверку всех имеющихся.
-   */
-  private plannedIntersectionChecks: Set<TMarker> | true = new Set();
-
-  events: AuditableEventTarget<
-    Layer<TMarker>['events'] extends TypedEventTarget<infer E> ? E : never
-  > = new AuditableEventTarget();
-
   constructor(map: LMap, autoPan: [Point, Point], paneName = "") {
     super();
     this.visible = true;
@@ -533,8 +426,6 @@ class LeafletPane<
     this.renderer = canvas({
       pane: this.compositePaneName("overlayPane"),
     });
-
-    this.map.on("zoomend", () => this.checkAllIntersections());
   }
 
   show() {
@@ -542,7 +433,6 @@ class LeafletPane<
     this.visible = true;
     for (const pane of this.panes()) pane.classList.add("map__layer_visible");
     this.events.dispatchEvent(new Event("visibilitychange"));
-    this.checkAllIntersections();
   }
 
   hide() {
@@ -585,14 +475,39 @@ class LeafletPane<
       }
     );
     interactiveMarker.marker = lMarker;
+    let timer: ReturnType<typeof setTimeout>;
+
     // Удаление одноразового маркера
     lMarker.on("popupclose", () => {
       lMarker.unbindPopup();
       lMarker.isOpen = false;
+      if (timer) {
+        clearTimeout( timer );
+        timer = undefined;
+      }
     });
 
+    const popupClose = () => {
+      if (!timer) {
+        timer = setTimeout( () => {
+          const popup = lMarker.getPopup();
+          if (popup) {
+            popup.close();
+          }
+          timer = undefined;
+        }, 300 );
+      }
+    };
+
+    const onMouseOver = () => {
+      if (timer) {
+        clearTimeout( timer );
+        timer = undefined;
+      }
+    };
+
     // Создание и открытие одноразового маркера
-    const open = async () => {
+    const open = async ( event: LeafletMouseEvent ) => {
       if (!lMarker.isOpen) {
         lMarker.isOpen = true;
         const content = await interactiveMarker.popupContent();
@@ -603,7 +518,7 @@ class LeafletPane<
         const popupDiv = document.createElement("div");
         popupDiv.classList.add("map__popup", "map__popup_loaded");
         popupDiv.appendChild( contentDiv );
-        
+
         // Ищем оптимальное положение попапа
         popupDiv.style.maxWidth = null;
         popupDiv.style.maxHeight = null;
@@ -613,7 +528,8 @@ class LeafletPane<
         const popupSize = point([ popupDiv.offsetWidth, popupDiv.offsetHeight ]);
         document.body.removeChild(popupDiv);
 
-        const coord = this.map.latLngToContainerPoint( lMarker.getLatLng() );
+        const markerCoord = this.map.latLngToContainerPoint( lMarker.getLatLng() );
+        const coord = event.sourceTarget === lMarker ? markerCoord : event.containerPoint;
         const size = this.map.getSize();
         const iconSize = point( lMarker.getIcon().options.iconSize );
         const left = coord.x - popupSize.x;
@@ -664,7 +580,15 @@ class LeafletPane<
             contentDiv.style.maxHeight = `${height - 40}px`;
           }
         }
-        
+
+        if (coord !== markerCoord) {
+          offset[0] += coord.x - markerCoord.x;
+          offset[1] += coord.y - markerCoord.y;
+        }
+
+        popupDiv.addEventListener('mouseover', onMouseOver);
+        popupDiv.addEventListener('mouseout', popupClose);
+
         lMarker.bindPopup(popupDiv, {
           closeButton: false,
           closeOnClick: false,
@@ -675,101 +599,32 @@ class LeafletPane<
       }
     };
 
-    lMarker.on("mouseover click", () => {
-      if (!lMarker.isOpen) open();
+    lMarker.on("mouseover", onMouseOver);
+
+    lMarker.on("mouseover click", ( event: LeafletMouseEvent ) => {
+      if (!lMarker.isOpen) open( event );
     });
-    // Закрытие попапа только при выходе мыши за его пределы либо пределы маркера
-    lMarker.on("mouseout", event => {
-      const popup = lMarker.getPopup();
-      if (popup) {
-        const container = popup.getElement();
-        if (container.contains(event.originalEvent?.relatedTarget as Node)) {
-          container.addEventListener("mouseleave", () => {
-            popup.close();
-          });
-        } else {
-          popup.close();
-        }
-      }
-    });
+
+    lMarker.on("mouseout", popupClose);
 
     this.syncMarker(interactiveMarker);
   }
 
   removeMarker(marker: TMarker) {
-    this.checkSiblingsIntersections(marker);
-    this.removePath(marker);
-    this.intersections.remove(this.intersectionMarkers.get(marker));
-    this.intersectionMarkers.delete(marker);
-    marker.marker = undefined;
+    if (marker.marker) {
+      this.removePath(marker);
+      marker.marker = undefined;
+    }
   }
 
   /** Связать маркер приложения и маркер leaflet */
   private syncMarker(marker: TMarker): void {
     const lMarker = marker.marker;
     this.representations.set(marker, [lMarker]);
-    const intersectionMarker = new IntersectionMapMarker(marker);
-    this.intersectionMarkers.set(marker, intersectionMarker);
-    this.intersections.add(intersectionMarker);
     marker.events.addEventListener("locationchange", () => {
       lMarker.setLatLng([marker.lat, marker.lng]);
-      this.intersections.update(intersectionMarker);
-      this.checkIntersections([marker]);
     });
     lMarker.addTo(this.map);
-    this.checkIntersections([marker]);
-  }
-
-  private checkIntersections(markers: TMarker[]): void {
-    if (this.plannedIntersectionChecks === true) return;
-    if (markers.length > 0 && this.plannedIntersectionChecks.size === 0)
-      window.queueMicrotask(() => {
-        if (this.plannedIntersectionChecks === true) return;
-        const markers = new Set<IntersectionMapMarker<TMarker>>();
-        for (const marker of this.plannedIntersectionChecks)
-          if (this.intersectionMarkers.has(marker))
-            markers.add(this.intersectionMarkers.get(marker));
-        this.plannedIntersectionChecks.clear();
-        if (
-          this.events.listenersCount("intersect") === 0
-          || markers.size === 0
-        ) return;
-        const { entries, graph } = this.intersections.check(markers, (obj) =>
-          obj && obj.marker ? obj.marker : null
-        );
-        this.events.dispatchEvent(
-          new IntersectionEvent("intersect", entries, graph)
-        );
-      });
-    for (const marker of markers) this.plannedIntersectionChecks.add(marker);
-  }
-
-  private checkAllIntersections(): void {
-    this.plannedIntersectionChecks = true;
-    window.queueMicrotask(() => {
-      if (this.plannedIntersectionChecks !== true) return;
-      this.plannedIntersectionChecks = new Set();
-      if (this.events.listenersCount("intersect") === 0) return;
-      const { entries, graph } = this.intersections.checkAll((obj) =>
-        obj && obj.marker ? obj.marker : null
-      );
-      if (entries.size > 0)
-        this.events.dispatchEvent(
-          new IntersectionEvent("intersect", entries, graph)
-        );
-    });
-  }
-
-  /**
-   * Проверить пересечения всех маркеров, в данный момент пересекающихся с указанным.
-   * Используется перед удалением.
-   */
-  private checkSiblingsIntersections(marker: TMarker): void {
-    const { entries: siblings } = this.intersections.check(
-      new Set([this.intersectionMarkers.get(marker)]),
-      (obj) => obj && obj.marker ? obj.marker : null,
-    );
-    this.checkIntersections([...siblings]);
   }
 
   /** В данный момент никак не реализован InteractiveMapPolylinePoint */
@@ -861,27 +716,3 @@ const DOMIcon = DivIcon.extend({
     return div;
   },
 }) as any; // С конструкторами объектов leaflet сложности, поэтому any
-
-/** Адаптер маркера для рассчета пересечений */
-class IntersectionMapMarker<TMarker extends MapMarker = MapMarker>
-  implements IntersectionMarker {
-
-  declare marker: TMarker;
-
-  get x() {
-    return this.marker.lng;
-  }
-
-  get y() {
-    return -this.marker.lat;
-  }
-
-  constructor(marker: TMarker) {
-    this.marker = marker;
-  }
-
-  rect() {
-    const icon = this.marker.marker?.options.icon as ExposedDivIcon;
-    return icon?.container.getBoundingClientRect() || new DOMRect;
-  }
-}

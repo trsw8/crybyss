@@ -11,14 +11,7 @@
 
 .map-container__map {
   position: relative;
-  height: calc(100vh - 97px);
-  min-height: 600px;
-}
-
-@media (max-width: 639px) {
-  .map-container__map {
-    height: calc(100vh - 62px);
-  }
+  height: 100vh;
 }
 
 .map-container__map map {

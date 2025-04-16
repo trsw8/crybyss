@@ -1,4 +1,4 @@
-<div class="map-overlay <%= locals.className %>">
+<div class="map-overlay <%= locals.className %>"<%- locals.style ? ` style="${locals.style}"` : '' %>>
 	<div class="map-overlay--time-indicator active">
 		<div class="map-overlay--time-indicator-date">дд.мм.гггг</div>
 		<div class="map-overlay--time-indicator-time">00:00:00</div>
@@ -35,8 +35,13 @@
 		</div>
 	</div>
 
-	<div class="map-overlay--buttons-wrapper active">
-		<div class="map-overlay--buttons-content active">
+	<div class="map-overlay--buttons-wrapper">
+		<div class="map-overlay--menu map-overlay--btn map-overlay--toggle-btn active">
+			<div class="toggle map-overlay--btn-primary-fill"><%- include('../../icons/arrow.svg') %></div>
+			<div class="open map-overlay--btn-primary-stroke"><%- include('../../icons/menu.svg') %></div>
+			<div class="close map-overlay--btn-primary-stroke"><%- include('../../icons/close.svg') %></div>
+		</div>
+		<div class="map-overlay--buttons-content">
 			<div class="map-overlay--ship map-overlay--btn map-overlay--btn-primary-fill">
 				<%- include('../../icons/liner.svg') %>
 				<span class="map-overlay--button-text">теплоходы</span>
@@ -62,44 +67,27 @@
 				<span class="map-overlay--button-text">закаты</span>
 			</div>
 		</div>
-		<div class="map-overlay--buttons-selector map-overlay--btn map-overlay--btn-primary-fill active">
-			<%- include('../../icons/arrow.svg') %>
+		<div style="display: none">
+			<input type="checkbox" name="over" id="ship-layer-checkbox" class="map-overlay--layers-checkbox" checked>
+			<input type="checkbox" name="over" id="stops-layer-checkbox" class="map-overlay--layers-checkbox" checked>
+			<input type="checkbox" name="over" id="sights-layer-checkbox" class="map-overlay--layers-checkbox">
+			<input type="checkbox" name="over" id="sunrises-layer-checkbox" class="map-overlay--layers-checkbox">
+			<input type="checkbox" name="over" id="sunsets-layer-checkbox" class="map-overlay--layers-checkbox">
+			<input type="checkbox" name="over" id="gateways-layer-checkbox" class="map-overlay--layers-checkbox">
 		</div>
 	</div>
-	<div class="map-overlay--menu map-overlay--btn map-overlay--toggle-btn map-overlay--btn-primary-stroke">
+	<!--div class="map-overlay--menu map-overlay--btn map-overlay--toggle-btn map-overlay--btn-primary-stroke">
 		<div class="open"><%- include('../../icons/menu.svg') %></div>
 		<div class="close"><%- include('../../icons/close.svg') %></div>
-	</div>
-	<div class="map-overlay--layers">
-		<div class="map-overlay--overlays-box">
-			<input type="checkbox" name="over" id="ship-layer-checkbox"
-				class="map-overlay--layers-hidden map-overlay--layers-checkbox custom-radio" checked>
-			<label for="ship-layer-checkbox" class="map-overlay--layers-hidden">Теплоходы</label>
-			<input type="checkbox" name="over" id="stops-layer-checkbox"
-				class="map-overlay--layers-hidden map-overlay--layers-checkbox custom-radio" checked>
-			<label for="stops-layer-checkbox" class="map-overlay--layers-hidden">Стоянки</label>
-			<input type="checkbox" name="over" id="sights-layer-checkbox"
-				class="map-overlay--layers-hidden map-overlay--layers-checkbox custom-radio" checked>
-			<label for="sights-layer-checkbox" class="map-overlay--layers-hidden">Места</label>
-			<input type="checkbox" name="over" id="sunrises-layer-checkbox"
-				class="map-overlay--layers-checkbox custom-radio" checked>
-			<label for="sunrises-layer-checkbox">Восходы</label>
-			<input type="checkbox" name="over" id="sunsets-layer-checkbox"
-				class="map-overlay--layers-checkbox custom-radio" checked>
-			<label for="sunsets-layer-checkbox">Закаты</label>
-			<input type="checkbox" name="over" id="gateways-layer-checkbox"
-				class="map-overlay--layers-checkbox custom-radio" checked>
-			<label for="gateways-layer-checkbox">Шлюзы</label>
-		</div>
-	</div>
+	</div-->
 
-	<div class="map-overlay--time map-overlay--btn map-overlay--btn-primary-fill active">
+	<div class="map-overlay--time map-overlay--btn map-overlay--btn-primary-fill">
 		<%- include('../../icons/clock.svg') %>
 	</div>
 	<div class="map-overlay--line map-overlay--btn map-overlay--btn-primary-stroke">
 		<%- include('../../icons/ruler.svg') %>
 	</div>
-	<div class="map-overlay--copy map-overlay--btn map-overlay--toggle-btn map-overlay--btn-primary-stroke active">
+	<div class="map-overlay--copy map-overlay--btn map-overlay--toggle-btn map-overlay--btn-primary-stroke">
 		<%- include('../../icons/layers.svg') %>
 	</div>
 	<div class="map-overlay--overlays">
@@ -114,20 +102,14 @@
 	</div>
 	<div class="map-overlay--ships-wrapper">
 		<span class="map-overlay--ships-text">
-			Теплоходов не в круизе: 
+			Теплоходов не в круизе:
 		</span>
 		<span class="map-overlay--ships-count">000</span>
 	</div>
 
 	<div class="map-overlay--range-dates">
-		<div class="range--deco range--deco-left">-<div class="asteriks"
-				tiptext="<div class='asteriks--box'>Подсказка для даты прибытия для посетителей</div>"
-				data-title="<div class='asteriks--box'>Подсказка для даты прибытия для посетителей</div>">
-				<%- include('../../icons/question.svg') %>
-			</div>
-		</div>
+		<div class="range--deco range--deco-left">-</div>
 		<div class="range--deco range--deco-right">-</div>
-		<input type="text" id="slider2" class="slider2" style="display: none;">
 		<div class="rs-container sliding">
 			<div class="rs-bg"></div>
 			<div class="rs-pointer">

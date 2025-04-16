@@ -38,6 +38,17 @@
 	margin-top: calc(var(--leaflet-marker-icon_height) / -2);
 }
 
+.leaflet-marker-icon,
+.leaflet-marker-icon svg,
+.leaflet-marker-icon.leaflet-interactive {
+	pointer-events: none;
+}
+
+.leaflet-marker-icon svg *,
+.leaflet-marker-icon.leaflet-interactive :not(svg):not(div) {
+	pointer-events: auto;
+}
+
 .leaflet-marker-icon>* {
 	width: 100%;
 	height: 100%;

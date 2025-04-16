@@ -13,7 +13,7 @@ export default class LocationInfo extends DOMComponent {
 		const div = document.createElement('div');
 		div.classList.add('location-info', ...classNames);
 		div.addEventListener('click', () => {
-			navigator.clipboard.writeText(`${lat},${lng}`);
+			navigator.clipboard?.writeText(`${lat},${lng}`);
 		});
 
 		for (const value of [lat, lng]) {

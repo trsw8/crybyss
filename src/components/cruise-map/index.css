@@ -1,8 +1,45 @@
 .cruise-map__marker_type_ship {
 	fill: var(--cruise-map__marker_color);
+	stroke: var(--cruise-map__marker_color);
 	transform:
 		translateY(calc(var(--cruise-map__marker_intersection-index, 0) * 12px))
 		rotate(var(--cruise-map__marker_angle, 0deg));
+}
+
+@keyframes highlight {
+	from {
+		filter: brightness(125%);
+	}
+	to {
+		filter: brightness(75%);
+	}
+}
+
+div.cruise-map__marker {
+	display: flex;
+	align-items: center;
+	place-content: center;
+	pointer-events: none;
+}
+
+div.cruise-map__marker .placeholder-icon circle {
+	fill: var(--cruise-map__marker_color);
+}
+
+.map.zoomed-out div.cruise-map__marker .collapsible,
+.map:not(.zoomed-out) div.cruise-map__marker .placeholder-icon {
+	display: none;
+}
+
+.cruise-map__marker_type_ship.active {
+	animation: 0.5s ease-in-out infinite alternate highlight;
+}
+
+.cruise-map__icon {
+	width: 24px;
+	height: 24px;
+	min-width: 24px;
+	min-height: 24px;
 }
 
 .cruise-map__icon_type_stop {

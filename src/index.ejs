@@ -1,42 +1,36 @@
 <!DOCTYPE html>
 <html>
-
 <head>
-
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>КруБИС</title>
-
 	<link rel="stylesheet" href="./index.css">
 </head>
-
 <body>
-
 	<main id="root">
 		<div class="filter-overlay">
-			<h2>онлайн карта</h2>
 			<div class="filter-box">
 				<div class="_label">
-					<p>Выберите дату <span class="symbol">?</span></p>
+					<p>Выберите дату<%- include('./components/hintbox/index', { text: 'Выберите дату' }) %></p>
 					<div class="datepicker-container">
 						<div class="datepicker-label">
 							<input type="text" id="datepicker-input" placeholder="" readonly>
 							<div class="calendar-svg-wrapper"><%- include('./icons/calendar.svg') %></div>
 						</div>
-						<div id="datepicker-calendar" class="hidden hidden-calendar">
+						<div id="datepicker-calendar" class="hidden">
 							<div class="calendar-header">
 								<span id="calendar-title"></span>
 								<button id="prev-month">‹</button>
 								<button id="next-month">›</button>
 							</div>
 							<div class="calendar-days">
-								<div>вс</div>
 								<div>пн</div>
 								<div>вт</div>
 								<div>ср</div>
 								<div>чт</div>
 								<div>пт</div>
 								<div>сб</div>
+								<div>вс</div>
 							</div>
 							<div id="calendar-body"></div>
 							<button id="confirm">установить</button>
@@ -73,7 +67,7 @@
 					</div>
 				</div>
 				<div class="_label">
-					<p>Шкала времени <span class="symbol">?</span></p>
+					<p>Шкала времени<%- include('./components/hintbox/index', { text: 'Шкала времени' }) %></p>
 					<div class="range-container">
 						<div class="slider-container">
 							<input type="range" id="time-slider" min="0" max="1439" value="720">
@@ -88,7 +82,7 @@
 					</div>
 				</div>
 				<div class="_label">
-					<p class="time-picker-label">Текущее время <span class="symbol">?</span></p>
+					<p class="time-picker-label">Текущее время<%- include('./components/hintbox/index', { text: 'Текущее время' }) %></p>
 					<label for="timeInput" class="time-picker-container">
 						<input type="time" id="timeInput" step="1">
 						<span id="timeDisplay">00:00:00</span>
@@ -99,8 +93,5 @@
 			<%- include('./components/map-container/index') %>
 		</div>
 	</main>
-
 </body>
-<script src="./script.js"></script>
-
 </html>
