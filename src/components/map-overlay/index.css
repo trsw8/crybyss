@@ -845,6 +845,13 @@ body .map-overlay--range-dates .rs-container .rs-pointer {
   stroke: var(--main);
 }
 
+@media (max-width: 800px) {
+  .stops-page .map-overlay--overlays {
+    top: 20px;
+    right: calc(25px + var(--height));
+  }
+}
+
 @media (max-width: 639px) {
   .map-overlay--overlays {
     top: 216px;
@@ -858,12 +865,17 @@ body .map-overlay--range-dates .rs-container .rs-pointer {
   right: 24px;
 }
 
+@media (max-width: 800px) {
+  .stops-page .map-overlay--zoom-block {
+    top: max(50% - 80px, 80px);
+  }
+}
+
 @media (max-width: 639px) {
   .map-overlay--zoom-block {
     top: max(60% - 80px, 280px);
   }
 
-  .stops-page .map-overlay--zoom-block,
   .cruise-page .map-overlay--zoom-block {
     top: max(50% - 80px, 80px);
   }
@@ -1122,8 +1134,7 @@ body .map-overlay--range-dates .rs-container .rs-pointer {
     right: 20px;
   }
 
-  .cruise-page .map-overlay--overlays,
-  .stops-page .map-overlay--overlays {
+  .cruise-page .map-overlay--overlays {
     top: calc(20px + var(--height) + 15px);
     right: calc(25px + var(--height));
   }
