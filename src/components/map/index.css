@@ -21,7 +21,7 @@
 
 .map__popup {
 	overflow: hidden;
-	width: 300px;
+	width: 225px;
 	height: auto;
 	padding-top: 20px;
 	padding-bottom: 20px;
@@ -31,7 +31,7 @@
 
 .map__popup-scroller {
 	overflow: auto;
-	max-height: 460px;
+	max-height: 400px;
 	padding-left: 20px;
 	padding-right: 20px;
 }
