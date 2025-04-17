@@ -88,6 +88,8 @@ export default class MapOverlay extends DOMComponent {
 		setOverlayBounds();
 		window.addEventListener("resize", setOverlayBounds);
 
+		const mapMode = cruiseMap.mapMode;
+
 		window.addEventListener("cruisesDataLoaded", () => {
 			const menuBtn = ( domNode as HTMLElement ).querySelector( ".map-overlay--menu" ) as HTMLElement;
 			const clockBtn = ( domNode as HTMLElement ).querySelector( ".map-overlay--time" ) as HTMLElement;
@@ -102,11 +104,11 @@ export default class MapOverlay extends DOMComponent {
 							if (layersBtn) layersBtn.classList.remove( 'active' );
 						}
 						else if (target === clockBtn) {
-							if (window.innerWidth < 901 && menuBtn) menuBtn.classList.remove( 'active' );
+							if (mapMode === 'default' && window.innerWidth < 901 && menuBtn) menuBtn.classList.remove( 'active' );
 							if (layersBtn) layersBtn.classList.remove( 'active' );
 						}
 						else if (target === layersBtn) {
-							if (window.innerWidth < 901 && menuBtn) menuBtn.classList.remove( 'active' );
+							if (mapMode === 'default' && window.innerWidth < 901 && menuBtn) menuBtn.classList.remove( 'active' );
 							if (clockBtn?.classList.contains( 'active' )) clockBtn.click();
 						}
 					}
@@ -119,8 +121,6 @@ export default class MapOverlay extends DOMComponent {
 
 			( domNode as HTMLElement ).style.removeProperty( 'display' );
 		}, { once: true });
-
-		const mapMode = cruiseMap.mapMode;
 
 		// страница круиза начало
 		if (mapMode === 'cruise') {
