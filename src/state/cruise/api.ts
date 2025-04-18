@@ -181,8 +181,8 @@ class CruiseData implements Cruise {
 		Object.assign( this, {
 			id: data.id,
 			name: data.name,
-			departure: parseDepartureDate( data.departure ),
-			arrival: parseArrivalDate( data.arrival ),
+			departure: parseDate( data.departure ),
+			arrival: parseDate( data.arrival ),
 			departureLocationName: data.departureLocationName,
 			arrivalLocationName: data.arrivalLocationName,
 			//~ url: data.url,
@@ -339,15 +339,29 @@ class ShipData implements Ship {
 	get navigationStartDate(): Date | undefined {
 		const cruise = this.cruises()[Symbol.iterator]().next().value;
 		if (!cruise?.departure) return;
-		else return new Date( +cruise.departure );
+		else {
+			const navigationStartDate =  new Date( +cruise.departure );
+			navigationStartDate.setMilliseconds(0);
+			navigationStartDate.setSeconds(0);
+			navigationStartDate.setMinutes(0);
+			navigationStartDate.setHours(0);
+			return navigationStartDate;
+		}
 	}
 
 	get navigationEndDate(): Date | undefined {
 		const cruises = [ ...this.cruises() ];
 		if (!cruises.length) return;
 		else {
-			const navigationEndDate = Math.max( ...cruises.map( cruise => +( cruise.arrival ?? -Infinity ) ) );
-			if (Number.isFinite( navigationEndDate )) return new Date( navigationEndDate );
+			const max = Math.max( ...cruises.map( cruise => +( cruise.arrival ?? -Infinity ) ) );
+			if (Number.isFinite( max )) {
+				const navigationEndDate = new Date( max );
+				navigationEndDate.setMilliseconds(999);
+				navigationEndDate.setSeconds(59);
+				navigationEndDate.setMinutes(59);
+				navigationEndDate.setHours(23);
+				return navigationEndDate;
+			}
 			else return;
 		}
 	}
@@ -361,14 +375,33 @@ class ShipData implements Ship {
 
 	cruisesOn( datetime: Date ): Cruise[] {
 		const moment = +datetime;
+		const dateObj = new Date( moment );
+		dateObj.setMilliseconds(0);
+		dateObj.setSeconds(0);
+		dateObj.setMinutes(0);
+		dateObj.setHours(0);
+		const dayStart = +dateObj;
+		const dayEnd = dayStart + 86399999;
 		const found: Cruise[] = [];
+		const arrived: Cruise[] = [];
+		const departing: Cruise[] = [];
 		for (const index of cache.activeCruises) {
 			const cruise = cache.cruises.at( index );
 			if (cruise.ship === this) {
 				if (+( cruise.departure ?? 0 ) <= moment && +( cruise.arrival ?? 0 ) >= moment) {
 					found.push( cruise );
 				}
+				else if (+( cruise.departure ?? 0 ) >= dayStart && +( cruise.departure ?? 0 ) <= dayEnd) {
+					departing.push( cruise );
+				}
+				else if (+( cruise.arrival ?? 0 ) >= dayStart && +( cruise.arrival ?? 0 ) <= dayEnd) {
+					arrived.push( cruise );
+				}
 			}
+		}
+		if (!found.length) {
+			if (departing.length) found.push( ...departing );
+			else if (arrived.length) found.push( ...arrived );
 		}
 		return found;
 	}
@@ -723,8 +756,15 @@ class CruiseAPICache extends Cache implements CruiseAPI {
 	get navigationStartDate(): Date | undefined {
 		if (!this.activeCruises.length) return;
 		else {
-			const navigationStartDate = this.cruises.at( this.activeCruises[0] ).departure;
-			if (navigationStartDate) return new Date( +navigationStartDate );
+			const datetime = this.cruises.at( this.activeCruises[0] ).departure;
+			if (datetime) {
+				const navigationStartDate = new Date( +datetime );
+				navigationStartDate.setMilliseconds(0);
+				navigationStartDate.setSeconds(0);
+				navigationStartDate.setMinutes(0);
+				navigationStartDate.setHours(0);
+				return navigationStartDate;
+			}
 			else return;
 		}
 	}
@@ -732,8 +772,15 @@ class CruiseAPICache extends Cache implements CruiseAPI {
 	get navigationEndDate(): Date | undefined {
 		if (!this.activeCruises.length) return;
 		else {
-			const navigationEndDate = Math.max( ...this.activeCruises.map( index => +( this.cruises.at( index ).arrival ?? -Infinity ) ) );
-			if (Number.isFinite( navigationEndDate )) return new Date( navigationEndDate );
+			const max = Math.max( ...this.activeCruises.map( index => +( this.cruises.at( index ).arrival ?? -Infinity ) ) );
+			if (Number.isFinite( max )) {
+				const navigationEndDate = new Date( max );
+				navigationEndDate.setMilliseconds(999);
+				navigationEndDate.setSeconds(59);
+				navigationEndDate.setMinutes(59);
+				navigationEndDate.setHours(23);
+				return navigationEndDate;
+			}
 			else return;
 		}
 	}
@@ -822,26 +869,4 @@ function parseDate(dateString: string): Date {
 	//~ const [, year, month, day, hour, minute, second = '00'] = match;
 	//~ return new Date(+year, +month - 1, +day, +hour, +minute, +second);
 	return new Date( dateString );
-}
-
-function parseDepartureDate( dateString: string ): Date {
-	const date = parseDate( dateString );
-	if (!date) return;
-
-	date.setHours( 0 );
-	date.setMinutes( 0 );
-	date.setSeconds( 0 );
-	date.setMilliseconds( 0 );
-	return date;
-}
-
-function parseArrivalDate( dateString: string ): Date {
-	const date = parseDate( dateString );
-	if (!date) return;
-
-	date.setHours( 23 );
-	date.setMinutes( 59 );
-	date.setSeconds( 59 );
-	date.setMilliseconds( 0 );
-	return date;
 }

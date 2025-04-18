@@ -551,22 +551,22 @@ class DateFilter {
 
 			if (timeValue) {
 				const [day, month, year] = dateValue.split(".");
-				const [hours, minutes, seconds] = timeValue.split(":");
+				let [hours, minutes, seconds = "00"] = timeValue.split(":");
 
 				finalDate = new Date(
-					parseInt(year),
-					parseInt(month) - 1,
-					parseInt(day),
-					parseInt(hours),
-					parseInt(minutes),
-					parseInt(seconds)
+					Number(year),
+					Number(month) - 1,
+					Number(day),
+					Number(hours),
+					Number(minutes),
+					Number(seconds)
 				);
 			} else {
 				const [day, month, year] = dateValue.split(".");
 				finalDate = new Date(
-					parseInt(year),
-					parseInt(month) - 1,
-					parseInt(day)
+					Number(year),
+					Number(month) - 1,
+					Number(day)
 				);
 			}
 
